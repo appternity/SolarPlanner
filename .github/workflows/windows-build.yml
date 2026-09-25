@@ -30,7 +30,7 @@ jobs:
           WEB_WORKER_EXPERIMENTAL_SAFARI_SUPPORT: true
         shell: bash
         run: |
-          cd ..
+          cd app && flutter pub get
           # Disable sound effects and GPU acceleration for desktop builds
           flutter build windows \
             --release \"\"
