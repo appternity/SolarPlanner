@@ -7,6 +7,7 @@ import 'roof_canvas.dart';
 import 'roof_dialogs.dart' show confirmDeleteRoof, showAddRoofDialog, showEditRoofDialog;
 import 'efficiency_dialog.dart';
 
+
 /// Full-screen project editor: roof canvas + control panel.
 class EditorScreen extends StatefulWidget {
   final AppDatabase db;
@@ -204,34 +205,10 @@ class _ControlPanel extends StatelessWidget {
 
         // Roofs
         const _SectionTitle('Dächer'),
-        SizedBox(
-          width: double.infinity,
-          child: DropdownButtonFormField<int>(
-            // initialValue must match an item or be null (the widget asserts
-            // otherwise); show a hint when no roof is selected.
-            initialValue: c.selectedRoofId != null &&
-                    c.roofs.any((r) => r.id == c.selectedRoofId)
-                ? c.selectedRoofId
-                : null,
-            hint: const Text('Kein Dach ausgewählt'),
-            isExpanded: true,
-            items: [
-              for (final r in c.roofs)
-                DropdownMenuItem(
-                  value: r.id,
-                  child: Text(r.name.isEmpty ? 'Dach #${r.id}' : r.name,
-                      overflow: TextOverflow.ellipsis),
-                ),
-            ],
-            onChanged: readOnly ? null : (v) {
-              c.selectedRoofId = v;
-              c.notifyNow();
-            },
-          ),
-        ),
-        // Per-roof yield efficiency (hard-coded table, see
-        // core/efficiency_table.dart). Roofs without modules show a blank value.
-        for (final r in c.roofs) _roofEfficiencyRow(context, c, r),
+        // Per-roof yield efficiency. Each row has a slim colored bar on the left
+        // that highlights when that roof is selected (single-selection).
+        for (final r in c.roofs)
+          _roofSelectionRow(context, c, r, readOnly),
         const SizedBox(height: 8),
         if (!readOnly)
           OutlinedButton.icon(
@@ -487,39 +464,57 @@ class _ControlPanel extends StatelessWidget {
 String _roofLabel(Roof r) =>
 r.name.isEmpty ? 'Dach #${r.id}' : r.name;
 
-/// One roof: name + module count, and the hard-coded yield efficiency for
-/// its orientation/pitch. Roofs without modules show a blank value.
-Widget _roofEfficiencyRow(BuildContext context, EditorController c, Roof r) {
-  final moduleCount =
-      c.placed.where((m) => m.roofId == r.id).length;
-  final hasModules = moduleCount > 0;
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      children: [
-        Expanded(
-          child: Text(
-            '${_roofLabel(r)} ($moduleCount Module)',
-            style: const TextStyle(fontSize: 13),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (hasModules) ...[
-          Text(
-            '${EfficiencyTable.efficiencyPercent(azimuthDeg: r.azimuthDeg, pitchDeg: r.pitchDeg).toStringAsFixed(0)} %',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(width: 4),
-        ] else
-          // Blank value for roofs without modules (keeps the row aligned).
-          const SizedBox(width: 40),
-        IconButton(
-          icon: const Icon(Icons.table_chart, size: 18),
-          tooltip: 'Ertragstabelle (Ausrichtung & Neigung)',
-          onPressed: () => showEfficiencyTableDialog(context),
-        ),
-      ],
+/// A tapable row with a slim colored bar on the left that highlights when
+/// that roof is selected. Shows module count and efficiency info.
+
+/// A tapable row with a slim colored bar on the left that highlights when
+/// that roof is selected. Shows module count and efficiency info.
+Widget _roofSelectionRow(
+    BuildContext context, EditorController c, Roof r, bool readOnly) {
+  final isSelected = c.selectedRoofId == r.id;
+  return ListTile(
+    contentPadding: EdgeInsets.zero,
+    leading: Container(
+      width: 8,
+      height: 24,
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Theme.of(context).primaryColor.withValues(alpha: 0.6)
+            : Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(2),
+      ),
     ),
+    title: Text(_roofLabel(r), style: const TextStyle(fontSize: 13)),
+    subtitle: Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Text(
+        '${c.placed.where((m) => m.roofId == r.id).length} ${
+            c.placed.where((m) => m.roofId == r.id).length > 1
+                ? "Modules"
+                : "Module"} — ${EfficiencyTable.efficiencyPercent(
+                    azimuthDeg: r.azimuthDeg,
+                    pitchDeg: r.pitchDeg)
+                .toStringAsFixed(0)} %',
+        style: const TextStyle(fontSize: 12),
+      ),
+    ),
+    trailing: IconButton(
+      icon: const Icon(Icons.table_chart, size: 18),
+      tooltip: 'Ertragstabelle (Ausrichtung & Neigung)',
+      visualDensity: VisualDensity.compact,
+      onPressed: () => showEfficiencyTableDialog(context),
+    ),
+    onTap: readOnly ? null : () {
+      if (c.selectedRoofId == r.id) {
+        c.selectedRoofId = null;
+      } else {
+        c.selectedRoofId = r.id;
+      }
+      c.notifyNow();
+    },
+    tileColor: isSelected
+        ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
+        : null,
   );
 }
 

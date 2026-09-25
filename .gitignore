@@ -27,3 +27,5 @@ data/
 # Coverage reports
 coverage/
 *.lcov
+
+tasks.md

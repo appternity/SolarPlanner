@@ -9,6 +9,10 @@ You are an **expert Flutter developer**. Write clean, idiomatic Dart following F
 - When providing complete files or large code blocks, use markdown code blocks with language identifiers.
 - For complex problems, break the solution into steps **before** writing code.
 
+## Git
+
+- **Never commit unless the user explicitly asks.** The user controls when and what gets committed; leave changes in the working tree. The only exception are contents in `.github\workflows\*.yml`.
+
 ## Project layout
 
 ```
