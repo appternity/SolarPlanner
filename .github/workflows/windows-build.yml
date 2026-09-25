@@ -32,8 +32,8 @@ jobs:
         run: |
           # Disable sound effects and GPU acceleration for desktop builds
           flutter build windows \
-            --release \
-            -p windows
+            --release \"\"
+            --platform=windows
 
       - name: Upload Windows executable as artifact
         uses: actions/upload-artifact@v4
