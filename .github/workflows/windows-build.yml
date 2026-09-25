@@ -56,6 +56,60 @@ jobs:
             exit 1
           }
 
+      - name: Decode signing certificate
+        if: ${{ secrets.CERT_PFX_BASE64 != '' }}
+        shell: pwsh
+        run: |
+          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\cert.pfx",
+            [Convert]::FromBase64String("${{ secrets.CERT_PFX_BASE64 }}"))
+          Write-Host "Certificate decoded."
+
+      - name: Sign executable and DLLs
+        if: ${{ secrets.CERT_PFX_BASE64 != '' }}
+        shell: pwsh
+        run: |
+          $releaseDir = "app/build/windows/x64/runner/Release"
+          $certPath  = "$env:RUNNER_TEMP\cert.pfx"
+          $pwd       = ConvertTo-SecureString -AsPlainText -Force "${{ secrets.CERT_PFX_PASSWORD }}"
+
+          # Sign the main executable
+          & signtool sign /fd SHA256 /f "$certPath" /p (ConvertFrom-SecureString -SecureString $pwd) `
+            /tr http://timestamp.digicert.com /td SHA256 "$releaseDir\solar_planner.exe"
+          if ($LASTEXITCODE -ne 0) { Write-Error "signtool failed for solar_planner.exe"; exit 1 }
+
+          # Sign all DLLs
+          Get-ChildItem -Path $releaseDir -Filter *.dll | ForEach-Object {
+            & signtool sign /fd SHA256 /f "$certPath" /p (ConvertFrom-SecureString -SecureString $pwd) `
+              /tr http://timestamp.digicert.com /td SHA256 $_.FullName
+            if ($LASTEXITCODE -ne 0) { Write-Error "signtool failed for $($_.Name)"; exit 1 }
+          }
+
+          # Verify signatures
+          & signtool verify /pa "$releaseDir\solar_planner.exe"
+          if ($LASTEXITCODE -ne 0) { Write-Error "Signature verification failed"; exit 1 }
+
+          Write-Host "::notice::All binaries signed and verified."
+
+      - name: Bundle trust files with release
+        shell: pwsh
+        run: |
+          $releaseDir = "app/build/windows/x64/runner/Release"
+
+          # Copy the public cert and one-click installer into the release folder
+          if (Test-Path "signing/solarplanner-trust.cer") {
+            Copy-Item "signing/solarplanner-trust.cer" "$releaseDir\solarplanner-trust.cer"
+          } else {
+            Write-Warning "signing/solarplanner-trust.cer not found - skipping trust bundle"
+          }
+
+          if (Test-Path "signing/install-trust.bat") {
+            Copy-Item "signing/install-trust.bat" "$releaseDir\install-trust.bat"
+          } else {
+            Write-Warning "signing/install-trust.bat not found - skipping trust bundle"
+          }
+
+          Write-Host "Trust bundle added to release directory."
+
       - name: Upload Windows executable bundle as artifact
         uses: actions/upload-artifact@v6
         with:
