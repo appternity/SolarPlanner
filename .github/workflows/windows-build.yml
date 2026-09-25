@@ -43,7 +43,7 @@ jobs:
           # Disable sound effects and GPU acceleration for desktop builds
           flutter build windows --release
 
-      - name: Bundle executable with DLLs into zip file
+      - name: Verify build output
         shell: pwsh
         run: |
           $releaseDir = "app/build/windows/x64/runner/Release"
@@ -51,29 +51,14 @@ jobs:
             Write-Error "Release directory not found: $releaseDir"
             exit 1
           }
-          # Use relative paths so 7z stores every file flat at the zip root.
-          $files = @((Get-ChildItem -Path $releaseDir -Filter *.dll).Name) + "solar_planner.exe"
-          # 7z needs the working directory set to the release folder for relative names.
-          $zipPath = Join-Path (Get-Location) "app/solar_planner_setup.zip"
-          Push-Location $releaseDir
-          try {
-            & 7z a -ba $zipPath $files
-          } finally {
-            Pop-Location
+          if (-not (Test-Path "$releaseDir/solar_planner.exe")) {
+            Write-Error "solar_planner.exe not found in $releaseDir"
+            exit 1
           }
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "7z failed with exit code $LASTEXITCODE"
-          }
-
-          if (-not (Test-Path "app/solar_planner_setup.zip")) {
-            Write-Error "Archive app/solar_planner_setup.zip was not created"
-          }
-
-          Write-Host "::notice::Archive created: app/solar_planner_setup.zip"
 
       - name: Upload Windows executable bundle as artifact
         uses: actions/upload-artifact@v4
         with:
           name: solar-planner-setup-windows
-          path: app/solar_planner_setup.zip
+          path: app/build/windows/x64/runner/Release
           retention-days: 30
