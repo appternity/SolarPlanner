@@ -32,9 +32,18 @@ jobs:
       - name: Bundle executable with DLLs into zip file
         shell: cmd
         run: >-
-          7z a "app\solar_planner_setup.zip"
+          7z a -ba "app\solar_planner_setup.zip"
             "app\build\windows\x64\runner\Release\*.dll"
             "app\build\windows\x64\runner\Release\solar_planner.exe"
+          if errorlevel 1 (
+            echo "::error::7z failed with exit code %ERRORLEVEL%"
+            exit /b 1
+          )
+          if not exist "app\solar_planner_setup.zip" (
+            echo "::error::Archive app\solar_planner_setup.zip was not created"
+            exit /b 1
+          )
+          echo "::notice::Archive created: app\solar_planner_setup.zip"
 
       - name: Upload Windows executable bundle as artifact
         uses: actions/upload-artifact@v4
