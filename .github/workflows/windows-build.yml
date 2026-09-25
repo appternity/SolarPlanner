@@ -1,0 +1,43 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.4'
+          channel: stable
+
+      - name: Get dependencies
+        run: |
+          cd app
+          flutter pub get
+
+      - name: Build Windows executable (release)
+        env:
+          FLUTTER_WEB_ENABLE_WASM_EXCEPTION_CATCHING: false
+          WEB_WORKER_EXPERIMENTAL_SAFARI_SUPPORT: true
+        shell: bash
+        run: |
+          # Disable sound effects and GPU acceleration for desktop builds
+          flutter build windows \
+            --release \
+            -p windows
+
+      - name: Upload Windows executable as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SolarPlanner-Windows-Release
+          path: app/windows/runner/release/SolarPlanner.exe
+          retention-days: 7
