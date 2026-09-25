@@ -54,9 +54,10 @@ jobs:
           # Use relative paths so 7z stores every file flat at the zip root.
           $files = @((Get-ChildItem -Path $releaseDir -Filter *.dll).Name) + "solar_planner.exe"
           # 7z needs the working directory set to the release folder for relative names.
+          $zipPath = Join-Path (Get-Location) "app/solar_planner_setup.zip"
           Push-Location $releaseDir
           try {
-            & 7z a -ba "..\..\..\..\solar_planner_setup.zip" $files
+            & 7z a -ba $zipPath $files
           } finally {
             Pop-Location
           }
