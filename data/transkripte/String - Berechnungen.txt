@@ -1,0 +1,93 @@
+In dieser Konstellation funktioniert das
+so nicht mit diesen Trainermodulen in
+diesem Wechselrichter. Da brennt euch
+der Wechselrichter durch. Zunächst müsst
+ihr die maximale Spannung checken. Die
+Systemspannung, die darf auf gar keinen
+Fall überschritten werden. Das ist der
+wichtigste Punkt in diesen ganzen
+Überlegungen. Wenn die überschritten
+wird, dann brennt euch der
+Wechselrichter durch, ist kaputt und das
+ist dann wirklich ärgerlich. Also das
+müsst ihr dringend beachten. Uns
+interessiert der Bereich PV Strang
+Eingangsdaten. Bei manchen Modellen
+heißt er auch DC Eingangsdaten, z.B. Das
+ist der Bereich, der beschreibt, welche
+Leistung von den Modulen über die DCKEL
+kommen kann. Das ist der Bereich, der
+uns interessiert. Und dann schaut ihr
+hier nach den maximalen Eingangsspannung
+in Volt. Wir haben also hier 1000 Volt
+und spoiler schon mal, bei fast allen
+üblichen Haushaltswechselrichtern werden
+das 1000 Volt sein. Die Zahl wisst ihr,
+1000 Volt müssen wir drunter bleiben.
+Jetzt hatten wir gesagt, wir haben 22
+Module Trina Vertex S. Wir brauchen hier
+die elektrischen Daten, wir brauchen die
+STC Daten und wir suchen jetzt als
+erstes für diese Maximalspannung die
+Leerlaufspannung. Das heißt also U mit
+Indikator OC auch in Volt wieder
+angegeben. In diesem Fall bei der 440
+Watt Variante von dem Modul
+Leerlaufspannung bei STC Bedingungen
+52,2 Volt. Wir wissen, wie viel Spannung
+jedes einzelne Modul erzeugt und wir
+haben auf dem Dach hier eine
+Reihenschaltung. Das heißt, ein Modul
+ist ins nächste gesteckt, die gehen alle
+der Reihe nach weg. Das heißt, die
+Spannung addiert sich mit jedem weiteren
+Modul. Die Stromstärke bleibt konstant
+über den ganzen Strang. Man könnte jetzt
+also theoretisch denken, wir rechnen
+dann einfach 22 Module mal 52,2 Volt
+Leerlaufspannung und haben es. Ganz so
+einfach ist es nicht. Ihr müsst nämlich
+noch die Temperatur bedenken. Je kälter
+es ist, desto effizienter arbeiten
+PVMule. Das heißt, wenn die Temperatur
+sinkt, dann steigt diese
+Leerlaufspannung noch mal. Und das müsst
+ihr natürlich auch mit berücksichtigen.
+Ihr seht hier den Bereich
+Temperaturwerte. Da interessiert uns der
+Temperaturkoeffizient von natürlich der
+Spannung VOC Open Circuit. Das sind hier
+-0,24%
+pro Kelvin. Wir haben die Anzahl der
+Module mal die Spannung in
+Leerlaufbetrieb mal und jetzt wird's
+interessant hier 1 plus den
+Temperaturkoeffizienten vom Datenblatt
+mal Delta t. Wo kriegen wir jetzt Delta
+t? Das habe ich euch hier in der Formel
+auch mal aufgeschrieben. Delta
+taturdifferenz
+von diesen Standardbedingungen auf den
+wärmsten Fall, den wir erwarten und den
+kältesten Fall, den wir erwarten. Damit
+haben wir jetzt endlich alles zusammen
+für unsere Formel. Rechen ja die
+maximale Spannung und im Sommer sinkt
+die Spannung nur. Das interessiert uns
+also nicht. Wir brauchen also hier das
+Delta T vom Winter. kommen wir auf 1200
+und ihr seht jetzt diese 1272 Volt, die
+sind größer als die 1000 Volt, die wir
+haben dürfen. Und deshalb habe ich
+vorhin gesagt, in dieser Konstellation
+funktioniert das so nicht mit diesen
+Trina Modulen in diesem Wechselrichter.
+Da brennt euch der Wechselrichter durch.
+Also, wenn euch das interessiert, wir
+können das natürlich gerne für euch
+planen. schaut einfach mal vorbei, bei
+macht ihr selbst Solar, da kriegt ihr
+die kostenlose Vorplanung und dann
+planen wir euch die Anlage so, dass alle
+Stränge natürlich zu dem Wechselrichter
+passen.

@@ -1,0 +1,24 @@
+{
+  "enableSkillCommands": true,
+  "packages": [
+    "npm:pi-loop-police",
+    "npm:@pi-unipi/compactor",
+    "npm:@davehardy20/pi-compact-plus",
+    "npm:pi-flutter-run"
+  ],
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 16384,
+    "keepRecentTokens": 20000
+  },
+  "thresholds": {
+    "checkpoint": 65,
+    "standard": 70,
+    "hard": 90
+  },
+  "cooldownMs": 120000,
+  "experimentalToolOutputPruning": true,
+  "toolOutputPruningMode": "agent-message",
+  "toolOutputSummaryStrategy": "llm",
+  "toolOutputPruneStrategy": "stub"
+}

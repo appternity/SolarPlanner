@@ -1,0 +1,70 @@
+{
+  "sessionGoals": {
+    "enabled": true,
+    "mode": "full"
+  },
+  "filesAndChanges": {
+    "enabled": true,
+    "mode": "all",
+    "maxPerCategory": 10
+  },
+  "commits": {
+    "enabled": true,
+    "mode": "full",
+    "maxCommits": 8
+  },
+  "outstandingContext": {
+    "enabled": true,
+    "mode": "full",
+    "maxItems": 5
+  },
+  "userPreferences": {
+    "enabled": true,
+    "mode": "all",
+    "maxPreferences": 10
+  },
+  "briefTranscript": {
+    "enabled": true,
+    "mode": "full",
+    "userTokenLimit": 256,
+    "assistantTokenLimit": 200,
+    "toolCallLimit": 8
+  },
+  "sessionContinuity": {
+    "enabled": true,
+    "mode": "full",
+    "eventCategories": []
+  },
+  "fts5Index": {
+    "enabled": true,
+    "mode": "manual",
+    "chunkSize": 4096,
+    "cacheTtlHours": 24
+  },
+  "sandboxExecution": {
+    "enabled": true,
+    "mode": "all",
+    "allowedLanguages": [
+      "javascript",
+      "typescript",
+      "python",
+      "shell"
+    ],
+    "outputLimit": 104857600
+  },
+  "pipeline": {
+    "autoInjection": false,
+    "customNoisePatterns": []
+  },
+  "autoCompaction": {
+    "enabled": true,
+    "thresholdPercent": 80,
+    "cooldownMs": 60000,
+    "repeatMinGrowthTokens": 4000,
+    "notify": true
+  },
+  "overrideDefaultCompaction": true,
+  "smartKeepTail": true,
+  "continueAfterThresholdCompact": true,
+  "debug": false
+}
