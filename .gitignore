@@ -1,1 +1,29 @@
+# Debug / build artifacts
 debug/
+build/
+.dart_tool/
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+
+# IDE files (project-wide, not package-specific)
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.settings/
+
+# OS / temp files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# User data — DO NOT COMMIT
+data/
+**/*.md  # Datasheets, transcriptions in data/ folder (see .gitignore above)
+
+# Coverage reports
+coverage/
+*.lcov
