@@ -30,16 +30,15 @@ jobs:
           flutter build windows --release
 
       - name: Bundle executable with DLLs into zip file
-        uses: montudor/action-zip@v1
-        with:
-          args: >-
-            7z a app/solar_planner_setup.zip
-              "app/build/windows/x64/runner/release/*.dll"
-              "app/build/windows/x64/runner/release/solar_planner.exe"
+        shell: cmd
+        run: >-
+          7z a "app\solar_planner_setup.zip"
+            "app\build\windows\x64\runner\release/*.dll"
+            "app\build\windows\x64\runner\release\solar_planner.exe"
 
       - name: Upload Windows executable bundle as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: solar_planner-setup-windows
+          name: solar-planner-setup-windows
           path: app/solar_planner_setup.zip
           retention-days: 30
