@@ -15,9 +15,23 @@ jobs:
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
+        id: flutter-action
         with:
           flutter-version: '3.47.4'
           channel: stable
+          
+      - name: Print outputs
+        shell: bash
+        run: |
+          echo CACHE-PATH=${{ steps.flutter-action.outputs.CACHE-PATH }}
+          echo CACHE-KEY=${{ steps.flutter-action.outputs.CACHE-KEY }}
+          echo CHANNEL=${{ steps.flutter-action.outputs.CHANNEL }}
+          echo VERSION=${{ steps.flutter-action.outputs.VERSION }}
+          echo ARCHITECTURE=${{ steps.flutter-action.outputs.ARCHITECTURE }}
+          echo PUB-CACHE-PATH=${{ steps.flutter-action.outputs.PUB-CACHE-PATH }}
+          echo PUB-CACHE-KEY=${{ steps.flutter-action.outputs.PUB-CACHE-KEY }}
+          echo CACHE-HIT=${{ steps.flutter-action.outputs.CACHE-HIT }}
+          echo PUB-CACHE-HIT=${{ steps.flutter-action.outputs.PUB-CACHE-HIT }}
 
       - name: Build Windows executable (release)
         env:
@@ -30,20 +44,30 @@ jobs:
           flutter build windows --release
 
       - name: Bundle executable with DLLs into zip file
-        shell: cmd
-        run: >-
-          7z a -ba "app\solar_planner_setup.zip"
-            "app\build\windows\x64\runner\Release\*.dll"
-            "app\build\windows\x64\runner\Release\solar_planner.exe"
-          if errorlevel 1 (
-            echo "::error::7z failed with exit code %ERRORLEVEL%"
-            exit /b 1
-          )
-          if not exist "app\solar_planner_setup.zip" (
-            echo "::error::Archive app\solar_planner_setup.zip was not created"
-            exit /b 1
-          )
-          echo "::notice::Archive created: app\solar_planner_setup.zip"
+        shell: pwsh
+        run: |
+          $releaseDir = "app/build/windows/x64/runner/Release"
+          if (-not (Test-Path $releaseDir)) {
+            Write-Error "Release directory not found: $releaseDir"
+            exit 1
+          }
+          $files = @((Get-ChildItem -Path $releaseDir -Filter *.dll).FullName) + "$(Join-Path $releaseDir 'solar_planner.exe')"
+          if (-not (Test-Path (Join-Path $releaseDir 'solar_planner.exe'))) {
+            Write-Error "Executable not found: $releaseDir/solar_planner.exe"
+            exit 1
+          }
+          Write-Host "Archiving $($files.Count) files:"
+          $files | ForEach-Object { Write-Host "  $_" }
+          & 7z a -ba "app/solar_planner_setup.zip" $files
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "7z failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          if (-not (Test-Path "app/solar_planner_setup.zip")) {
+            Write-Error "Archive app/solar_planner_setup.zip was not created"
+            exit 1
+          }
+          Write-Host "::notice::Archive created: app/solar_planner_setup.zip"
 
       - name: Upload Windows executable bundle as artifact
         uses: actions/upload-artifact@v4
