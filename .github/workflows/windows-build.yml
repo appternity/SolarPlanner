@@ -30,6 +30,7 @@ jobs:
           WEB_WORKER_EXPERIMENTAL_SAFARI_SUPPORT: true
         shell: bash
         run: |
+          cd ..
           # Disable sound effects and GPU acceleration for desktop builds
           flutter build windows \
             --release \"\"
@@ -38,6 +39,6 @@ jobs:
       - name: Upload Windows executable as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SolarPlanner-Windows-Release
-          path: app/windows/runner/release/SolarPlanner.exe
-          retention-days: 7
+          name: solar_planner-windows-release
+          path: build/windows/x64/runner/release/solar_planner.exe
+          retention-days: 30
