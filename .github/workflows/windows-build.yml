@@ -33,8 +33,8 @@ jobs:
         shell: cmd
         run: >-
           7z a "app\solar_planner_setup.zip"
-            "app\build\windows\x64\runner\release/*.dll"
-            "app\build\windows\x64\runner\release\solar_planner.exe"
+            "app\build\windows\x64\runner\Release\*.dll"
+            "app\build\windows\x64\runner\Release\solar_planner.exe"
 
       - name: Upload Windows executable bundle as artifact
         uses: actions/upload-artifact@v4
