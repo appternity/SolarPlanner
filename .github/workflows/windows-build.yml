@@ -33,5 +33,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: solar_planner-windows-release
-          path: build/windows/x64/runner/release/solar_planner.exe
+          path: app/build/windows/x64/runner/release/solar_planner.exe
           retention-days: 30
