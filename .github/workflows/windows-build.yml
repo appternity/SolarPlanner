@@ -89,8 +89,7 @@ jobs:
 
           $releaseDir = "app/build/windows/x64/runner/Release"
           $certPath  = "$env:RUNNER_TEMP\cert.pfx"
-          $pwd       = ConvertTo-SecureString -AsPlainText -Force $env:CERT_PFX_PASSWORD
-          $pwdPlain  = ConvertFrom-SecureString -SecureString $pwd
+          $pwdPlain  = $env:CERT_PFX_PASSWORD
 
           # Sign the main executable
           & $signtool.FullName sign /fd SHA256 /f "$certPath" /p $pwdPlain `
