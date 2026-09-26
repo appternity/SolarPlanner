@@ -29,3 +29,5 @@ coverage/
 *.lcov
 
 tasks.md
+# Code-signing PFX (contains private key — never commit)
+signing/*.pfx

@@ -76,24 +76,36 @@ jobs:
             Write-Host "No certificate found — skipping signing."
             exit 0
           }
+
+          # Locate signtool.exe (Windows SDK is not on PATH by default)
+          $sdkRoot = "C:\Program Files (x86)\Windows Kits"
+          $signtool = Get-ChildItem -Path $sdkRoot -Recurse -Filter signtool.exe -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match 'x64' } | Select-Object -First 1
+          if (-not $signtool) {
+            Write-Error "signtool.exe not found under $sdkRoot"
+            exit 1
+          }
+          Write-Host "Using signtool: $($signtool.FullName)"
+
           $releaseDir = "app/build/windows/x64/runner/Release"
           $certPath  = "$env:RUNNER_TEMP\cert.pfx"
           $pwd       = ConvertTo-SecureString -AsPlainText -Force $env:CERT_PFX_PASSWORD
+          $pwdPlain  = ConvertFrom-SecureString -SecureString $pwd
 
           # Sign the main executable
-          & signtool sign /fd SHA256 /f "$certPath" /p (ConvertFrom-SecureString -SecureString $pwd) `
+          & $signtool.FullName sign /fd SHA256 /f "$certPath" /p $pwdPlain `
             /tr http://timestamp.digicert.com /td SHA256 "$releaseDir\solar_planner.exe"
           if ($LASTEXITCODE -ne 0) { Write-Error "signtool failed for solar_planner.exe"; exit 1 }
 
           # Sign all DLLs
           Get-ChildItem -Path $releaseDir -Filter *.dll | ForEach-Object {
-            & signtool sign /fd SHA256 /f "$certPath" /p (ConvertFrom-SecureString -SecureString $pwd) `
+            & $signtool.FullName sign /fd SHA256 /f "$certPath" /p $pwdPlain `
               /tr http://timestamp.digicert.com /td SHA256 $_.FullName
             if ($LASTEXITCODE -ne 0) { Write-Error "signtool failed for $($_.Name)"; exit 1 }
           }
 
           # Verify signatures
-          & signtool verify /pa "$releaseDir\solar_planner.exe"
+          & $signtool.FullName verify /pa "$releaseDir\solar_planner.exe"
           if ($LASTEXITCODE -ne 0) { Write-Error "Signature verification failed"; exit 1 }
 
           Write-Host "::notice::All binaries signed and verified."
