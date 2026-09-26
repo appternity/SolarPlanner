@@ -103,6 +103,11 @@ jobs:
             if ($LASTEXITCODE -ne 0) { Write-Error "signtool failed for $($_.Name)"; exit 1 }
           }
 
+          # Import self-signed root so the runner trusts our chain
+          if (Test-Path "signing/solarplanner-trust.cer") {
+            certutil -addstore Root "signing/solarplanner-trust.cer" | Out-Null
+          }
+
           # Verify signatures
           & $signtool.FullName verify /pa "$releaseDir\solar_planner.exe"
           if ($LASTEXITCODE -ne 0) { Write-Error "Signature verification failed"; exit 1 }
