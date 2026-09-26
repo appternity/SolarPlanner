@@ -31,3 +31,7 @@ coverage/
 tasks.md
 # Code-signing PFX (contains private key — never commit)
 signing/*.pfx
+
+# Python
+__pycache__/
+*.pyc
