@@ -3,8 +3,12 @@ import 'package:drift/drift.dart';
 import 'database.dart';
 import 'electrical.dart' show mcbRatingForInverter;
 
-/// Seeds the inventory with real products from the datasheets in
-/// `data/datenblatt/` (values read from the manufacturer PDFs).
+/// Gold layer: seeds the inventory with real products.
+///
+/// Medallion pipeline:
+///   bronze  → `data/datenblatt/bronze/<category>/` (raw PDFs + notes)
+///   silver  → `data/datenblatt/silver/<category>/` (structured JSON/CSV)
+///   gold    → this file → SQLite via `seedIfEmpty`
 ///
 /// Only runs when the database is completely empty (first start).
 Future<void> seedIfEmpty(AppDatabase db) async {

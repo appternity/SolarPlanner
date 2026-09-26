@@ -21,7 +21,7 @@ SolarPlanner/
 │   ├── lib/db/               # Drift schema + migrations
 │   └── ...                   # UI, controllers, services
 ├── docs/                     # Architecture reference (see below)
-├── data/datenblatt/          # Datasheets for seed generation
+├── data/datenblatt/          # Medallion: bronze/ (PDFs), silver/ (JSON extracts)
 ├── src/solarplanner/         # Python auxiliary files
 └── AGENTS.md                 # This file — slim index + role guide
 ```
