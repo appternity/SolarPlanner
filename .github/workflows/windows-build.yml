@@ -57,20 +57,28 @@ jobs:
           }
 
       - name: Decode signing certificate
-        if: ${{ secrets.CERT_PFX_BASE64 != '' }}
         shell: pwsh
         run: |
+          if (-not $env:CERT_PFX_BASE64) {
+            Write-Host "No certificate configured — skipping signing."
+            exit 0
+          }
           [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\cert.pfx",
-            [Convert]::FromBase64String("${{ secrets.CERT_PFX_BASE64 }}"))
+            [Convert]::FromBase64String($env:CERT_PFX_BASE64))
           Write-Host "Certificate decoded."
+        env:
+          CERT_PFX_BASE64: ${{ secrets.CERT_PFX_BASE64 }}
 
       - name: Sign executable and DLLs
-        if: ${{ secrets.CERT_PFX_BASE64 != '' }}
         shell: pwsh
         run: |
+          if (-not (Test-Path "$env:RUNNER_TEMP\cert.pfx")) {
+            Write-Host "No certificate found — skipping signing."
+            exit 0
+          }
           $releaseDir = "app/build/windows/x64/runner/Release"
           $certPath  = "$env:RUNNER_TEMP\cert.pfx"
-          $pwd       = ConvertTo-SecureString -AsPlainText -Force "${{ secrets.CERT_PFX_PASSWORD }}"
+          $pwd       = ConvertTo-SecureString -AsPlainText -Force $env:CERT_PFX_PASSWORD
 
           # Sign the main executable
           & signtool sign /fd SHA256 /f "$certPath" /p (ConvertFrom-SecureString -SecureString $pwd) `
@@ -89,6 +97,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Error "Signature verification failed"; exit 1 }
 
           Write-Host "::notice::All binaries signed and verified."
+        env:
+          CERT_PFX_PASSWORD: ${{ secrets.CERT_PFX_PASSWORD }}
 
       - name: Bundle trust files with release
         shell: pwsh
