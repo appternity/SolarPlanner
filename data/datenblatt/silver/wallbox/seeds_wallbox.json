@@ -1,0 +1,661 @@
+[
+  {
+    "manufacturer": "go-e",
+    "series_name": "Gemini flex 2.0",
+    "model_number": "CH-05-11-01",
+    "product_type": "Mobile Wallbox / Charging Station (IC-CPD)",
+    "standard_compliance": [
+      "EN IEC 62752:2016/A1:2020"
+    ],
+    "max_charging_power_kw_single_phase": 3.7,
+    "max_charging_power_kw_three_phase": 11,
+    "min_charging_power_kw": 1.4,
+    "power_steps_kw_list": [
+      1.4,
+      3.7,
+      7.4,
+      11
+    ],
+    "phase_configuration_supported": [
+      "single-phase",
+      "three-phase"
+    ],
+    "nominal_voltage_single_phase_v_min_max": {
+      "min": 230,
+      "max": 240
+    },
+    "nominal_voltage_three_phase_v_min_max": {
+      "min": 400,
+      "max": 415
+    },
+    "nominal_frequency_hz": 50,
+    "network_configurations_supported": [
+      "TT",
+      "TN",
+      "IT"
+    ],
+    "standby_power_w_dark_leds": 3.1,
+    "standby_power_w_bright_leds": 5.2,
+    "rfid_support_mhz": 13.56,
+    "wifi_standard_and_band_ghz": {
+      "standard": "802.11b/g/n",
+      "frequency_ghz": 2.4
+    },
+    "mobile_network_technologies_supported": [
+      "4G/LTE",
+      "2G/EDGE"
+    ],
+    "lte_bands_fdd_list": [
+      "B1",
+      "B3",
+      "B5",
+      "B7",
+      "B8",
+      "B20"
+    ],
+    "lte_frequency_range_mhz_min_max": [
+      800,
+      2600
+    ],
+    "dimensions_mm_w_h_d_cm": {
+      "width": 15.5,
+      "height": 26,
+      "depth": 11
+    },
+    "weight_kg": 1.63,
+    "cable_length_cm_default": 30,
+    "conductor_count_and_size_mm_sq_primary_circuit": [
+      "5 x 2.5"
+    ],
+    "connector_type_cee_red_plug_amps_rating": 16,
+    "ip_rating_protection_class": "IP65",
+    "dc_fault_current_protection_integrated": true,
+    "rCD_type_a_required_on_building_side": true,
+    "integrated_ac_residual_current_monitoring_ma_max": {
+      "ac_milliampere": 20,
+      "dc_milliampere": 6
+    },
+    "tuv_rheinland_certified_safety_standards_verified": true,
+    "led_status_indicator_ring_available": true,
+    "app_control_and_remote_monitoring_enabled": true,
+    "integrated_energy_meter_for_consumption_tracking": true,
+    "theft_proof_cable_locking_mechanism": true,
+    "rfid_access_control_support": true,
+    "warranty_product_years_processing_defects": 25,
+    "included_items_list": [
+      "Wall mounting bracket with screws and wall plugs",
+      "Optional theft protection lockable adapter (U-piece)",
+      "One reset card"
+    ],
+    "special_features_and_use_cases": [
+      "Integrated SIM card for mobile data connection — no Wi-Fi required",
+      "Plug & Play installation dependent on house wiring",
+      "Converts from stationary to mobile use with few steps (adapter may be needed)",
+      "Remote monitoring and control via app even without Wi-Fi (via integrated SIM)",
+      "Suitable for indoor and outdoor environments"
+    ],
+    "operating_temperature_range_celsius_min_max": {
+      "min": -25,
+      "max": 40
+    },
+    "storage_temperature_range_celsius_min_max": {
+      "min": -40,
+      "max": 85
+    },
+    "average_ambient_temp_limit_degrees_per_day": 35,
+    "maximum_installation_altitude_m_above_sea_level": 2000,
+    "relative_humidity_maximum_percent_non_condensing": 95,
+    "impact_resistance_rating_ik_code": "IK08"
+  },
+  {
+    "manufacturer": "go-e",
+    "series_name": "Gemini flex 2.0",
+    "model_number": "CH-05-22-01",
+    "product_type": "Mobile Wallbox / Charging Station (IC-CPD)",
+    "standard_compliance": [
+      "EN IEC 62752:2016/A1:2020"
+    ],
+    "max_charging_power_kw_single_phase": 7.4,
+    "max_charging_power_kw_three_phase": 22,
+    "min_charging_power_kw": 3.7,
+    "power_steps_kw_list": [
+      3.7,
+      7.4,
+      11,
+      22
+    ],
+    "phase_configuration_supported": [
+      "single-phase",
+      "three-phase"
+    ],
+    "nominal_voltage_single_phase_v_min_max": {
+      "min": 230,
+      "max": 240
+    },
+    "nominal_voltage_three_phase_v_min_max": {
+      "min": 400,
+      "max": 415
+    },
+    "nominal_frequency_hz": 50,
+    "network_configurations_supported": [
+      "TT",
+      "TN",
+      "IT"
+    ],
+    "standby_power_w_dark_leds": 3.1,
+    "standby_power_w_bright_leds": 5.2,
+    "rfid_support_mhz": 13.56,
+    "wifi_standard_and_band_ghz": {
+      "standard": "802.11b/g/n",
+      "frequency_ghz": 2.4
+    },
+    "mobile_network_technologies_supported": [
+      "4G/LTE",
+      "2G/EDGE"
+    ],
+    "lte_bands_fdd_list": [
+      "B1",
+      "B3",
+      "B5",
+      "B7",
+      "B8",
+      "B20"
+    ],
+    "lte_frequency_range_mhz_min_max": [
+      800,
+      2600
+    ],
+    "dimensions_mm_w_h_d_cm": {
+      "width": 15.5,
+      "height": 26,
+      "depth": 11
+    },
+    "weight_kg": 1.82,
+    "cable_length_cm_default": 30,
+    "conductor_count_and_size_mm_sq_primary_circuit": [
+      "5 x 6"
+    ],
+    "connector_type_cee_red_plug_amps_rating": 32,
+    "ip_rating_protection_class": "IP65",
+    "dc_fault_current_protection_integrated": true,
+    "rCD_type_a_required_on_building_side": true,
+    "integrated_ac_residual_current_monitoring_ma_max": {
+      "ac_milliampere": 20,
+      "dc_milliampere": 6
+    },
+    "tuv_rheinland_certified_safety_standards_verified": true,
+    "led_status_indicator_ring_available": true,
+    "app_control_and_remote_monitoring_enabled": true,
+    "integrated_energy_meter_for_consumption_tracking": true,
+    "theft_proof_cable_locking_mechanism": true,
+    "rfid_access_control_support": true,
+    "warranty_product_years_processing_defects": 25,
+    "included_items_list": [
+      "Wall mounting bracket with screws and wall plugs",
+      "Optional theft protection lockable adapter (U-piece)",
+      "One reset card"
+    ],
+    "special_features_and_use_cases": [
+      "Integrated SIM card for mobile data connection — no Wi-Fi required",
+      "Plug & Play installation dependent on house wiring",
+      "Converts from stationary to mobile use with few steps (adapter may be needed)",
+      "Remote monitoring and control via app even without Wi-Fi (via integrated SIM)",
+      "Suitable for indoor and outdoor environments"
+    ],
+    "operating_temperature_range_celsius_min_max": {
+      "min": -25,
+      "max": 40
+    },
+    "storage_temperature_range_celsius_min_max": {
+      "min": -40,
+      "max": 85
+    },
+    "average_ambient_temp_limit_degrees_per_day": 35,
+    "maximum_installation_altitude_m_above_sea_level": 2000,
+    "relative_humidity_maximum_percent_non_condensing": 95,
+    "impact_resistance_rating_ik_code": "IK08"
+  },
+  {
+    "manufacturer": "go-e",
+    "series_name": "Gemini 2.0",
+    "product_type": "Stationäre Wallbox/Ladestation für Elektrofahrzeuge (IC-CPD)",
+    "standard_compliance": [
+      "EN IEC 61851-1:2019"
+    ],
+    "phase_configuration_supported": [
+      "single-phase",
+      "three-phase"
+    ],
+    "nominal_voltage_single_phase_v_min_max": {
+      "min": 230,
+      "max": 240
+    },
+    "nominal_voltage_three_phase_v_min_max": {
+      "min": 400,
+      "max": 415
+    },
+    "nominal_frequency_hz": 50,
+    "network_configurations_supported": [
+      "TT",
+      "TN",
+      "IT"
+    ],
+    "standby_power_w_dark_leds": 3.1,
+    "standby_power_w_bright_leds": 5.2,
+    "rfid_support_mhz": 13.56,
+    "wifi_standard_and_band_ghz": {
+      "standard": "802.11b/g/n",
+      "frequency_ghz": 2.4,
+      "band_mhz_min_max": [
+        2412,
+        2472
+      ]
+    },
+    "mobile_network_technologies_supported": [
+      "4G/LTE",
+      "2G/EDGE"
+    ],
+    "lte_bands_fdd_list": [
+      "B1",
+      "B3",
+      "B5",
+      "B7",
+      "B8",
+      "B20"
+    ],
+    "lte_frequency_range_mhz_min_max": [
+      800,
+      2600
+    ],
+    "gsm_bands_supported": [
+      "GSM900",
+      "GSM1800"
+    ],
+    "dimensions_mm_w_h_d_cm": {
+      "width": 15.5,
+      "height": 26,
+      "depth": 11
+    },
+    "cable_length_m_default": 1.8,
+    "connector_type_vehicle_side": "Typ 2 Dose (EN 62196-2) mit mechanischer Verriegelung",
+    "cable_cross_section_type": "H07BQ-F",
+    "ip_rating_protection_class": "IP65",
+    "protection_class_iec": "Schutzklasse I",
+    "pollution_degree": 2,
+    "dc_fault_current_protection_integrated": true,
+    "rCD_type_a_required_on_building_side": true,
+    "integrated_ac_residual_current_monitoring_ma_max": {
+      "ac_milliampere": 20,
+      "dc_milliampere": 6
+    },
+    "led_status_indicator_ring_available": true,
+    "app_control_and_remote_monitoring_enabled": true,
+    "integrated_energy_meter_for_consumption_tracking": true,
+    "theft_proof_cable_locking_mechanism": true,
+    "rfid_access_control_support": true,
+    "max_rfid_users_per_charger": 10,
+    "ocpp_version_supported": "OCPP 1.6",
+    "communication_protocols_list": [
+      "HTTP Cloud API",
+      "MQTT API",
+      "Modbus TCP"
+    ],
+    "load_management_modes": [
+      "static",
+      "dynamic (with go-e Controller)"
+    ],
+    "photovoltaic_integration_method": [
+      "go-e Controller (separates Produkt)",
+      "offene API-Schnittstelle",
+      "alternatives Energiemanagementsystem"
+    ],
+    "grid_service_control_support": true,
+    "integrated_sim_card_type": "eSIM (werkseitig integriert, nicht tauschbar)",
+    "mobile_network_contract_years_free": 5,
+    "country_restrictions_list": [
+      "Niederlande",
+      "Frankreich",
+      "Italien"
+    ],
+    "operating_temperature_range_celsius_min_max": {
+      "min": -25,
+      "max": 40
+    },
+    "storage_temperature_range_celsius_min_max": {
+      "min": -40,
+      "max": 85
+    },
+    "average_ambient_temp_limit_degrees_per_day": 35,
+    "maximum_installation_altitude_m_above_sea_level": 2000,
+    "relative_humidity_maximum_percent_non_condensing": 95,
+    "impact_resistance_rating_ik_code": "IK08",
+    "warranty_product_years": 3,
+    "included_items_list": [
+      "Ladestation mit 1,8 Meter Anschlusskabel für ortsfeste Installation",
+      "Wandhalterung inkl. Schrauben und Dübel",
+      "Optional montierbare Diebstahlsicherung (U-Stück)",
+      "Eine Resetkarte",
+      "Ein RFID-Chip (bereits angelernt)",
+      "Kurzanleitung"
+    ],
+    "special_features_and_use_cases": [
+      "Integrierte SIM-Karte für Mobilfunkverbindung — smarte Funktionen auch ohne WLAN",
+      "Plug & Play Installation: Wandmontageplatte anbringen, Wallbox einhängen",
+      "Typ 1 Fahrzeuge mit Adapterkabel Typ 2 auf Typ 1 ladbar (Zubehör)",
+      "Automatisches Entriegeln des Ladekabels bei Stromausfall",
+      "1-/3-Phasen Umschaltung per App oder automatisch mit go-e Controller",
+      "KWh Limit Modus / ECO-Modus / Next Trip Modus",
+      "Flexible Stromtarife mit intelligentem Lademanagement (100+ Tarife)",
+      "Updatefähig für spätere Funktionen (Smart-Home, etc.)"
+    ],
+    "model_number": "CH-05-11-51",
+    "max_charging_power_kw_single_phase": 3.7,
+    "max_charging_power_kw_three_phase": 11,
+    "min_charging_power_kw": 1.4,
+    "power_steps_kw_list": [
+      1.4,
+      3.7,
+      7.4,
+      11
+    ],
+    "max_charging_current_a_single_phase": 16,
+    "max_charging_current_a_three_phase": 16,
+    "adjustable_current_range_a_min_max": {
+      "min": 6,
+      "max": 16
+    },
+    "weight_kg": 1.85,
+    "conductor_count_and_size_mm_sq_primary_circuit": [
+      "5 x 2.5"
+    ]
+  },
+  {
+    "manufacturer": "go-e",
+    "series_name": "Gemini 2.0",
+    "product_type": "Stationäre Wallbox/Ladestation für Elektrofahrzeuge (IC-CPD)",
+    "standard_compliance": [
+      "EN IEC 61851-1:2019"
+    ],
+    "phase_configuration_supported": [
+      "single-phase",
+      "three-phase"
+    ],
+    "nominal_voltage_single_phase_v_min_max": {
+      "min": 230,
+      "max": 240
+    },
+    "nominal_voltage_three_phase_v_min_max": {
+      "min": 400,
+      "max": 415
+    },
+    "nominal_frequency_hz": 50,
+    "network_configurations_supported": [
+      "TT",
+      "TN",
+      "IT"
+    ],
+    "standby_power_w_dark_leds": 3.1,
+    "standby_power_w_bright_leds": 5.2,
+    "rfid_support_mhz": 13.56,
+    "wifi_standard_and_band_ghz": {
+      "standard": "802.11b/g/n",
+      "frequency_ghz": 2.4,
+      "band_mhz_min_max": [
+        2412,
+        2472
+      ]
+    },
+    "mobile_network_technologies_supported": [
+      "4G/LTE",
+      "2G/EDGE"
+    ],
+    "lte_bands_fdd_list": [
+      "B1",
+      "B3",
+      "B5",
+      "B7",
+      "B8",
+      "B20"
+    ],
+    "lte_frequency_range_mhz_min_max": [
+      800,
+      2600
+    ],
+    "gsm_bands_supported": [
+      "GSM900",
+      "GSM1800"
+    ],
+    "dimensions_mm_w_h_d_cm": {
+      "width": 15.5,
+      "height": 26,
+      "depth": 11
+    },
+    "cable_length_m_default": 1.8,
+    "connector_type_vehicle_side": "Typ 2 Dose (EN 62196-2) mit mechanischer Verriegelung",
+    "cable_cross_section_type": "H07BQ-F",
+    "ip_rating_protection_class": "IP65",
+    "protection_class_iec": "Schutzklasse I",
+    "pollution_degree": 2,
+    "dc_fault_current_protection_integrated": true,
+    "rCD_type_a_required_on_building_side": true,
+    "integrated_ac_residual_current_monitoring_ma_max": {
+      "ac_milliampere": 20,
+      "dc_milliampere": 6
+    },
+    "led_status_indicator_ring_available": true,
+    "app_control_and_remote_monitoring_enabled": true,
+    "integrated_energy_meter_for_consumption_tracking": true,
+    "theft_proof_cable_locking_mechanism": true,
+    "rfid_access_control_support": true,
+    "max_rfid_users_per_charger": 10,
+    "ocpp_version_supported": "OCPP 1.6",
+    "communication_protocols_list": [
+      "HTTP Cloud API",
+      "MQTT API",
+      "Modbus TCP"
+    ],
+    "load_management_modes": [
+      "static",
+      "dynamic (with go-e Controller)"
+    ],
+    "photovoltaic_integration_method": [
+      "go-e Controller (separates Produkt)",
+      "offene API-Schnittstelle",
+      "alternatives Energiemanagementsystem"
+    ],
+    "grid_service_control_support": true,
+    "integrated_sim_card_type": "eSIM (werkseitig integriert, nicht tauschbar)",
+    "mobile_network_contract_years_free": 5,
+    "country_restrictions_list": [
+      "Niederlande",
+      "Frankreich",
+      "Italien"
+    ],
+    "operating_temperature_range_celsius_min_max": {
+      "min": -25,
+      "max": 40
+    },
+    "storage_temperature_range_celsius_min_max": {
+      "min": -40,
+      "max": 85
+    },
+    "average_ambient_temp_limit_degrees_per_day": 35,
+    "maximum_installation_altitude_m_above_sea_level": 2000,
+    "relative_humidity_maximum_percent_non_condensing": 95,
+    "impact_resistance_rating_ik_code": "IK08",
+    "warranty_product_years": 3,
+    "included_items_list": [
+      "Ladestation mit 1,8 Meter Anschlusskabel für ortsfeste Installation",
+      "Wandhalterung inkl. Schrauben und Dübel",
+      "Optional montierbare Diebstahlsicherung (U-Stück)",
+      "Eine Resetkarte",
+      "Ein RFID-Chip (bereits angelernt)",
+      "Kurzanleitung"
+    ],
+    "special_features_and_use_cases": [
+      "Integrierte SIM-Karte für Mobilfunkverbindung — smarte Funktionen auch ohne WLAN",
+      "Plug & Play Installation: Wandmontageplatte anbringen, Wallbox einhängen",
+      "Typ 1 Fahrzeuge mit Adapterkabel Typ 2 auf Typ 1 ladbar (Zubehör)",
+      "Automatisches Entriegeln des Ladekabels bei Stromausfall",
+      "1-/3-Phasen Umschaltung per App oder automatisch mit go-e Controller",
+      "KWh Limit Modus / ECO-Modus / Next Trip Modus",
+      "Flexible Stromtarife mit intelligentem Lademanagement (100+ Tarife)",
+      "Updatefähig für spätere Funktionen (Smart-Home, etc.)"
+    ],
+    "model_number": "CH-05-22-51",
+    "max_charging_power_kw_single_phase": 7.4,
+    "max_charging_power_kw_three_phase": 22,
+    "min_charging_power_kw": 1.4,
+    "power_steps_kw_list": [
+      1.4,
+      3.7,
+      7.4,
+      11,
+      22
+    ],
+    "max_charging_current_a_single_phase": 32,
+    "max_charging_current_a_three_phase": 32,
+    "adjustable_current_range_a_min_max": {
+      "min": 6,
+      "max": 32
+    },
+    "weight_kg": 2.34,
+    "conductor_count_and_size_mm_sq_primary_circuit": [
+      "5 x 6"
+    ]
+  },
+  {
+    "manufacturer": "Trydan",
+    "series_name": "Trydan",
+    "model_number": "TRY32-1-L5-P-SC (Beispiel)",
+    "product_type": "E-Charger / Wallbox",
+    "standard_compliance": [],
+    "color": "Schwarz",
+    "material_housing": "Polykarbonat MVR",
+    "max_charging_power_kw_single_phase": 7.4,
+    "max_charging_power_kw_three_phase": 22,
+    "adjustable_current_range_a_min_max_per_phase": {
+      "min": 6,
+      "max": 32
+    },
+    "phase_configuration_supported": [
+      "single-phase",
+      "three-phase"
+    ],
+    "nominal_voltage_single_phase_v_min_max": {
+      "min": 230,
+      "max": 240
+    },
+    "nominal_voltage_three_phase_v_min_max": {
+      "min": 400,
+      "max": 415
+    },
+    "nominal_frequency_hz_list": [
+      50,
+      60
+    ],
+    "cable_length_m_options": [
+      5,
+      10
+    ],
+    "cable_type_options": [
+      "Flach",
+      "Feder"
+    ],
+    "connector_type_vehicle_side": "Typ 2 / Buchse (Steckdose)",
+    "display_size_inches": 2.6,
+    "rgb_status_lighting_by_charging_state": true,
+    "ip_rating_protection_class": "IP54",
+    "impact_resistance_rating_ik_code": "IK10",
+    "integrated_ac_residual_current_monitoring_ma_max": {
+      "ac_milliampere": 30,
+      "dc_milliampere": 6
+    },
+    "mid_compliance_energy_meter_optional": true,
+    "user_platform": "Anwendung und Portal V2C Cloud",
+    "connectivity_list": [
+      "WiFi",
+      "Bluetooth"
+    ],
+    "communication_protocols_list": [
+      "OCPP",
+      "REST API Cloud"
+    ],
+    "smart_home_integration": [
+      "Alexa",
+      "Google Home"
+    ],
+    "operating_temperature_range_celsius_min_max": {
+      "min": -25,
+      "max": 50
+    },
+    "storage_temperature_range_celsius_min_max": {
+      "min": -40,
+      "max": 70
+    },
+    "weight_kg": 7.0,
+    "model_number_composition_scheme": {
+      "prefix": "TRY",
+      "intensity_a": 32,
+      "grid_type": {
+        "1": "Einphasig",
+        "3": "Dreiphasig"
+      },
+      "cable_type": {
+        "L5": "Flach 5m",
+        "L10": "Flach 10m",
+        "M": "Feder"
+      },
+      "protection_measures": {
+        "P": "Mit Schutzmaßnahmen",
+        "SC": "Mit Schuko"
+      },
+      "example": "TRY32-1-L5-P-SC"
+    },
+    "accessories_list": [
+      "Leckdetektor V2C-F (bei einphasiger Netzform)",
+      "Fernbedienung V2C-R",
+      "Kabelträger V2C-SOP",
+      "Sockel aus rostfreiem Stahl V2C-PED",
+      "MID-Einphasenzähler V2C-MID-1",
+      "MID-Drehstromzähler V2C-MID-3"
+    ]
+  },
+  {
+    "name": "Trydan Pro",
+    "manufacturer": "Trydan Technologies Ltd.",
+    "modelNumber": "TRYDAN-PRO",
+    "nominalPowerKw": 22.0,
+    "phases": 3,
+    "maxCurrentA": 63.0,
+    "connectorType": "Type 2",
+    "cableLengthM": null,
+    "isHardwired": true,
+    "ipRating": "IP65",
+    "operatingTempC_min": -30.0,
+    "operatingTempC_max": 50.0,
+    "weightKg": null,
+    "dimensionsMm": {
+      "w": 305.0,
+      "h": 419.0,
+      "d": null
+    },
+    "displayType": "Touchscreen",
+    "displaySizeInches": 7.0,
+    "smartChargingModes": [
+      "Dynamic load balancing",
+      "EV priority"
+    ],
+    "communicationInterfaces": [
+      "Ethernet",
+      "4G (optional)",
+      "Wi-Fi (via app)"
+    ],
+    "certifications": [
+      "CE",
+      "UKCA"
+    ],
+    "warrantyYears": 5,
+    "notes": "7-inch touchscreen with integrated load management (up to 4 EVs). Ethernet + optional 4G connectivity. IP65, DIN rail or wall mount."
+  }
+]

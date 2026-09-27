@@ -1,0 +1,65 @@
+[
+  {
+    "name": "Unistor Plus",
+    "manufacturer": "Vaillant",
+    "modelNumber": "VIHRW250/2B",
+    "type": "Combination storage water heater with heating circuit heat exchanger and electric immersion heater",
+    "nominalVolumeL": 246,
+    "weightKg": {
+      "empty": 113.4,
+      "operational": 373.1
+    },
+    "hydraulicConnections": {
+      "coldWaterInlet": "R3/4\"",
+      "hotWaterOutlet": "R3/4\"",
+      "heatingSupply": "R1\"",
+      "heatingReturn": "R1\"",
+      "circulation": "R3/4\"",
+      "heaterNipple": "G1 1/2\""
+    },
+    "hotWaterTank": {
+      "innerVesselMaterial": "Steel, enamelled",
+      "anodeType": "Magnesium protection anode",
+      "maxOperatingPressureBar": 10,
+      "maxHotWaterTempC": 85,
+      "standbyEnergyLossKwhPer24h": 1.53,
+      "heatingPowerDinEn12897Kw": 36,
+      "heatExchangerWaterVolumeL": 13.5
+    },
+    "heatingCircuit": {
+      "nominalFlowRateM3PerH": 2,
+      "pressureLossAtNominalKpa": 8.0,
+      "maxOperatingPressureBar": 10,
+      "maxSupplyTempC": 85,
+      "heatExchangerAreaM2": 1.8
+    },
+    "electricHeater": {
+      "ratedPowerKwRange": [
+        2.0,
+        4.5
+      ],
+      "permissibleWaterTempC_range": [
+        7,
+        85
+      ],
+      "maxOperatingPressureMpa": 1.0,
+      "maxSurfacePowerWPerCm2": 14.1,
+      "thermalCutoutTempC": 95,
+      "compliance": [
+        "EN 60730-1",
+        "EN 60730-2-9"
+      ],
+      "maxImmersionLengthMm": 370,
+      "threadConnection": "G1 1/2\"",
+      "powerSupply": {
+        "singlePhase": "1N~PE 230V/50Hz, 1x16A",
+        "threePhase": "3N~PE 400V/50Hz, 3x16A"
+      }
+    },
+    "source": {
+      "bronzeFile": "betriebs--und-installationsanleitung_unistor-plus-vih-rw-250_1436472.pdf",
+      "chapter": 14,
+      "page": 13
+    }
+  }
+]

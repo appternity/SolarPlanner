@@ -22,6 +22,7 @@ SolarPlanner/
 │   └── ...                   # UI, controllers, services
 ├── docs/                     # Architecture reference (see below)
 ├── data/datenblatt/          # Medallion: bronze/ (PDFs), silver/ (JSON extracts)
+├── data/systemuebersicht/    # HAK-Bestandsaufnahme + PV-Stromlaufplan (s. docs-Index unten)
 ├── src/solarplanner/         # Python auxiliary files
 └── AGENTS.md                 # This file — slim index + role guide
 ```
@@ -42,6 +43,8 @@ Deep-dive documentation organized by topic — read these for implementation det
 | [`docs/seed-data.md`](./docs/seed-data.md) | Datasheet sources for inverters/modules, name-based backfill strategy for existing DBs. |
 | [`docs/canvas-gestures.md`](./docs/canvas-gestures.md) | Pointer event wiring (pan+zoom gotcha), world painter clipping, move semantics & module drift fix. |
 | [`docs/module-labels.md`](./docs/module-labels.md) | Label format `{roofId}.{stringId}.{moduleId}`, rendering rules, regression test coverage. |
+| [`data/systemuebersicht/HAUSANSCHLUSSKASTEN_INVENTAR.md`](./data/systemuebersicht/HAUSANSCHLUSSKASTEN_INVENTAR.md) | **Bestandsaufnahme HAK** (Foto 2026-09-27): Zähler AEGIS M132 (bidirektional, Stadtwerke/GLIEMATO), Hauptschalter, LS-Reihen, FI-Gruppen, HPA-Schiene, freie Plätze. Offene Punkte: Nennströme ablesen, maxFeedInKw erfragen. |
+| [`data/systemuebersicht/STROMLAUFPLAN_PV.md`](./data/systemuebersicht/STROMLAUFPLAN_PV.md) | **PV-Stromlaufplan Netzbetreiber → Module** (8–25 kWp, 3~): AC-Seite (Kuppelstelle, LS-Stufung, FI Typ B), DC-Seite (String-Spannungsfenster Voc_cold/Voc_hot, MPPT-Parallelsummen, DC-Sicherungen), Erdung/HPA (VDE 0100-600), optionale UV PV, Normen-Checkliste, Leistungsklassen-Matrix. **Dauerhafte Referenz für alle PV-Planungen — bei Bestand-/Normänderungen hier aktualisieren.** |
 
 ## Quick reference — common pitfalls
 
