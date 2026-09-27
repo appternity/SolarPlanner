@@ -21,8 +21,7 @@ Thumbs.db
 desktop.ini
 
 # User data — DO NOT COMMIT
-data/
-**/*.md  # Datasheets, transcriptions in data/ folder (see .gitignore above)
+data/**.pdf  # Datasheets, transcriptions in data/ folder (see .gitignore above)
 
 # Coverage reports
 coverage/
