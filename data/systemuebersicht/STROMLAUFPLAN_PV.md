@@ -9,46 +9,52 @@
 ## 0. Systemübersicht (Blockschaltbild)
 
 ```
-┌───────────────┐   AC 400/230V  ┌───────────────────────────────────┐
-│ NETZBETREIBER │◄══════════════►│        HAK (Bestand)              │
-│ Stadtwerke    │  3~ + PE       │ ┌──────────┐  ┌─────────────┐     │
-│               │                │ │Zähler    │  │Hauptschalter│     │
-└───────────────┘                │ │AEGIS M132│  │(R1, 63 A?)  │     │
-                                 │ └────┬─────┘  └──────┬──────┘     │
-                                 │      │ bidirektional │            │
-                                 │ ┌────▼───────────────▼──────────┐ │
-                                 │ │  KUPPELSTELLE (PV-Einspeisung)│ │
-                                 │ │  LS 3P C25/C32 + FI Typ B*    │ │
-                                 │ └────────────┬──────────────────┘ │
-                                 └──────────────┼────────────────────┘
-                                                │ AC (Wechselstrom)
-                                                │ 3×2,5 mm² Cu (min., längenabhängig)
-                                                ▼
-                                 ┌─────────────────────────────┐
-                                 │   WECHSELRICHTER (AC/DC)    │
-                                 │   8–25 kW, 3~, MPPT×2       │
-                                 └────┬───────────────────┬────┘
-                                      │ DC (Gleichstrom)  │ PE
-                                      │ 1000 V / 1500 V   ▼
-                                      │            ┌──────────────┐
-                                      │            │ HPA / Erdung │
-                                      ▼            └──────────────┘
-                    ┌─────────────────────────────────┐
-                    │  DC-VERTEILER / STRING-SCHALTER │
-                    │  (je String: LS DC + Sicherung) │
-                    └────┬──────────┬──────────┬──────┘
-                         │          │          │  DC (Gleichstrom)
-                         ▼          ▼          ▼
-                    ┌────────┐ ┌────────┐ ┌────────┐
-                    │STRING 1│ │STRING 2│ │STRING n│   (je String:
-                    │n₁×Mod. │ │n₂×Mod. │ │nₙ×Mod. │    Module in Serie)
-                    └────────┘ └────────┘ └────────┘
-                         │          │          │
-                         ▼          ▼          ▼
-                    ┌─────────────────────────────────┐
-                    │  SOLARMODULE (Dach)             │
-                    │  Rahmen → Erdung (VDE 0100-600) │
-                    └─────────────────────────────────┘
+┌───────────────┐   AC 400/230V  ┌──────────────────────────────────────┐
+│ NETZBETREIBER │◄══════════════►│        HAK (Bestand)                 │
+│ Stadtwerke    │  3~ + PE       │ ┌────────────┐  ┌───────────────┐    │
+│               │                │ │ Zähler     │  │ Hauptschalter │    │
+└───────────────┘                │ │ AEGIS M132 │  │ (R1, 63 A?)   │    │
+                                 │ └────┬───────┘  └──────┬────────┘    │
+                                 │      │ bidirektional   │             │
+                                 │ ┌────▼─────────────────▼────────┐    │
+                                 │ │ KUPPELSTELLE (PV-Einspeisung) │    │
+                                 │ │ LS 3P C25/C32 + FI Typ B*     │    │
+                                 │ └────────────┬──────────────────┘    │
+                                 │              │                       │
+                                 │ ┌────────────▼─────────────────────┐ │
+                                 │ │ SPEICHER-AC (optional, ≤ 20 kWh) │ │
+                                 │ │ LS 3P C16/C25 (Stufung unter     │ │
+                                 │ │ Kuppelstelle) + AC-Kabel         │ │
+                                 │ └────────────┬─────────────────────┘ │
+                                 └──────────────┼───────────────────────┘
+                        ┌───────────────────────┴───────────────────────┐
+                        │ AC (Wechselstrom)                             │
+                        ▼                                               ▼
+             ┌─────────────────────────────┐          ┌───────────────────────────┐
+             │   WECHSELRICHTER (AC/DC)    │          │ BATTERIESPEICHER (opt.)   │
+             │   8–25 kW, 3~, MPPT×2       │          │ AC-coupled, LFP           │
+             └────┬───────────────────┬────┘          │ ≤ 20 kWh, bis 4 Units     │
+                  │ DC (Gleichstrom)  │ PE            └────┬───────────┬──────────┘
+                  │ 1000 V / 1500 V   ▼                    │ DC        │ PE
+                  │            ┌──────────────┐            │ (je Unit) │
+                  │            │ HPA / Erdung │◄───────────┴───────────┘
+                  ▼            └──────────────┘
+             ┌─────────────────────────────────┐
+             │  DC-VERTEILER / STRING-SCHALTER │
+             │  (je String: LS DC + Sicherung) │
+             └────┬──────────┬──────────┬──────┘
+                  │          │          │  DC (Gleichstrom)
+                  ▼          ▼          ▼
+             ┌────────┐ ┌────────┐ ┌────────┐
+             │STRING 1│ │STRING 2│ │STRING n│   (je String:
+             │n₁×Mod. │ │n₂×Mod. │ │nₙ×Mod. │    Module in Serie)
+             └────────┘ └────────┘ └────────┘
+                  │          │          │
+                  ▼          ▼          ▼
+             ┌─────────────────────────────────┐
+             │  SOLARMODULE (Dach)             │
+             │  Rahmen → Erdung (VDE 0100-600) │
+             └─────────────────────────────────┘
 ```
 
 \* FI Typ B an der Kuppelstelle: **empfohlen** (VDE-AR-N 4105 / Netzbetreiber-Vorgabe), keine harte VDE-Pflicht für die Einspeisung selbst.
@@ -175,7 +181,36 @@ HAK: LS 3P C40/C50 (PV-Gruppenschalter)
 | PE in UV | Klemme → zurück zur HPA im HAK (≥ 10 mm² Cu) | **VDE 0100-600 §543** |
 | FI Typ B (optional in UV) | 63 A / 30 mA, wenn Netzbetreiber es verlangt | **VDE-AR-N 4105 / VDE 0100-534** — Netzbetreiber-Vorgabe prüfen |
 
-## 7. Normen-Checkliste (vor Inbetriebnahme)
+## 7. Abschnitt G: Batteriespeicher (AC-coupled, optional)
+
+**Aufbau (≤ 20 kWh, bis 4 Head-Units parallel):**
+```
+HAK/UV „PV": LS 3P C16/C25 (Speicher-AC, Stufung unter Kuppelstelle)
+        │ AC 3×2,5–6 mm² Cu
+        ▼
+┌─────────────────────────────────────┐
+│  BATTERIESPEICHER (AC-coupled, LFP) │
+│ ┌──────────┐  ┌──────────┐         │
+│ │ Head-Unit│  │ Head-Unit│  … bis 4│
+│ │ ~5 kWh   │  │ ~5 kWh   │         │
+│ └──────────┘  └──────────┘         │
+│ DC-Verteiler: LS + Sicherung je Unit│
+│ PE-Klemme (→ HPA im HAK)           │
+└─────────────────────────────────────┘
+```
+
+| Komponente | Spezifikation | Norm / Bemerkung |
+|---|---|---|
+| **Batteriespeicher-Head-Unit** (AC-coupled, LFP) | je ~5 kWh; **bis 4 parallel**; eigener WR + DC-Seite pro Unit. Schutzart: IP20–43 (innen) / IP54+IK08 (außen, UV-beständig) | **IEC 62619** (Zellensicherheit, Temperaturüberwachung via BMS); VDE-AR-N 4105 |
+| **DC-Verteiler / String-Schalter** | DC-LS 1000/1500 V + Sicherung **je Head-Unit** („One unit per fuse") | **VDE 0100-712 §4**: eine Sicherung pro String/Unit; DC-Klasse nach WR (1000 V ≤ ~15 kWp / 1500 V >~18 kWp) |
+| **DC-Verkabelung WR → Head-Unit** | PV-Dauerkabel (H1Z2Z2-J, 4/6 mm²), je Unit separat; `I_Z ≥ 1,25 · I_Nenn(Unit)` | **VDE 0100-443**: Querschnitt nach Umgebungstemp. korrigieren (Garage ~30 °C, außen 40–50 °C → −10…20 %) |
+| **LS-Schalter Speicher-AC** (HAK oder UV „PV“) | 3P C16/C25; `I_out = P_AC(Speicher) / (√3 · 400 V)`; Stufung **unter** PV-Kuppelstelle | **VDE 0100-443 §542**: `I_B ≤ I_N ≤ I_Z`. Beispiele: 6,4 kW → C16; 8 kW → C20; 12,5 kW → C32 |
+| **AC-Kabel Speicher ↔ HAK/UV** | Cu, 3×2,5–6 mm² (längenabhängig); DC/AC getrennt verlegen | **VDE 0100-443**: `I_Z ≥ I_N`; **VDE 0100-712 §4**: strikte DC/AC-Trennung |
+| **PE-Anschluss Speicher-Gehäuse** | ≥ 4 mm² Cu → HPA-Schiene (R5) — **Pflicht je Head-Unit** | **VDE 0100-600 §542**: Hauptpotentialausgleich; Schutzklasse II: dedizierter PE entfällt, FI Typ B bleibt Pflicht |
+| **DC-Überspannungsschutz** (falls BZA) | Typ 2, 1000/1500 V an Speicher-DC — nur bei Blitzschutzanlage & Freifeld-Aufstellung | **DIN EN 62305-4**; VDE 0100-712 §4 — ohne BZA: Herstellerangaben prüfen |
+| **Kommunikation / Monitoring** | LAN (Cat 6) Speicher ↔ Router; getrennt vom Starkstrom (> 30 cm); ePRM-Gateway an bidirektionalen Zähler (AEGIS M132) für PV-Überschussladen & Lastmanagement | IEC 61851-23; VDE 0100-520 §7.6 (EMV-Trennung); VDE-AR-N 4105 |
+
+## 8. Normen-Checkliste (vor Inbetriebnahme)
 
 | # | Prüfung | Norm | Status |
 |---|---------|------|--------|
@@ -195,8 +230,13 @@ HAK: LS 3P C40/C50 (PV-Gruppenschalter)
 | 14 | FI-Prüfung (Bestand L3, R3) + neuer FI Typ B: Prüfdatum dokumentiert | VDE 0100-534 / DIN VDE 0107-100 | ☐ bei Inbetriebnahme testen |
 | 15 | Blitzschutz: DC-Ableiter (Typ 2) falls PV in Blitzschutzzone | DIN VDE 0855-1 | ☐ prüfen (Blitzschutzanlage vorhanden?) |
 | 16 | Inbetriebnahme-Protokoll + Übergabe an Netzbetreiber (Anmeldung PV) | VDE-AR-N 4105 §8 / EnWG | ☐ **vor Einspeisung anmelden!** |
+| 17 | Speicher: LS-Schalter AC, Stufung unter Kuppelstelle; `I_N ≥ I_out(Speicher)` | VDE 0100-443 §542 | ☐ nur bei Speicher (je AC-Leistung) |
+| 18 | Speicher: DC-Sicherung je Head-Unit (gG, ≥ I_sc der Unit); „One unit per fuse" | VDE 0100-712 §4 / VDE 0100-443 | ☐ nur bei Speicher (je Unit dimensionieren) |
+| 19 | Speicher: DC-Kabel `I_Z` (Umgebungstemp.) ≥ `1,25 · I_Nenn(Unit)`; DC/AC getrennt | VDE 0100-443 §542 / IEC 62548 | ☐ nur bei Speicher (je Unit prüfen) |
+| 20 | Speicher: Gehäuse-PE je Head-Unit → HPA (≥ 4 mm² Cu); BMS-Funktionstest | VDE 0100-600 §542 / IEC 62619 | ☐ nur bei Speicher (vor Inbetriebnahme) |
+| 21 | Speicher: DC-Ableiter Typ 2 (falls BZA + Freifeld) | DIN EN 62305-4 / VDE 0100-712 | ☐ nur bei Speicher + BZA prüfen |
 
-## 8. Leistungsklassen-Übersicht (8–25 kWp) — Planungsmatrix
+## 9. Leistungsklassen-Übersicht (8–25 kWp) — Planungsmatrix
 
 | Anlagenleistung | WR-Typ (Beispiele) | DC-Klasse | MPPTs | Strings/MPPT (typ.) | AC-LS im HAK | UV „PV" nötig? |
 |---|---|---|---|---|---|---|
@@ -208,7 +248,7 @@ HAK: LS 3P C40/C50 (PV-Gruppenschalter)
 
 > **Kritischer Punkt bei >18 kWp:** Mit 450-W-Modulen (Voc ~37 V) und 1000-V-WR: max. ~26 Module/String (kalt). Bei 1500-V-WR: bis ~38 Module/String. **Immer Voc_cold am Standort-T_min berechnen!**
 
-## 9. Offene Daten (müssen vor finaler Planung erfasst werden)
+## 10. Offene Daten (müssen vor finaler Planung erfasst werden)
 
 | # | Datenpunkt | Woher? |
 |---|-----------|--------|
@@ -222,6 +262,8 @@ HAK: LS 3P C40/C50 (PV-Gruppenschalter)
 | 8 | Erdungswiderstand (Fundamenterdung) | Messung vor Ort — **Pflicht vor Inbetriebnahme** |
 | 9 | Blitzschutzanlage vorhanden? (Ja/Nein) | Vor Ort — **bestimmt DC-Ableiter-Pflicht** |
 | 10 | Freie HAK-Plätze (R4: Nummern 7–12, 17–23) | Foto/Abzählung — **bestimmt UV-PV-Bedarf** |
+| 11 | Speicher-Modell + Datenblatt (Nennkapazität, AC-Leistung, Nennstrom DC je Unit, Anzahl Head-Units) | Hersteller — **für Abschnitt G (DC-Sicherung, Querschnitt, LS-Stufung)** |
+| 12 | Speicher-Aufstellort (innen IP40 / außen IP54) + Kabellängen (AC: Speicher↔HAK/UV, DC: WR↔Unit) | Vor-Ort-Aufmaß — **für I_Z-Berechnung & Schutzart** |
 
 ---
 *Erstellt: 2026-09-27 · Rolle: Elektromeister · Gültig für 8–25 kWp, 3~ Netzanschluss.*
