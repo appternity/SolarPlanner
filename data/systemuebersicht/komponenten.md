@@ -68,7 +68,7 @@ Berechnung der Komponentenanzahlen.
 
 ---
 
-## 2. Hydraulische Komponenten
+## 2. Komponenten
 
 | ID | Klasse | Unterklassifizierung | Name (lang) | Norm | Min (Formel) | Max (Formel) |
 |----|--------|---------------------|-------------|------|:---:|:---:|
