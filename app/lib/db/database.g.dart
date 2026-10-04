@@ -3001,6 +3001,332 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _personenMeta = const VerificationMeta(
+    'personen',
+  );
+  @override
+  late final GeneratedColumn<int> personen = GeneratedColumn<int>(
+    'personen',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(4),
+  );
+  static const VerificationMeta _etagenMeta = const VerificationMeta('etagen');
+  @override
+  late final GeneratedColumn<int> etagen = GeneratedColumn<int>(
+    'etagen',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2),
+  );
+  static const VerificationMeta _kellerMeta = const VerificationMeta('keller');
+  @override
+  late final GeneratedColumn<bool> keller = GeneratedColumn<bool>(
+    'keller',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("keller" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _baederMeta = const VerificationMeta('baeder');
+  @override
+  late final GeneratedColumn<int> baeder = GeneratedColumn<int>(
+    'baeder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2),
+  );
+  static const VerificationMeta _kuechenMeta = const VerificationMeta(
+    'kuechen',
+  );
+  @override
+  late final GeneratedColumn<int> kuechen = GeneratedColumn<int>(
+    'kuechen',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _fbhZonenMeta = const VerificationMeta(
+    'fbhZonen',
+  );
+  @override
+  late final GeneratedColumn<int> fbhZonen = GeneratedColumn<int>(
+    'fbh_zonen',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(4),
+  );
+  static const VerificationMeta _radiatorenMeta = const VerificationMeta(
+    'radiatoren',
+  );
+  @override
+  late final GeneratedColumn<bool> radiatoren = GeneratedColumn<bool>(
+    'radiatoren',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("radiatoren" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _gartenMeta = const VerificationMeta('garten');
+  @override
+  late final GeneratedColumn<bool> garten = GeneratedColumn<bool>(
+    'garten',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("garten" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _wpKwMeta = const VerificationMeta('wpKw');
+  @override
+  late final GeneratedColumn<double> wpKw = GeneratedColumn<double>(
+    'wp_kw',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(10.25),
+  );
+  static const VerificationMeta _hwSchleifeMMeta = const VerificationMeta(
+    'hwSchleifeM',
+  );
+  @override
+  late final GeneratedColumn<int> hwSchleifeM = GeneratedColumn<int>(
+    'hw_schleife_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(28),
+  );
+  static const VerificationMeta _pvKwpMeta = const VerificationMeta('pvKwp');
+  @override
+  late final GeneratedColumn<double> pvKwp = GeneratedColumn<double>(
+    'pv_kwp',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(10),
+  );
+  static const VerificationMeta _wbKwMeta = const VerificationMeta('wbKw');
+  @override
+  late final GeneratedColumn<double> wbKw = GeneratedColumn<double>(
+    'wb_kw',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(11),
+  );
+  static const VerificationMeta _wbAussenMeta = const VerificationMeta(
+    'wbAussen',
+  );
+  @override
+  late final GeneratedColumn<bool> wbAussen = GeneratedColumn<bool>(
+    'wb_aussen',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("wb_aussen" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _wbKommMeta = const VerificationMeta('wbKomm');
+  @override
+  late final GeneratedColumn<bool> wbKomm = GeneratedColumn<bool>(
+    'wb_komm',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("wb_komm" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _wbUeberschussMeta = const VerificationMeta(
+    'wbUeberschuss',
+  );
+  @override
+  late final GeneratedColumn<bool> wbUeberschuss = GeneratedColumn<bool>(
+    'wb_ueberschuss',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("wb_ueberschuss" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _bzaMeta = const VerificationMeta('bza');
+  @override
+  late final GeneratedColumn<bool> bza = GeneratedColumn<bool>(
+    'bza',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("bza" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _wbLeitungMMeta = const VerificationMeta(
+    'wbLeitungM',
+  );
+  @override
+  late final GeneratedColumn<int> wbLeitungM = GeneratedColumn<int>(
+    'wb_leitung_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(30),
+  );
+  static const VerificationMeta _batKwhMeta = const VerificationMeta('batKwh');
+  @override
+  late final GeneratedColumn<double> batKwh = GeneratedColumn<double>(
+    'bat_kwh',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(10),
+  );
+  static const VerificationMeta _batUnitsMeta = const VerificationMeta(
+    'batUnits',
+  );
+  @override
+  late final GeneratedColumn<int> batUnits = GeneratedColumn<int>(
+    'bat_units',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2),
+  );
+  static const VerificationMeta _batDcAMeta = const VerificationMeta('batDcA');
+  @override
+  late final GeneratedColumn<double> batDcA = GeneratedColumn<double>(
+    'bat_dc_a',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(45),
+  );
+  static const VerificationMeta _batAcKwMeta = const VerificationMeta(
+    'batAcKw',
+  );
+  @override
+  late final GeneratedColumn<double> batAcKw = GeneratedColumn<double>(
+    'bat_ac_kw',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(6.4),
+  );
+  static const VerificationMeta _batAussenMeta = const VerificationMeta(
+    'batAussen',
+  );
+  @override
+  late final GeneratedColumn<bool> batAussen = GeneratedColumn<bool>(
+    'bat_aussen',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("bat_aussen" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _pvAnlageMeta = const VerificationMeta(
+    'pvAnlage',
+  );
+  @override
+  late final GeneratedColumn<bool> pvAnlage = GeneratedColumn<bool>(
+    'pv_anlage',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pv_anlage" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _batAnlageMeta = const VerificationMeta(
+    'batAnlage',
+  );
+  @override
+  late final GeneratedColumn<bool> batAnlage = GeneratedColumn<bool>(
+    'bat_anlage',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("bat_anlage" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _wbAnlageMeta = const VerificationMeta(
+    'wbAnlage',
+  );
+  @override
+  late final GeneratedColumn<bool> wbAnlage = GeneratedColumn<bool>(
+    'wb_anlage',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("wb_anlage" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _wpAnlageMeta = const VerificationMeta(
+    'wpAnlage',
+  );
+  @override
+  late final GeneratedColumn<bool> wpAnlage = GeneratedColumn<bool>(
+    'wp_anlage',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("wp_anlage" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3018,6 +3344,32 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     maxFeedInKw,
     hasMainEquipotential,
     isBoltedMounting,
+    personen,
+    etagen,
+    keller,
+    baeder,
+    kuechen,
+    fbhZonen,
+    radiatoren,
+    garten,
+    wpKw,
+    hwSchleifeM,
+    pvKwp,
+    wbKw,
+    wbAussen,
+    wbKomm,
+    wbUeberschuss,
+    bza,
+    wbLeitungM,
+    batKwh,
+    batUnits,
+    batDcA,
+    batAcKw,
+    batAussen,
+    pvAnlage,
+    batAnlage,
+    wbAnlage,
+    wpAnlage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3145,6 +3497,171 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         ),
       );
     }
+    if (data.containsKey('personen')) {
+      context.handle(
+        _personenMeta,
+        personen.isAcceptableOrUnknown(data['personen']!, _personenMeta),
+      );
+    }
+    if (data.containsKey('etagen')) {
+      context.handle(
+        _etagenMeta,
+        etagen.isAcceptableOrUnknown(data['etagen']!, _etagenMeta),
+      );
+    }
+    if (data.containsKey('keller')) {
+      context.handle(
+        _kellerMeta,
+        keller.isAcceptableOrUnknown(data['keller']!, _kellerMeta),
+      );
+    }
+    if (data.containsKey('baeder')) {
+      context.handle(
+        _baederMeta,
+        baeder.isAcceptableOrUnknown(data['baeder']!, _baederMeta),
+      );
+    }
+    if (data.containsKey('kuechen')) {
+      context.handle(
+        _kuechenMeta,
+        kuechen.isAcceptableOrUnknown(data['kuechen']!, _kuechenMeta),
+      );
+    }
+    if (data.containsKey('fbh_zonen')) {
+      context.handle(
+        _fbhZonenMeta,
+        fbhZonen.isAcceptableOrUnknown(data['fbh_zonen']!, _fbhZonenMeta),
+      );
+    }
+    if (data.containsKey('radiatoren')) {
+      context.handle(
+        _radiatorenMeta,
+        radiatoren.isAcceptableOrUnknown(data['radiatoren']!, _radiatorenMeta),
+      );
+    }
+    if (data.containsKey('garten')) {
+      context.handle(
+        _gartenMeta,
+        garten.isAcceptableOrUnknown(data['garten']!, _gartenMeta),
+      );
+    }
+    if (data.containsKey('wp_kw')) {
+      context.handle(
+        _wpKwMeta,
+        wpKw.isAcceptableOrUnknown(data['wp_kw']!, _wpKwMeta),
+      );
+    }
+    if (data.containsKey('hw_schleife_m')) {
+      context.handle(
+        _hwSchleifeMMeta,
+        hwSchleifeM.isAcceptableOrUnknown(
+          data['hw_schleife_m']!,
+          _hwSchleifeMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pv_kwp')) {
+      context.handle(
+        _pvKwpMeta,
+        pvKwp.isAcceptableOrUnknown(data['pv_kwp']!, _pvKwpMeta),
+      );
+    }
+    if (data.containsKey('wb_kw')) {
+      context.handle(
+        _wbKwMeta,
+        wbKw.isAcceptableOrUnknown(data['wb_kw']!, _wbKwMeta),
+      );
+    }
+    if (data.containsKey('wb_aussen')) {
+      context.handle(
+        _wbAussenMeta,
+        wbAussen.isAcceptableOrUnknown(data['wb_aussen']!, _wbAussenMeta),
+      );
+    }
+    if (data.containsKey('wb_komm')) {
+      context.handle(
+        _wbKommMeta,
+        wbKomm.isAcceptableOrUnknown(data['wb_komm']!, _wbKommMeta),
+      );
+    }
+    if (data.containsKey('wb_ueberschuss')) {
+      context.handle(
+        _wbUeberschussMeta,
+        wbUeberschuss.isAcceptableOrUnknown(
+          data['wb_ueberschuss']!,
+          _wbUeberschussMeta,
+        ),
+      );
+    }
+    if (data.containsKey('bza')) {
+      context.handle(
+        _bzaMeta,
+        bza.isAcceptableOrUnknown(data['bza']!, _bzaMeta),
+      );
+    }
+    if (data.containsKey('wb_leitung_m')) {
+      context.handle(
+        _wbLeitungMMeta,
+        wbLeitungM.isAcceptableOrUnknown(
+          data['wb_leitung_m']!,
+          _wbLeitungMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('bat_kwh')) {
+      context.handle(
+        _batKwhMeta,
+        batKwh.isAcceptableOrUnknown(data['bat_kwh']!, _batKwhMeta),
+      );
+    }
+    if (data.containsKey('bat_units')) {
+      context.handle(
+        _batUnitsMeta,
+        batUnits.isAcceptableOrUnknown(data['bat_units']!, _batUnitsMeta),
+      );
+    }
+    if (data.containsKey('bat_dc_a')) {
+      context.handle(
+        _batDcAMeta,
+        batDcA.isAcceptableOrUnknown(data['bat_dc_a']!, _batDcAMeta),
+      );
+    }
+    if (data.containsKey('bat_ac_kw')) {
+      context.handle(
+        _batAcKwMeta,
+        batAcKw.isAcceptableOrUnknown(data['bat_ac_kw']!, _batAcKwMeta),
+      );
+    }
+    if (data.containsKey('bat_aussen')) {
+      context.handle(
+        _batAussenMeta,
+        batAussen.isAcceptableOrUnknown(data['bat_aussen']!, _batAussenMeta),
+      );
+    }
+    if (data.containsKey('pv_anlage')) {
+      context.handle(
+        _pvAnlageMeta,
+        pvAnlage.isAcceptableOrUnknown(data['pv_anlage']!, _pvAnlageMeta),
+      );
+    }
+    if (data.containsKey('bat_anlage')) {
+      context.handle(
+        _batAnlageMeta,
+        batAnlage.isAcceptableOrUnknown(data['bat_anlage']!, _batAnlageMeta),
+      );
+    }
+    if (data.containsKey('wb_anlage')) {
+      context.handle(
+        _wbAnlageMeta,
+        wbAnlage.isAcceptableOrUnknown(data['wb_anlage']!, _wbAnlageMeta),
+      );
+    }
+    if (data.containsKey('wp_anlage')) {
+      context.handle(
+        _wpAnlageMeta,
+        wpAnlage.isAcceptableOrUnknown(data['wp_anlage']!, _wpAnlageMeta),
+      );
+    }
     return context;
   }
 
@@ -3214,6 +3731,110 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_bolted_mounting'],
       )!,
+      personen: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}personen'],
+      )!,
+      etagen: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}etagen'],
+      )!,
+      keller: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}keller'],
+      )!,
+      baeder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}baeder'],
+      )!,
+      kuechen: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}kuechen'],
+      )!,
+      fbhZonen: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fbh_zonen'],
+      )!,
+      radiatoren: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}radiatoren'],
+      )!,
+      garten: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}garten'],
+      )!,
+      wpKw: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}wp_kw'],
+      )!,
+      hwSchleifeM: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}hw_schleife_m'],
+      )!,
+      pvKwp: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}pv_kwp'],
+      )!,
+      wbKw: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}wb_kw'],
+      )!,
+      wbAussen: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}wb_aussen'],
+      )!,
+      wbKomm: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}wb_komm'],
+      )!,
+      wbUeberschuss: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}wb_ueberschuss'],
+      )!,
+      bza: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}bza'],
+      )!,
+      wbLeitungM: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wb_leitung_m'],
+      )!,
+      batKwh: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}bat_kwh'],
+      )!,
+      batUnits: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bat_units'],
+      )!,
+      batDcA: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}bat_dc_a'],
+      )!,
+      batAcKw: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}bat_ac_kw'],
+      )!,
+      batAussen: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}bat_aussen'],
+      )!,
+      pvAnlage: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pv_anlage'],
+      )!,
+      batAnlage: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}bat_anlage'],
+      )!,
+      wbAnlage: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}wb_anlage'],
+      )!,
+      wpAnlage: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}wp_anlage'],
+      )!,
     );
   }
 
@@ -3264,6 +3885,84 @@ class Project extends DataClass implements Insertable<Project> {
   /// mounting makes the natural protective conductor questionable → a
   /// dedicated PE conductor is recommended.
   final bool isBoltedMounting;
+
+  /// Number of household members.
+  final int personen;
+
+  /// Number of floors (Etagen).
+  final int etagen;
+
+  /// Whether the building has a basement (Keller).
+  final bool keller;
+
+  /// Number of bathrooms.
+  final int baeder;
+
+  /// Number of kitchens.
+  final int kuechen;
+
+  /// Number of underfloor-heating zones (WP system).
+  final int fbhZonen;
+
+  /// Whether radiators are present (WP system).
+  final bool radiatoren;
+
+  /// Whether there is a garden (WP system, affects heat-rejection sizing).
+  final bool garten;
+
+  /// Heat-pump rated output in kW (WP system).
+  final double wpKw;
+
+  /// Length of the district-heating / heat-source loop in metres.
+  final int hwSchleifeM;
+
+  /// PV plant size in kWp.
+  final double pvKwp;
+
+  /// Wallbox rated output in kW.
+  final double wbKw;
+
+  /// Wallbox installed outdoors?
+  final bool wbAussen;
+
+  /// Wallbox has communication (LAN/WLAN/OCPP)?
+  final bool wbKomm;
+
+  /// Wallbox uses PV surplus charging?
+  final bool wbUeberschuss;
+
+  /// Backup power (BZA) required?
+  final bool bza;
+
+  /// Wallbox cable run length in metres.
+  final int wbLeitungM;
+
+  /// Battery storage capacity in kWh.
+  final double batKwh;
+
+  /// Number of battery storage units.
+  final int batUnits;
+
+  /// Battery DC fuse rating in amperes.
+  final double batDcA;
+
+  /// Battery AC inverter output in kW.
+  final double batAcKw;
+
+  /// Battery storage installed outdoors?
+  final bool batAussen;
+
+  /// PV plant is planned for this project?
+  final bool pvAnlage;
+
+  /// Battery storage is planned for this project?
+  final bool batAnlage;
+
+  /// Wallbox is planned for this project?
+  final bool wbAnlage;
+
+  /// Heat pump is planned for this project?
+  final bool wpAnlage;
   const Project({
     required this.id,
     required this.name,
@@ -3280,6 +3979,32 @@ class Project extends DataClass implements Insertable<Project> {
     this.maxFeedInKw,
     required this.hasMainEquipotential,
     required this.isBoltedMounting,
+    required this.personen,
+    required this.etagen,
+    required this.keller,
+    required this.baeder,
+    required this.kuechen,
+    required this.fbhZonen,
+    required this.radiatoren,
+    required this.garten,
+    required this.wpKw,
+    required this.hwSchleifeM,
+    required this.pvKwp,
+    required this.wbKw,
+    required this.wbAussen,
+    required this.wbKomm,
+    required this.wbUeberschuss,
+    required this.bza,
+    required this.wbLeitungM,
+    required this.batKwh,
+    required this.batUnits,
+    required this.batDcA,
+    required this.batAcKw,
+    required this.batAussen,
+    required this.pvAnlage,
+    required this.batAnlage,
+    required this.wbAnlage,
+    required this.wpAnlage,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3305,6 +4030,32 @@ class Project extends DataClass implements Insertable<Project> {
     }
     map['has_main_equipotential'] = Variable<bool>(hasMainEquipotential);
     map['is_bolted_mounting'] = Variable<bool>(isBoltedMounting);
+    map['personen'] = Variable<int>(personen);
+    map['etagen'] = Variable<int>(etagen);
+    map['keller'] = Variable<bool>(keller);
+    map['baeder'] = Variable<int>(baeder);
+    map['kuechen'] = Variable<int>(kuechen);
+    map['fbh_zonen'] = Variable<int>(fbhZonen);
+    map['radiatoren'] = Variable<bool>(radiatoren);
+    map['garten'] = Variable<bool>(garten);
+    map['wp_kw'] = Variable<double>(wpKw);
+    map['hw_schleife_m'] = Variable<int>(hwSchleifeM);
+    map['pv_kwp'] = Variable<double>(pvKwp);
+    map['wb_kw'] = Variable<double>(wbKw);
+    map['wb_aussen'] = Variable<bool>(wbAussen);
+    map['wb_komm'] = Variable<bool>(wbKomm);
+    map['wb_ueberschuss'] = Variable<bool>(wbUeberschuss);
+    map['bza'] = Variable<bool>(bza);
+    map['wb_leitung_m'] = Variable<int>(wbLeitungM);
+    map['bat_kwh'] = Variable<double>(batKwh);
+    map['bat_units'] = Variable<int>(batUnits);
+    map['bat_dc_a'] = Variable<double>(batDcA);
+    map['bat_ac_kw'] = Variable<double>(batAcKw);
+    map['bat_aussen'] = Variable<bool>(batAussen);
+    map['pv_anlage'] = Variable<bool>(pvAnlage);
+    map['bat_anlage'] = Variable<bool>(batAnlage);
+    map['wb_anlage'] = Variable<bool>(wbAnlage);
+    map['wp_anlage'] = Variable<bool>(wpAnlage);
     return map;
   }
 
@@ -3331,6 +4082,32 @@ class Project extends DataClass implements Insertable<Project> {
           : Value(maxFeedInKw),
       hasMainEquipotential: Value(hasMainEquipotential),
       isBoltedMounting: Value(isBoltedMounting),
+      personen: Value(personen),
+      etagen: Value(etagen),
+      keller: Value(keller),
+      baeder: Value(baeder),
+      kuechen: Value(kuechen),
+      fbhZonen: Value(fbhZonen),
+      radiatoren: Value(radiatoren),
+      garten: Value(garten),
+      wpKw: Value(wpKw),
+      hwSchleifeM: Value(hwSchleifeM),
+      pvKwp: Value(pvKwp),
+      wbKw: Value(wbKw),
+      wbAussen: Value(wbAussen),
+      wbKomm: Value(wbKomm),
+      wbUeberschuss: Value(wbUeberschuss),
+      bza: Value(bza),
+      wbLeitungM: Value(wbLeitungM),
+      batKwh: Value(batKwh),
+      batUnits: Value(batUnits),
+      batDcA: Value(batDcA),
+      batAcKw: Value(batAcKw),
+      batAussen: Value(batAussen),
+      pvAnlage: Value(pvAnlage),
+      batAnlage: Value(batAnlage),
+      wbAnlage: Value(wbAnlage),
+      wpAnlage: Value(wpAnlage),
     );
   }
 
@@ -3357,6 +4134,32 @@ class Project extends DataClass implements Insertable<Project> {
         json['hasMainEquipotential'],
       ),
       isBoltedMounting: serializer.fromJson<bool>(json['isBoltedMounting']),
+      personen: serializer.fromJson<int>(json['personen']),
+      etagen: serializer.fromJson<int>(json['etagen']),
+      keller: serializer.fromJson<bool>(json['keller']),
+      baeder: serializer.fromJson<int>(json['baeder']),
+      kuechen: serializer.fromJson<int>(json['kuechen']),
+      fbhZonen: serializer.fromJson<int>(json['fbhZonen']),
+      radiatoren: serializer.fromJson<bool>(json['radiatoren']),
+      garten: serializer.fromJson<bool>(json['garten']),
+      wpKw: serializer.fromJson<double>(json['wpKw']),
+      hwSchleifeM: serializer.fromJson<int>(json['hwSchleifeM']),
+      pvKwp: serializer.fromJson<double>(json['pvKwp']),
+      wbKw: serializer.fromJson<double>(json['wbKw']),
+      wbAussen: serializer.fromJson<bool>(json['wbAussen']),
+      wbKomm: serializer.fromJson<bool>(json['wbKomm']),
+      wbUeberschuss: serializer.fromJson<bool>(json['wbUeberschuss']),
+      bza: serializer.fromJson<bool>(json['bza']),
+      wbLeitungM: serializer.fromJson<int>(json['wbLeitungM']),
+      batKwh: serializer.fromJson<double>(json['batKwh']),
+      batUnits: serializer.fromJson<int>(json['batUnits']),
+      batDcA: serializer.fromJson<double>(json['batDcA']),
+      batAcKw: serializer.fromJson<double>(json['batAcKw']),
+      batAussen: serializer.fromJson<bool>(json['batAussen']),
+      pvAnlage: serializer.fromJson<bool>(json['pvAnlage']),
+      batAnlage: serializer.fromJson<bool>(json['batAnlage']),
+      wbAnlage: serializer.fromJson<bool>(json['wbAnlage']),
+      wpAnlage: serializer.fromJson<bool>(json['wpAnlage']),
     );
   }
   @override
@@ -3378,6 +4181,32 @@ class Project extends DataClass implements Insertable<Project> {
       'maxFeedInKw': serializer.toJson<double?>(maxFeedInKw),
       'hasMainEquipotential': serializer.toJson<bool>(hasMainEquipotential),
       'isBoltedMounting': serializer.toJson<bool>(isBoltedMounting),
+      'personen': serializer.toJson<int>(personen),
+      'etagen': serializer.toJson<int>(etagen),
+      'keller': serializer.toJson<bool>(keller),
+      'baeder': serializer.toJson<int>(baeder),
+      'kuechen': serializer.toJson<int>(kuechen),
+      'fbhZonen': serializer.toJson<int>(fbhZonen),
+      'radiatoren': serializer.toJson<bool>(radiatoren),
+      'garten': serializer.toJson<bool>(garten),
+      'wpKw': serializer.toJson<double>(wpKw),
+      'hwSchleifeM': serializer.toJson<int>(hwSchleifeM),
+      'pvKwp': serializer.toJson<double>(pvKwp),
+      'wbKw': serializer.toJson<double>(wbKw),
+      'wbAussen': serializer.toJson<bool>(wbAussen),
+      'wbKomm': serializer.toJson<bool>(wbKomm),
+      'wbUeberschuss': serializer.toJson<bool>(wbUeberschuss),
+      'bza': serializer.toJson<bool>(bza),
+      'wbLeitungM': serializer.toJson<int>(wbLeitungM),
+      'batKwh': serializer.toJson<double>(batKwh),
+      'batUnits': serializer.toJson<int>(batUnits),
+      'batDcA': serializer.toJson<double>(batDcA),
+      'batAcKw': serializer.toJson<double>(batAcKw),
+      'batAussen': serializer.toJson<bool>(batAussen),
+      'pvAnlage': serializer.toJson<bool>(pvAnlage),
+      'batAnlage': serializer.toJson<bool>(batAnlage),
+      'wbAnlage': serializer.toJson<bool>(wbAnlage),
+      'wpAnlage': serializer.toJson<bool>(wpAnlage),
     };
   }
 
@@ -3397,6 +4226,32 @@ class Project extends DataClass implements Insertable<Project> {
     Value<double?> maxFeedInKw = const Value.absent(),
     bool? hasMainEquipotential,
     bool? isBoltedMounting,
+    int? personen,
+    int? etagen,
+    bool? keller,
+    int? baeder,
+    int? kuechen,
+    int? fbhZonen,
+    bool? radiatoren,
+    bool? garten,
+    double? wpKw,
+    int? hwSchleifeM,
+    double? pvKwp,
+    double? wbKw,
+    bool? wbAussen,
+    bool? wbKomm,
+    bool? wbUeberschuss,
+    bool? bza,
+    int? wbLeitungM,
+    double? batKwh,
+    int? batUnits,
+    double? batDcA,
+    double? batAcKw,
+    bool? batAussen,
+    bool? pvAnlage,
+    bool? batAnlage,
+    bool? wbAnlage,
+    bool? wpAnlage,
   }) => Project(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -3417,6 +4272,32 @@ class Project extends DataClass implements Insertable<Project> {
     maxFeedInKw: maxFeedInKw.present ? maxFeedInKw.value : this.maxFeedInKw,
     hasMainEquipotential: hasMainEquipotential ?? this.hasMainEquipotential,
     isBoltedMounting: isBoltedMounting ?? this.isBoltedMounting,
+    personen: personen ?? this.personen,
+    etagen: etagen ?? this.etagen,
+    keller: keller ?? this.keller,
+    baeder: baeder ?? this.baeder,
+    kuechen: kuechen ?? this.kuechen,
+    fbhZonen: fbhZonen ?? this.fbhZonen,
+    radiatoren: radiatoren ?? this.radiatoren,
+    garten: garten ?? this.garten,
+    wpKw: wpKw ?? this.wpKw,
+    hwSchleifeM: hwSchleifeM ?? this.hwSchleifeM,
+    pvKwp: pvKwp ?? this.pvKwp,
+    wbKw: wbKw ?? this.wbKw,
+    wbAussen: wbAussen ?? this.wbAussen,
+    wbKomm: wbKomm ?? this.wbKomm,
+    wbUeberschuss: wbUeberschuss ?? this.wbUeberschuss,
+    bza: bza ?? this.bza,
+    wbLeitungM: wbLeitungM ?? this.wbLeitungM,
+    batKwh: batKwh ?? this.batKwh,
+    batUnits: batUnits ?? this.batUnits,
+    batDcA: batDcA ?? this.batDcA,
+    batAcKw: batAcKw ?? this.batAcKw,
+    batAussen: batAussen ?? this.batAussen,
+    pvAnlage: pvAnlage ?? this.pvAnlage,
+    batAnlage: batAnlage ?? this.batAnlage,
+    wbAnlage: wbAnlage ?? this.wbAnlage,
+    wpAnlage: wpAnlage ?? this.wpAnlage,
   );
   Project copyWithCompanion(ProjectsCompanion data) {
     return Project(
@@ -3451,6 +4332,40 @@ class Project extends DataClass implements Insertable<Project> {
       isBoltedMounting: data.isBoltedMounting.present
           ? data.isBoltedMounting.value
           : this.isBoltedMounting,
+      personen: data.personen.present ? data.personen.value : this.personen,
+      etagen: data.etagen.present ? data.etagen.value : this.etagen,
+      keller: data.keller.present ? data.keller.value : this.keller,
+      baeder: data.baeder.present ? data.baeder.value : this.baeder,
+      kuechen: data.kuechen.present ? data.kuechen.value : this.kuechen,
+      fbhZonen: data.fbhZonen.present ? data.fbhZonen.value : this.fbhZonen,
+      radiatoren: data.radiatoren.present
+          ? data.radiatoren.value
+          : this.radiatoren,
+      garten: data.garten.present ? data.garten.value : this.garten,
+      wpKw: data.wpKw.present ? data.wpKw.value : this.wpKw,
+      hwSchleifeM: data.hwSchleifeM.present
+          ? data.hwSchleifeM.value
+          : this.hwSchleifeM,
+      pvKwp: data.pvKwp.present ? data.pvKwp.value : this.pvKwp,
+      wbKw: data.wbKw.present ? data.wbKw.value : this.wbKw,
+      wbAussen: data.wbAussen.present ? data.wbAussen.value : this.wbAussen,
+      wbKomm: data.wbKomm.present ? data.wbKomm.value : this.wbKomm,
+      wbUeberschuss: data.wbUeberschuss.present
+          ? data.wbUeberschuss.value
+          : this.wbUeberschuss,
+      bza: data.bza.present ? data.bza.value : this.bza,
+      wbLeitungM: data.wbLeitungM.present
+          ? data.wbLeitungM.value
+          : this.wbLeitungM,
+      batKwh: data.batKwh.present ? data.batKwh.value : this.batKwh,
+      batUnits: data.batUnits.present ? data.batUnits.value : this.batUnits,
+      batDcA: data.batDcA.present ? data.batDcA.value : this.batDcA,
+      batAcKw: data.batAcKw.present ? data.batAcKw.value : this.batAcKw,
+      batAussen: data.batAussen.present ? data.batAussen.value : this.batAussen,
+      pvAnlage: data.pvAnlage.present ? data.pvAnlage.value : this.pvAnlage,
+      batAnlage: data.batAnlage.present ? data.batAnlage.value : this.batAnlage,
+      wbAnlage: data.wbAnlage.present ? data.wbAnlage.value : this.wbAnlage,
+      wpAnlage: data.wpAnlage.present ? data.wpAnlage.value : this.wpAnlage,
     );
   }
 
@@ -3471,13 +4386,39 @@ class Project extends DataClass implements Insertable<Project> {
           ..write('gridPhases: $gridPhases, ')
           ..write('maxFeedInKw: $maxFeedInKw, ')
           ..write('hasMainEquipotential: $hasMainEquipotential, ')
-          ..write('isBoltedMounting: $isBoltedMounting')
+          ..write('isBoltedMounting: $isBoltedMounting, ')
+          ..write('personen: $personen, ')
+          ..write('etagen: $etagen, ')
+          ..write('keller: $keller, ')
+          ..write('baeder: $baeder, ')
+          ..write('kuechen: $kuechen, ')
+          ..write('fbhZonen: $fbhZonen, ')
+          ..write('radiatoren: $radiatoren, ')
+          ..write('garten: $garten, ')
+          ..write('wpKw: $wpKw, ')
+          ..write('hwSchleifeM: $hwSchleifeM, ')
+          ..write('pvKwp: $pvKwp, ')
+          ..write('wbKw: $wbKw, ')
+          ..write('wbAussen: $wbAussen, ')
+          ..write('wbKomm: $wbKomm, ')
+          ..write('wbUeberschuss: $wbUeberschuss, ')
+          ..write('bza: $bza, ')
+          ..write('wbLeitungM: $wbLeitungM, ')
+          ..write('batKwh: $batKwh, ')
+          ..write('batUnits: $batUnits, ')
+          ..write('batDcA: $batDcA, ')
+          ..write('batAcKw: $batAcKw, ')
+          ..write('batAussen: $batAussen, ')
+          ..write('pvAnlage: $pvAnlage, ')
+          ..write('batAnlage: $batAnlage, ')
+          ..write('wbAnlage: $wbAnlage, ')
+          ..write('wpAnlage: $wpAnlage')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     name,
     address,
@@ -3493,7 +4434,33 @@ class Project extends DataClass implements Insertable<Project> {
     maxFeedInKw,
     hasMainEquipotential,
     isBoltedMounting,
-  );
+    personen,
+    etagen,
+    keller,
+    baeder,
+    kuechen,
+    fbhZonen,
+    radiatoren,
+    garten,
+    wpKw,
+    hwSchleifeM,
+    pvKwp,
+    wbKw,
+    wbAussen,
+    wbKomm,
+    wbUeberschuss,
+    bza,
+    wbLeitungM,
+    batKwh,
+    batUnits,
+    batDcA,
+    batAcKw,
+    batAussen,
+    pvAnlage,
+    batAnlage,
+    wbAnlage,
+    wpAnlage,
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3512,7 +4479,33 @@ class Project extends DataClass implements Insertable<Project> {
           other.gridPhases == this.gridPhases &&
           other.maxFeedInKw == this.maxFeedInKw &&
           other.hasMainEquipotential == this.hasMainEquipotential &&
-          other.isBoltedMounting == this.isBoltedMounting);
+          other.isBoltedMounting == this.isBoltedMounting &&
+          other.personen == this.personen &&
+          other.etagen == this.etagen &&
+          other.keller == this.keller &&
+          other.baeder == this.baeder &&
+          other.kuechen == this.kuechen &&
+          other.fbhZonen == this.fbhZonen &&
+          other.radiatoren == this.radiatoren &&
+          other.garten == this.garten &&
+          other.wpKw == this.wpKw &&
+          other.hwSchleifeM == this.hwSchleifeM &&
+          other.pvKwp == this.pvKwp &&
+          other.wbKw == this.wbKw &&
+          other.wbAussen == this.wbAussen &&
+          other.wbKomm == this.wbKomm &&
+          other.wbUeberschuss == this.wbUeberschuss &&
+          other.bza == this.bza &&
+          other.wbLeitungM == this.wbLeitungM &&
+          other.batKwh == this.batKwh &&
+          other.batUnits == this.batUnits &&
+          other.batDcA == this.batDcA &&
+          other.batAcKw == this.batAcKw &&
+          other.batAussen == this.batAussen &&
+          other.pvAnlage == this.pvAnlage &&
+          other.batAnlage == this.batAnlage &&
+          other.wbAnlage == this.wbAnlage &&
+          other.wpAnlage == this.wpAnlage);
 }
 
 class ProjectsCompanion extends UpdateCompanion<Project> {
@@ -3531,6 +4524,32 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   final Value<double?> maxFeedInKw;
   final Value<bool> hasMainEquipotential;
   final Value<bool> isBoltedMounting;
+  final Value<int> personen;
+  final Value<int> etagen;
+  final Value<bool> keller;
+  final Value<int> baeder;
+  final Value<int> kuechen;
+  final Value<int> fbhZonen;
+  final Value<bool> radiatoren;
+  final Value<bool> garten;
+  final Value<double> wpKw;
+  final Value<int> hwSchleifeM;
+  final Value<double> pvKwp;
+  final Value<double> wbKw;
+  final Value<bool> wbAussen;
+  final Value<bool> wbKomm;
+  final Value<bool> wbUeberschuss;
+  final Value<bool> bza;
+  final Value<int> wbLeitungM;
+  final Value<double> batKwh;
+  final Value<int> batUnits;
+  final Value<double> batDcA;
+  final Value<double> batAcKw;
+  final Value<bool> batAussen;
+  final Value<bool> pvAnlage;
+  final Value<bool> batAnlage;
+  final Value<bool> wbAnlage;
+  final Value<bool> wpAnlage;
   const ProjectsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -3547,6 +4566,32 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.maxFeedInKw = const Value.absent(),
     this.hasMainEquipotential = const Value.absent(),
     this.isBoltedMounting = const Value.absent(),
+    this.personen = const Value.absent(),
+    this.etagen = const Value.absent(),
+    this.keller = const Value.absent(),
+    this.baeder = const Value.absent(),
+    this.kuechen = const Value.absent(),
+    this.fbhZonen = const Value.absent(),
+    this.radiatoren = const Value.absent(),
+    this.garten = const Value.absent(),
+    this.wpKw = const Value.absent(),
+    this.hwSchleifeM = const Value.absent(),
+    this.pvKwp = const Value.absent(),
+    this.wbKw = const Value.absent(),
+    this.wbAussen = const Value.absent(),
+    this.wbKomm = const Value.absent(),
+    this.wbUeberschuss = const Value.absent(),
+    this.bza = const Value.absent(),
+    this.wbLeitungM = const Value.absent(),
+    this.batKwh = const Value.absent(),
+    this.batUnits = const Value.absent(),
+    this.batDcA = const Value.absent(),
+    this.batAcKw = const Value.absent(),
+    this.batAussen = const Value.absent(),
+    this.pvAnlage = const Value.absent(),
+    this.batAnlage = const Value.absent(),
+    this.wbAnlage = const Value.absent(),
+    this.wpAnlage = const Value.absent(),
   });
   ProjectsCompanion.insert({
     this.id = const Value.absent(),
@@ -3564,6 +4609,32 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.maxFeedInKw = const Value.absent(),
     this.hasMainEquipotential = const Value.absent(),
     this.isBoltedMounting = const Value.absent(),
+    this.personen = const Value.absent(),
+    this.etagen = const Value.absent(),
+    this.keller = const Value.absent(),
+    this.baeder = const Value.absent(),
+    this.kuechen = const Value.absent(),
+    this.fbhZonen = const Value.absent(),
+    this.radiatoren = const Value.absent(),
+    this.garten = const Value.absent(),
+    this.wpKw = const Value.absent(),
+    this.hwSchleifeM = const Value.absent(),
+    this.pvKwp = const Value.absent(),
+    this.wbKw = const Value.absent(),
+    this.wbAussen = const Value.absent(),
+    this.wbKomm = const Value.absent(),
+    this.wbUeberschuss = const Value.absent(),
+    this.bza = const Value.absent(),
+    this.wbLeitungM = const Value.absent(),
+    this.batKwh = const Value.absent(),
+    this.batUnits = const Value.absent(),
+    this.batDcA = const Value.absent(),
+    this.batAcKw = const Value.absent(),
+    this.batAussen = const Value.absent(),
+    this.pvAnlage = const Value.absent(),
+    this.batAnlage = const Value.absent(),
+    this.wbAnlage = const Value.absent(),
+    this.wpAnlage = const Value.absent(),
   }) : name = Value(name),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
@@ -3583,6 +4654,32 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Expression<double>? maxFeedInKw,
     Expression<bool>? hasMainEquipotential,
     Expression<bool>? isBoltedMounting,
+    Expression<int>? personen,
+    Expression<int>? etagen,
+    Expression<bool>? keller,
+    Expression<int>? baeder,
+    Expression<int>? kuechen,
+    Expression<int>? fbhZonen,
+    Expression<bool>? radiatoren,
+    Expression<bool>? garten,
+    Expression<double>? wpKw,
+    Expression<int>? hwSchleifeM,
+    Expression<double>? pvKwp,
+    Expression<double>? wbKw,
+    Expression<bool>? wbAussen,
+    Expression<bool>? wbKomm,
+    Expression<bool>? wbUeberschuss,
+    Expression<bool>? bza,
+    Expression<int>? wbLeitungM,
+    Expression<double>? batKwh,
+    Expression<int>? batUnits,
+    Expression<double>? batDcA,
+    Expression<double>? batAcKw,
+    Expression<bool>? batAussen,
+    Expression<bool>? pvAnlage,
+    Expression<bool>? batAnlage,
+    Expression<bool>? wbAnlage,
+    Expression<bool>? wpAnlage,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3602,6 +4699,32 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       if (hasMainEquipotential != null)
         'has_main_equipotential': hasMainEquipotential,
       if (isBoltedMounting != null) 'is_bolted_mounting': isBoltedMounting,
+      if (personen != null) 'personen': personen,
+      if (etagen != null) 'etagen': etagen,
+      if (keller != null) 'keller': keller,
+      if (baeder != null) 'baeder': baeder,
+      if (kuechen != null) 'kuechen': kuechen,
+      if (fbhZonen != null) 'fbh_zonen': fbhZonen,
+      if (radiatoren != null) 'radiatoren': radiatoren,
+      if (garten != null) 'garten': garten,
+      if (wpKw != null) 'wp_kw': wpKw,
+      if (hwSchleifeM != null) 'hw_schleife_m': hwSchleifeM,
+      if (pvKwp != null) 'pv_kwp': pvKwp,
+      if (wbKw != null) 'wb_kw': wbKw,
+      if (wbAussen != null) 'wb_aussen': wbAussen,
+      if (wbKomm != null) 'wb_komm': wbKomm,
+      if (wbUeberschuss != null) 'wb_ueberschuss': wbUeberschuss,
+      if (bza != null) 'bza': bza,
+      if (wbLeitungM != null) 'wb_leitung_m': wbLeitungM,
+      if (batKwh != null) 'bat_kwh': batKwh,
+      if (batUnits != null) 'bat_units': batUnits,
+      if (batDcA != null) 'bat_dc_a': batDcA,
+      if (batAcKw != null) 'bat_ac_kw': batAcKw,
+      if (batAussen != null) 'bat_aussen': batAussen,
+      if (pvAnlage != null) 'pv_anlage': pvAnlage,
+      if (batAnlage != null) 'bat_anlage': batAnlage,
+      if (wbAnlage != null) 'wb_anlage': wbAnlage,
+      if (wpAnlage != null) 'wp_anlage': wpAnlage,
     });
   }
 
@@ -3621,6 +4744,32 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Value<double?>? maxFeedInKw,
     Value<bool>? hasMainEquipotential,
     Value<bool>? isBoltedMounting,
+    Value<int>? personen,
+    Value<int>? etagen,
+    Value<bool>? keller,
+    Value<int>? baeder,
+    Value<int>? kuechen,
+    Value<int>? fbhZonen,
+    Value<bool>? radiatoren,
+    Value<bool>? garten,
+    Value<double>? wpKw,
+    Value<int>? hwSchleifeM,
+    Value<double>? pvKwp,
+    Value<double>? wbKw,
+    Value<bool>? wbAussen,
+    Value<bool>? wbKomm,
+    Value<bool>? wbUeberschuss,
+    Value<bool>? bza,
+    Value<int>? wbLeitungM,
+    Value<double>? batKwh,
+    Value<int>? batUnits,
+    Value<double>? batDcA,
+    Value<double>? batAcKw,
+    Value<bool>? batAussen,
+    Value<bool>? pvAnlage,
+    Value<bool>? batAnlage,
+    Value<bool>? wbAnlage,
+    Value<bool>? wpAnlage,
   }) {
     return ProjectsCompanion(
       id: id ?? this.id,
@@ -3638,6 +4787,32 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       maxFeedInKw: maxFeedInKw ?? this.maxFeedInKw,
       hasMainEquipotential: hasMainEquipotential ?? this.hasMainEquipotential,
       isBoltedMounting: isBoltedMounting ?? this.isBoltedMounting,
+      personen: personen ?? this.personen,
+      etagen: etagen ?? this.etagen,
+      keller: keller ?? this.keller,
+      baeder: baeder ?? this.baeder,
+      kuechen: kuechen ?? this.kuechen,
+      fbhZonen: fbhZonen ?? this.fbhZonen,
+      radiatoren: radiatoren ?? this.radiatoren,
+      garten: garten ?? this.garten,
+      wpKw: wpKw ?? this.wpKw,
+      hwSchleifeM: hwSchleifeM ?? this.hwSchleifeM,
+      pvKwp: pvKwp ?? this.pvKwp,
+      wbKw: wbKw ?? this.wbKw,
+      wbAussen: wbAussen ?? this.wbAussen,
+      wbKomm: wbKomm ?? this.wbKomm,
+      wbUeberschuss: wbUeberschuss ?? this.wbUeberschuss,
+      bza: bza ?? this.bza,
+      wbLeitungM: wbLeitungM ?? this.wbLeitungM,
+      batKwh: batKwh ?? this.batKwh,
+      batUnits: batUnits ?? this.batUnits,
+      batDcA: batDcA ?? this.batDcA,
+      batAcKw: batAcKw ?? this.batAcKw,
+      batAussen: batAussen ?? this.batAussen,
+      pvAnlage: pvAnlage ?? this.pvAnlage,
+      batAnlage: batAnlage ?? this.batAnlage,
+      wbAnlage: wbAnlage ?? this.wbAnlage,
+      wpAnlage: wpAnlage ?? this.wpAnlage,
     );
   }
 
@@ -3691,6 +4866,84 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     if (isBoltedMounting.present) {
       map['is_bolted_mounting'] = Variable<bool>(isBoltedMounting.value);
     }
+    if (personen.present) {
+      map['personen'] = Variable<int>(personen.value);
+    }
+    if (etagen.present) {
+      map['etagen'] = Variable<int>(etagen.value);
+    }
+    if (keller.present) {
+      map['keller'] = Variable<bool>(keller.value);
+    }
+    if (baeder.present) {
+      map['baeder'] = Variable<int>(baeder.value);
+    }
+    if (kuechen.present) {
+      map['kuechen'] = Variable<int>(kuechen.value);
+    }
+    if (fbhZonen.present) {
+      map['fbh_zonen'] = Variable<int>(fbhZonen.value);
+    }
+    if (radiatoren.present) {
+      map['radiatoren'] = Variable<bool>(radiatoren.value);
+    }
+    if (garten.present) {
+      map['garten'] = Variable<bool>(garten.value);
+    }
+    if (wpKw.present) {
+      map['wp_kw'] = Variable<double>(wpKw.value);
+    }
+    if (hwSchleifeM.present) {
+      map['hw_schleife_m'] = Variable<int>(hwSchleifeM.value);
+    }
+    if (pvKwp.present) {
+      map['pv_kwp'] = Variable<double>(pvKwp.value);
+    }
+    if (wbKw.present) {
+      map['wb_kw'] = Variable<double>(wbKw.value);
+    }
+    if (wbAussen.present) {
+      map['wb_aussen'] = Variable<bool>(wbAussen.value);
+    }
+    if (wbKomm.present) {
+      map['wb_komm'] = Variable<bool>(wbKomm.value);
+    }
+    if (wbUeberschuss.present) {
+      map['wb_ueberschuss'] = Variable<bool>(wbUeberschuss.value);
+    }
+    if (bza.present) {
+      map['bza'] = Variable<bool>(bza.value);
+    }
+    if (wbLeitungM.present) {
+      map['wb_leitung_m'] = Variable<int>(wbLeitungM.value);
+    }
+    if (batKwh.present) {
+      map['bat_kwh'] = Variable<double>(batKwh.value);
+    }
+    if (batUnits.present) {
+      map['bat_units'] = Variable<int>(batUnits.value);
+    }
+    if (batDcA.present) {
+      map['bat_dc_a'] = Variable<double>(batDcA.value);
+    }
+    if (batAcKw.present) {
+      map['bat_ac_kw'] = Variable<double>(batAcKw.value);
+    }
+    if (batAussen.present) {
+      map['bat_aussen'] = Variable<bool>(batAussen.value);
+    }
+    if (pvAnlage.present) {
+      map['pv_anlage'] = Variable<bool>(pvAnlage.value);
+    }
+    if (batAnlage.present) {
+      map['bat_anlage'] = Variable<bool>(batAnlage.value);
+    }
+    if (wbAnlage.present) {
+      map['wb_anlage'] = Variable<bool>(wbAnlage.value);
+    }
+    if (wpAnlage.present) {
+      map['wp_anlage'] = Variable<bool>(wpAnlage.value);
+    }
     return map;
   }
 
@@ -3711,7 +4964,33 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
           ..write('gridPhases: $gridPhases, ')
           ..write('maxFeedInKw: $maxFeedInKw, ')
           ..write('hasMainEquipotential: $hasMainEquipotential, ')
-          ..write('isBoltedMounting: $isBoltedMounting')
+          ..write('isBoltedMounting: $isBoltedMounting, ')
+          ..write('personen: $personen, ')
+          ..write('etagen: $etagen, ')
+          ..write('keller: $keller, ')
+          ..write('baeder: $baeder, ')
+          ..write('kuechen: $kuechen, ')
+          ..write('fbhZonen: $fbhZonen, ')
+          ..write('radiatoren: $radiatoren, ')
+          ..write('garten: $garten, ')
+          ..write('wpKw: $wpKw, ')
+          ..write('hwSchleifeM: $hwSchleifeM, ')
+          ..write('pvKwp: $pvKwp, ')
+          ..write('wbKw: $wbKw, ')
+          ..write('wbAussen: $wbAussen, ')
+          ..write('wbKomm: $wbKomm, ')
+          ..write('wbUeberschuss: $wbUeberschuss, ')
+          ..write('bza: $bza, ')
+          ..write('wbLeitungM: $wbLeitungM, ')
+          ..write('batKwh: $batKwh, ')
+          ..write('batUnits: $batUnits, ')
+          ..write('batDcA: $batDcA, ')
+          ..write('batAcKw: $batAcKw, ')
+          ..write('batAussen: $batAussen, ')
+          ..write('pvAnlage: $pvAnlage, ')
+          ..write('batAnlage: $batAnlage, ')
+          ..write('wbAnlage: $wbAnlage, ')
+          ..write('wpAnlage: $wpAnlage')
           ..write(')'))
         .toString();
   }
@@ -9051,6 +10330,32 @@ typedef $$ProjectsTableCreateCompanionBuilder = ProjectsCompanion Function({
   Value<double?> maxFeedInKw,
   Value<bool> hasMainEquipotential,
   Value<bool> isBoltedMounting,
+  Value<int> personen,
+  Value<int> etagen,
+  Value<bool> keller,
+  Value<int> baeder,
+  Value<int> kuechen,
+  Value<int> fbhZonen,
+  Value<bool> radiatoren,
+  Value<bool> garten,
+  Value<double> wpKw,
+  Value<int> hwSchleifeM,
+  Value<double> pvKwp,
+  Value<double> wbKw,
+  Value<bool> wbAussen,
+  Value<bool> wbKomm,
+  Value<bool> wbUeberschuss,
+  Value<bool> bza,
+  Value<int> wbLeitungM,
+  Value<double> batKwh,
+  Value<int> batUnits,
+  Value<double> batDcA,
+  Value<double> batAcKw,
+  Value<bool> batAussen,
+  Value<bool> pvAnlage,
+  Value<bool> batAnlage,
+  Value<bool> wbAnlage,
+  Value<bool> wpAnlage,
 });
 typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
   Value<int> id,
@@ -9068,6 +10373,32 @@ typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
   Value<double?> maxFeedInKw,
   Value<bool> hasMainEquipotential,
   Value<bool> isBoltedMounting,
+  Value<int> personen,
+  Value<int> etagen,
+  Value<bool> keller,
+  Value<int> baeder,
+  Value<int> kuechen,
+  Value<int> fbhZonen,
+  Value<bool> radiatoren,
+  Value<bool> garten,
+  Value<double> wpKw,
+  Value<int> hwSchleifeM,
+  Value<double> pvKwp,
+  Value<double> wbKw,
+  Value<bool> wbAussen,
+  Value<bool> wbKomm,
+  Value<bool> wbUeberschuss,
+  Value<bool> bza,
+  Value<int> wbLeitungM,
+  Value<double> batKwh,
+  Value<int> batUnits,
+  Value<double> batDcA,
+  Value<double> batAcKw,
+  Value<bool> batAussen,
+  Value<bool> pvAnlage,
+  Value<bool> batAnlage,
+  Value<bool> wbAnlage,
+  Value<bool> wpAnlage,
 });
 
 class $$ProjectsTableFilterComposer
@@ -9151,6 +10482,136 @@ class $$ProjectsTableFilterComposer
 
   ColumnFilters<bool> get isBoltedMounting => $composableBuilder(
     column: $table.isBoltedMounting,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get personen => $composableBuilder(
+    column: $table.personen,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get etagen => $composableBuilder(
+    column: $table.etagen,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get keller => $composableBuilder(
+    column: $table.keller,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get baeder => $composableBuilder(
+    column: $table.baeder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get kuechen => $composableBuilder(
+    column: $table.kuechen,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get fbhZonen => $composableBuilder(
+    column: $table.fbhZonen,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get radiatoren => $composableBuilder(
+    column: $table.radiatoren,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get garten => $composableBuilder(
+    column: $table.garten,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get wpKw => $composableBuilder(
+    column: $table.wpKw,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get hwSchleifeM => $composableBuilder(
+    column: $table.hwSchleifeM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get pvKwp => $composableBuilder(
+    column: $table.pvKwp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get wbKw => $composableBuilder(
+    column: $table.wbKw,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wbAussen => $composableBuilder(
+    column: $table.wbAussen,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wbKomm => $composableBuilder(
+    column: $table.wbKomm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wbUeberschuss => $composableBuilder(
+    column: $table.wbUeberschuss,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get bza => $composableBuilder(
+    column: $table.bza,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get wbLeitungM => $composableBuilder(
+    column: $table.wbLeitungM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get batKwh => $composableBuilder(
+    column: $table.batKwh,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get batUnits => $composableBuilder(
+    column: $table.batUnits,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get batDcA => $composableBuilder(
+    column: $table.batDcA,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get batAcKw => $composableBuilder(
+    column: $table.batAcKw,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get batAussen => $composableBuilder(
+    column: $table.batAussen,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pvAnlage => $composableBuilder(
+    column: $table.pvAnlage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get batAnlage => $composableBuilder(
+    column: $table.batAnlage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wbAnlage => $composableBuilder(
+    column: $table.wbAnlage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wpAnlage => $composableBuilder(
+    column: $table.wpAnlage,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9238,6 +10699,136 @@ class $$ProjectsTableOrderingComposer
     column: $table.isBoltedMounting,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get personen => $composableBuilder(
+    column: $table.personen,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get etagen => $composableBuilder(
+    column: $table.etagen,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get keller => $composableBuilder(
+    column: $table.keller,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get baeder => $composableBuilder(
+    column: $table.baeder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get kuechen => $composableBuilder(
+    column: $table.kuechen,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get fbhZonen => $composableBuilder(
+    column: $table.fbhZonen,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get radiatoren => $composableBuilder(
+    column: $table.radiatoren,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get garten => $composableBuilder(
+    column: $table.garten,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get wpKw => $composableBuilder(
+    column: $table.wpKw,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get hwSchleifeM => $composableBuilder(
+    column: $table.hwSchleifeM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get pvKwp => $composableBuilder(
+    column: $table.pvKwp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get wbKw => $composableBuilder(
+    column: $table.wbKw,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wbAussen => $composableBuilder(
+    column: $table.wbAussen,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wbKomm => $composableBuilder(
+    column: $table.wbKomm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wbUeberschuss => $composableBuilder(
+    column: $table.wbUeberschuss,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get bza => $composableBuilder(
+    column: $table.bza,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get wbLeitungM => $composableBuilder(
+    column: $table.wbLeitungM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get batKwh => $composableBuilder(
+    column: $table.batKwh,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get batUnits => $composableBuilder(
+    column: $table.batUnits,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get batDcA => $composableBuilder(
+    column: $table.batDcA,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get batAcKw => $composableBuilder(
+    column: $table.batAcKw,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get batAussen => $composableBuilder(
+    column: $table.batAussen,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pvAnlage => $composableBuilder(
+    column: $table.pvAnlage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get batAnlage => $composableBuilder(
+    column: $table.batAnlage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wbAnlage => $composableBuilder(
+    column: $table.wbAnlage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wpAnlage => $composableBuilder(
+    column: $table.wpAnlage,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ProjectsTableAnnotationComposer
@@ -9309,6 +10900,92 @@ class $$ProjectsTableAnnotationComposer
     column: $table.isBoltedMounting,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get personen =>
+      $composableBuilder(column: $table.personen, builder: (column) => column);
+
+  GeneratedColumn<int> get etagen =>
+      $composableBuilder(column: $table.etagen, builder: (column) => column);
+
+  GeneratedColumn<bool> get keller =>
+      $composableBuilder(column: $table.keller, builder: (column) => column);
+
+  GeneratedColumn<int> get baeder =>
+      $composableBuilder(column: $table.baeder, builder: (column) => column);
+
+  GeneratedColumn<int> get kuechen =>
+      $composableBuilder(column: $table.kuechen, builder: (column) => column);
+
+  GeneratedColumn<int> get fbhZonen =>
+      $composableBuilder(column: $table.fbhZonen, builder: (column) => column);
+
+  GeneratedColumn<bool> get radiatoren => $composableBuilder(
+    column: $table.radiatoren,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get garten =>
+      $composableBuilder(column: $table.garten, builder: (column) => column);
+
+  GeneratedColumn<double> get wpKw =>
+      $composableBuilder(column: $table.wpKw, builder: (column) => column);
+
+  GeneratedColumn<int> get hwSchleifeM => $composableBuilder(
+    column: $table.hwSchleifeM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get pvKwp =>
+      $composableBuilder(column: $table.pvKwp, builder: (column) => column);
+
+  GeneratedColumn<double> get wbKw =>
+      $composableBuilder(column: $table.wbKw, builder: (column) => column);
+
+  GeneratedColumn<bool> get wbAussen =>
+      $composableBuilder(column: $table.wbAussen, builder: (column) => column);
+
+  GeneratedColumn<bool> get wbKomm =>
+      $composableBuilder(column: $table.wbKomm, builder: (column) => column);
+
+  GeneratedColumn<bool> get wbUeberschuss => $composableBuilder(
+    column: $table.wbUeberschuss,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get bza =>
+      $composableBuilder(column: $table.bza, builder: (column) => column);
+
+  GeneratedColumn<int> get wbLeitungM => $composableBuilder(
+    column: $table.wbLeitungM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get batKwh =>
+      $composableBuilder(column: $table.batKwh, builder: (column) => column);
+
+  GeneratedColumn<int> get batUnits =>
+      $composableBuilder(column: $table.batUnits, builder: (column) => column);
+
+  GeneratedColumn<double> get batDcA =>
+      $composableBuilder(column: $table.batDcA, builder: (column) => column);
+
+  GeneratedColumn<double> get batAcKw =>
+      $composableBuilder(column: $table.batAcKw, builder: (column) => column);
+
+  GeneratedColumn<bool> get batAussen =>
+      $composableBuilder(column: $table.batAussen, builder: (column) => column);
+
+  GeneratedColumn<bool> get pvAnlage =>
+      $composableBuilder(column: $table.pvAnlage, builder: (column) => column);
+
+  GeneratedColumn<bool> get batAnlage =>
+      $composableBuilder(column: $table.batAnlage, builder: (column) => column);
+
+  GeneratedColumn<bool> get wbAnlage =>
+      $composableBuilder(column: $table.wbAnlage, builder: (column) => column);
+
+  GeneratedColumn<bool> get wpAnlage =>
+      $composableBuilder(column: $table.wpAnlage, builder: (column) => column);
 }
 
 class $$ProjectsTableTableManager
@@ -9354,6 +11031,32 @@ class $$ProjectsTableTableManager
                 Value<double?> maxFeedInKw = const Value.absent(),
                 Value<bool> hasMainEquipotential = const Value.absent(),
                 Value<bool> isBoltedMounting = const Value.absent(),
+                Value<int> personen = const Value.absent(),
+                Value<int> etagen = const Value.absent(),
+                Value<bool> keller = const Value.absent(),
+                Value<int> baeder = const Value.absent(),
+                Value<int> kuechen = const Value.absent(),
+                Value<int> fbhZonen = const Value.absent(),
+                Value<bool> radiatoren = const Value.absent(),
+                Value<bool> garten = const Value.absent(),
+                Value<double> wpKw = const Value.absent(),
+                Value<int> hwSchleifeM = const Value.absent(),
+                Value<double> pvKwp = const Value.absent(),
+                Value<double> wbKw = const Value.absent(),
+                Value<bool> wbAussen = const Value.absent(),
+                Value<bool> wbKomm = const Value.absent(),
+                Value<bool> wbUeberschuss = const Value.absent(),
+                Value<bool> bza = const Value.absent(),
+                Value<int> wbLeitungM = const Value.absent(),
+                Value<double> batKwh = const Value.absent(),
+                Value<int> batUnits = const Value.absent(),
+                Value<double> batDcA = const Value.absent(),
+                Value<double> batAcKw = const Value.absent(),
+                Value<bool> batAussen = const Value.absent(),
+                Value<bool> pvAnlage = const Value.absent(),
+                Value<bool> batAnlage = const Value.absent(),
+                Value<bool> wbAnlage = const Value.absent(),
+                Value<bool> wpAnlage = const Value.absent(),
               }) => ProjectsCompanion(
                 id: id,
                 name: name,
@@ -9370,6 +11073,32 @@ class $$ProjectsTableTableManager
                 maxFeedInKw: maxFeedInKw,
                 hasMainEquipotential: hasMainEquipotential,
                 isBoltedMounting: isBoltedMounting,
+                personen: personen,
+                etagen: etagen,
+                keller: keller,
+                baeder: baeder,
+                kuechen: kuechen,
+                fbhZonen: fbhZonen,
+                radiatoren: radiatoren,
+                garten: garten,
+                wpKw: wpKw,
+                hwSchleifeM: hwSchleifeM,
+                pvKwp: pvKwp,
+                wbKw: wbKw,
+                wbAussen: wbAussen,
+                wbKomm: wbKomm,
+                wbUeberschuss: wbUeberschuss,
+                bza: bza,
+                wbLeitungM: wbLeitungM,
+                batKwh: batKwh,
+                batUnits: batUnits,
+                batDcA: batDcA,
+                batAcKw: batAcKw,
+                batAussen: batAussen,
+                pvAnlage: pvAnlage,
+                batAnlage: batAnlage,
+                wbAnlage: wbAnlage,
+                wpAnlage: wpAnlage,
               ),
           createCompanionCallback:
               ({
@@ -9388,6 +11117,32 @@ class $$ProjectsTableTableManager
                 Value<double?> maxFeedInKw = const Value.absent(),
                 Value<bool> hasMainEquipotential = const Value.absent(),
                 Value<bool> isBoltedMounting = const Value.absent(),
+                Value<int> personen = const Value.absent(),
+                Value<int> etagen = const Value.absent(),
+                Value<bool> keller = const Value.absent(),
+                Value<int> baeder = const Value.absent(),
+                Value<int> kuechen = const Value.absent(),
+                Value<int> fbhZonen = const Value.absent(),
+                Value<bool> radiatoren = const Value.absent(),
+                Value<bool> garten = const Value.absent(),
+                Value<double> wpKw = const Value.absent(),
+                Value<int> hwSchleifeM = const Value.absent(),
+                Value<double> pvKwp = const Value.absent(),
+                Value<double> wbKw = const Value.absent(),
+                Value<bool> wbAussen = const Value.absent(),
+                Value<bool> wbKomm = const Value.absent(),
+                Value<bool> wbUeberschuss = const Value.absent(),
+                Value<bool> bza = const Value.absent(),
+                Value<int> wbLeitungM = const Value.absent(),
+                Value<double> batKwh = const Value.absent(),
+                Value<int> batUnits = const Value.absent(),
+                Value<double> batDcA = const Value.absent(),
+                Value<double> batAcKw = const Value.absent(),
+                Value<bool> batAussen = const Value.absent(),
+                Value<bool> pvAnlage = const Value.absent(),
+                Value<bool> batAnlage = const Value.absent(),
+                Value<bool> wbAnlage = const Value.absent(),
+                Value<bool> wpAnlage = const Value.absent(),
               }) => ProjectsCompanion.insert(
                 id: id,
                 name: name,
@@ -9404,6 +11159,32 @@ class $$ProjectsTableTableManager
                 maxFeedInKw: maxFeedInKw,
                 hasMainEquipotential: hasMainEquipotential,
                 isBoltedMounting: isBoltedMounting,
+                personen: personen,
+                etagen: etagen,
+                keller: keller,
+                baeder: baeder,
+                kuechen: kuechen,
+                fbhZonen: fbhZonen,
+                radiatoren: radiatoren,
+                garten: garten,
+                wpKw: wpKw,
+                hwSchleifeM: hwSchleifeM,
+                pvKwp: pvKwp,
+                wbKw: wbKw,
+                wbAussen: wbAussen,
+                wbKomm: wbKomm,
+                wbUeberschuss: wbUeberschuss,
+                bza: bza,
+                wbLeitungM: wbLeitungM,
+                batKwh: batKwh,
+                batUnits: batUnits,
+                batDcA: batDcA,
+                batAcKw: batAcKw,
+                batAussen: batAussen,
+                pvAnlage: pvAnlage,
+                batAnlage: batAnlage,
+                wbAnlage: wbAnlage,
+                wpAnlage: wpAnlage,
               ),
           withReferenceMapper: (p0) => p0
               .map(

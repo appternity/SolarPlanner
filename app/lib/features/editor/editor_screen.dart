@@ -6,6 +6,8 @@ import '../../core/efficiency_table.dart';
 import 'roof_canvas.dart';
 import 'roof_dialogs.dart' show confirmDeleteRoof, showAddRoofDialog, showEditRoofDialog;
 import 'efficiency_dialog.dart';
+import 'project_properties_dialog.dart'
+    show ProjectPropertiesResult, showProjectPropertiesDialog;
 
 
 /// Full-screen project editor: roof canvas + control panel.
@@ -188,6 +190,10 @@ class _ControlPanel extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
+        // Project identity & properties
+        _ProjectSection(controller: c, readOnly: readOnly),
+        const Divider(),
+
         // Mode
         const _SectionTitle('Modus'),
         Wrap(
@@ -455,6 +461,58 @@ class _ControlPanel extends StatelessWidget {
             icon: const Icon(Icons.delete_outline),
             onPressed: onDelete,
           ),
+      ],
+    );
+  }
+}
+
+/// Project identity (name/address/coordinates) with a button to open the
+/// full properties dialog. In read-only mode only name and address are shown.
+class _ProjectSection extends StatelessWidget {
+  final EditorController controller;
+  final bool readOnly;
+
+  const _ProjectSection({required this.controller, required this.readOnly});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = controller.project;
+    if (p == null) return const SizedBox.shrink();
+    final coord = '${p.latitude.toStringAsFixed(4)}, ${p.longitude.toStringAsFixed(4)}';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('Projekt'),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  if (p.address.isNotEmpty) Text(p.address, style: const TextStyle(fontSize: 12)),
+                  Text(coord, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                ],
+              ),
+            ),
+            if (!readOnly)
+              IconButton(
+                key: const ValueKey('project-edit-button'),
+                icon: const Icon(Icons.edit, size: 20),
+                tooltip: 'Projekt-Eigenschaften bearbeiten',
+                onPressed: () async {
+                  final result = await showProjectPropertiesDialog(context, p);
+                  if (result != null) {
+                    // The result carries every field explicitly, so it is safe
+                    // to apply even though `p` (the dialog's prefill source)
+                    // is the in-memory row. The write triggers a repaint.
+                    await ProjectPropertiesResult.apply(controller, result);
+                  }
+                },
+              ),
+          ],
+        ),
       ],
     );
   }

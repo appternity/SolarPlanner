@@ -137,6 +137,88 @@ class Projects extends Table {
   /// mounting makes the natural protective conductor questionable → a
   /// dedicated PE conductor is recommended.
   BoolColumn get isBoltedMounting => boolean().withDefault(const Constant(true))();
+
+  // ------------------------------------------------------------------
+  // Haushaltsparameter (Eingabewerte) — komponenten.md §1
+  // ------------------------------------------------------------------
+
+  /// Number of household members.
+  IntColumn get personen => integer().withDefault(const Constant(4))();
+
+  /// Number of floors (Etagen).
+  IntColumn get etagen => integer().withDefault(const Constant(2))();
+
+  /// Whether the building has a basement (Keller).
+  BoolColumn get keller => boolean().withDefault(const Constant(true))();
+
+  /// Number of bathrooms.
+  IntColumn get baeder => integer().withDefault(const Constant(2))();
+
+  /// Number of kitchens.
+  IntColumn get kuechen => integer().withDefault(const Constant(1))();
+
+  /// Number of underfloor-heating zones (WP system).
+  IntColumn get fbhZonen => integer().withDefault(const Constant(4))();
+
+  /// Whether radiators are present (WP system).
+  BoolColumn get radiatoren => boolean().withDefault(const Constant(false))();
+
+  /// Whether there is a garden (WP system, affects heat-rejection sizing).
+  BoolColumn get garten => boolean().withDefault(const Constant(true))();
+
+  /// Heat-pump rated output in kW (WP system).
+  RealColumn get wpKw => real().withDefault(const Constant(10.25))();
+
+  /// Length of the district-heating / heat-source loop in metres.
+  IntColumn get hwSchleifeM => integer().withDefault(const Constant(28))();
+
+  /// PV plant size in kWp.
+  RealColumn get pvKwp => real().withDefault(const Constant(10))();
+
+  /// Wallbox rated output in kW.
+  RealColumn get wbKw => real().withDefault(const Constant(11))();
+
+  /// Wallbox installed outdoors?
+  BoolColumn get wbAussen => boolean().withDefault(const Constant(true))();
+
+  /// Wallbox has communication (LAN/WLAN/OCPP)?
+  BoolColumn get wbKomm => boolean().withDefault(const Constant(true))();
+
+  /// Wallbox uses PV surplus charging?
+  BoolColumn get wbUeberschuss => boolean().withDefault(const Constant(false))();
+
+  /// Backup power (BZA) required?
+  BoolColumn get bza => boolean().withDefault(const Constant(false))();
+
+  /// Wallbox cable run length in metres.
+  IntColumn get wbLeitungM => integer().withDefault(const Constant(30))();
+
+  /// Battery storage capacity in kWh.
+  RealColumn get batKwh => real().withDefault(const Constant(10))();
+
+  /// Number of battery storage units.
+  IntColumn get batUnits => integer().withDefault(const Constant(2))();
+
+  /// Battery DC fuse rating in amperes.
+  RealColumn get batDcA => real().withDefault(const Constant(45))();
+
+  /// Battery AC inverter output in kW.
+  RealColumn get batAcKw => real().withDefault(const Constant(6.4))();
+
+  /// Battery storage installed outdoors?
+  BoolColumn get batAussen => boolean().withDefault(const Constant(true))();
+
+  /// PV plant is planned for this project?
+  BoolColumn get pvAnlage => boolean().withDefault(const Constant(false))();
+
+  /// Battery storage is planned for this project?
+  BoolColumn get batAnlage => boolean().withDefault(const Constant(false))();
+
+  /// Wallbox is planned for this project?
+  BoolColumn get wbAnlage => boolean().withDefault(const Constant(false))();
+
+  /// Heat pump is planned for this project?
+  BoolColumn get wpAnlage => boolean().withDefault(const Constant(false))();
 }
 
 /// Roof type: flat roof or one slope of a gabled (pitched) roof.

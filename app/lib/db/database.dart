@@ -47,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -221,6 +221,63 @@ class AppDatabase extends _$AppDatabase {
             await _addColumnIfMissing('inverters', 'q_kvar', 'REAL');
             await _addColumnIfMissing('wallboxes', 'breaker_a', 'REAL');
             await _addColumnIfMissing('wallboxes', 'rcd_rated_a', 'REAL');
+          }
+
+          if (from < 9) {
+            // v8 -> v9: Haushaltsparameter (Eingabewerte) from
+            // komponenten.md §1 — building/household input values.
+            await _addColumnIfMissing('projects', 'personen',
+                "INTEGER NOT NULL DEFAULT 4");
+            await _addColumnIfMissing('projects', 'etagen',
+                "INTEGER NOT NULL DEFAULT 2");
+            await _addColumnIfMissing('projects', 'keller',
+                "INTEGER NOT NULL DEFAULT 1");
+            await _addColumnIfMissing('projects', 'baeder',
+                "INTEGER NOT NULL DEFAULT 2");
+            await _addColumnIfMissing('projects', 'kuechen',
+                "INTEGER NOT NULL DEFAULT 1");
+            await _addColumnIfMissing('projects', 'fbh_zonen',
+                "INTEGER NOT NULL DEFAULT 4");
+            await _addColumnIfMissing('projects', 'radiatoren',
+                "INTEGER NOT NULL DEFAULT 0");
+            await _addColumnIfMissing('projects', 'garten',
+                "INTEGER NOT NULL DEFAULT 1");
+            await _addColumnIfMissing('projects', 'wp_kw',
+                "REAL NOT NULL DEFAULT 10.25");
+            await _addColumnIfMissing('projects', 'hw_schleife_m',
+                "INTEGER NOT NULL DEFAULT 28");
+            await _addColumnIfMissing('projects', 'pv_kwp',
+                "REAL NOT NULL DEFAULT 10");
+            await _addColumnIfMissing('projects', 'wb_kw',
+                "REAL NOT NULL DEFAULT 11");
+            await _addColumnIfMissing('projects', 'wb_aussen',
+                "INTEGER NOT NULL DEFAULT 1");
+            await _addColumnIfMissing('projects', 'wb_komm',
+                "INTEGER NOT NULL DEFAULT 1");
+            await _addColumnIfMissing('projects', 'wb_ueberschuss',
+                "INTEGER NOT NULL DEFAULT 0");
+            await _addColumnIfMissing('projects', 'bza',
+                "INTEGER NOT NULL DEFAULT 0");
+            await _addColumnIfMissing('projects', 'wb_leitung_m',
+                "INTEGER NOT NULL DEFAULT 30");
+            await _addColumnIfMissing('projects', 'bat_kwh',
+                "REAL NOT NULL DEFAULT 10");
+            await _addColumnIfMissing('projects', 'bat_units',
+                "INTEGER NOT NULL DEFAULT 2");
+            await _addColumnIfMissing('projects', 'bat_dc_a',
+                "REAL NOT NULL DEFAULT 45");
+            await _addColumnIfMissing('projects', 'bat_ac_kw',
+                "REAL NOT NULL DEFAULT 6.4");
+            await _addColumnIfMissing('projects', 'bat_aussen',
+                "INTEGER NOT NULL DEFAULT 1");
+            await _addColumnIfMissing('projects', 'pv_anlage',
+                "INTEGER NOT NULL DEFAULT 0");
+            await _addColumnIfMissing('projects', 'bat_anlage',
+                "INTEGER NOT NULL DEFAULT 0");
+            await _addColumnIfMissing('projects', 'wb_anlage',
+                "INTEGER NOT NULL DEFAULT 0");
+            await _addColumnIfMissing('projects', 'wp_anlage',
+                "INTEGER NOT NULL DEFAULT 0");
           }
         },
         beforeOpen: (details) async {

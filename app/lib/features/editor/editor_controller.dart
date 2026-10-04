@@ -239,6 +239,102 @@ class EditorController extends ChangeNotifier {
     ));
   }
 
+  /// Persists project properties (identity, site coordinates and the
+  /// household/planning parameters) in a single batched write.
+  ///
+  /// All arguments are optional: null keeps the current value. The feed-in
+  /// limit is treated like [updateSiteConditions] — an explicit null via the
+  /// dialog's empty field clears it, a non-null value stores it.
+  Future<void> updateProjectProperties({
+    String? name,
+    String? address,
+    double? latitude,
+    double? longitude,
+    int? gridPhases,
+    Value<double?> maxFeedInKw = const Value.absent(),
+    bool? hasMainEquipotential,
+    bool? isBoltedMounting,
+    int? personen,
+    int? etagen,
+    bool? keller,
+    int? baeder,
+    int? kuechen,
+    bool? pvAnlage,
+    double? pvKwp,
+    bool? batAnlage,
+    double? batKwh,
+    int? batUnits,
+    double? batDcA,
+    double? batAcKw,
+    bool? batAussen,
+    bool? wbAnlage,
+    double? wbKw,
+    bool? wbAussen,
+    bool? wbKomm,
+    bool? wbUeberschuss,
+    bool? bza,
+    int? wbLeitungM,
+    bool? wpAnlage,
+    double? wpKw,
+    int? fbhZonen,
+    bool? radiatoren,
+    bool? garten,
+    int? hwSchleifeM,
+  }) async {
+    if (!_canEdit) return;
+    final p = project;
+    if (p == null) return;
+
+    // Keep the in-memory model and the database consistent via one companion.
+    final c = ProjectsCompanion(
+      name: Value(name ?? p.name),
+      address: Value(address ?? p.address),
+      latitude: Value(latitude ?? p.latitude),
+      longitude: Value(longitude ?? p.longitude),
+      updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+      activeModuleTypeId: Value(activeModuleTypeId),
+      activeInverterId: Value(activeInverterId),
+      tAmbientMinC: Value(p.tAmbientMinC),
+      tAmbientMaxC: Value(p.tAmbientMaxC),
+      gridPhases: Value(gridPhases ?? p.gridPhases),
+      maxFeedInKw: maxFeedInKw.present
+          ? maxFeedInKw
+          : Value(p.maxFeedInKw),
+      hasMainEquipotential: Value(hasMainEquipotential ?? p.hasMainEquipotential),
+      isBoltedMounting: Value(isBoltedMounting ?? p.isBoltedMounting),
+      personen: Value(personen ?? p.personen),
+      etagen: Value(etagen ?? p.etagen),
+      keller: Value(keller ?? p.keller),
+      baeder: Value(baeder ?? p.baeder),
+      kuechen: Value(kuechen ?? p.kuechen),
+      pvAnlage: Value(pvAnlage ?? p.pvAnlage),
+      pvKwp: Value(pvKwp ?? p.pvKwp),
+      batAnlage: Value(batAnlage ?? p.batAnlage),
+      batKwh: Value(batKwh ?? p.batKwh),
+      batUnits: Value(batUnits ?? p.batUnits),
+      batDcA: Value(batDcA ?? p.batDcA),
+      batAcKw: Value(batAcKw ?? p.batAcKw),
+      batAussen: Value(batAussen ?? p.batAussen),
+      wbAnlage: Value(wbAnlage ?? p.wbAnlage),
+      wbKw: Value(wbKw ?? p.wbKw),
+      wbAussen: Value(wbAussen ?? p.wbAussen),
+      wbKomm: Value(wbKomm ?? p.wbKomm),
+      wbUeberschuss: Value(wbUeberschuss ?? p.wbUeberschuss),
+      bza: Value(bza ?? p.bza),
+      wbLeitungM: Value(wbLeitungM ?? p.wbLeitungM),
+      wpAnlage: Value(wpAnlage ?? p.wpAnlage),
+      wpKw: Value(wpKw ?? p.wpKw),
+      fbhZonen: Value(fbhZonen ?? p.fbhZonen),
+      radiatoren: Value(radiatoren ?? p.radiatoren),
+      garten: Value(garten ?? p.garten),
+      hwSchleifeM: Value(hwSchleifeM ?? p.hwSchleifeM),
+    );
+    project = p.copyWithCompanion(c);
+    await (db.update(db.projects)..where((t) => t.id.equals(projectId)))
+        .write(c);
+    _changed();
+  }
+
   /// Persists the site-condition fields used by the VDE checks (grid phases,
   /// feed-in limit, equipotential / mounting flags). T_min/T_max are fixed
   /// planning constants (−25 °C / 40 °C) and are not user-editable.
