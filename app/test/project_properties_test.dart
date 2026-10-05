@@ -48,8 +48,6 @@ void main() {
         personen: 3,
         etagen: 3,
         keller: false,
-        pvAnlage: true,
-        pvKwp: 12.5,
       );
 
       final p = await projectRow();
@@ -61,12 +59,9 @@ void main() {
       expect(p.personen, 3);
       expect(p.etagen, 3);
       expect(p.keller, isFalse);
-      expect(p.pvAnlage, isTrue);
-      expect(p.pvKwp, 12.5);
       // Untouched fields keep their previous values:
       expect(p.gridPhases, 3);
       expect(p.baeder, 2);
-      expect(p.wbAnlage, isFalse);
     });
 
     test('clears the feed-in limit with an explicit null', () async {
@@ -157,19 +152,6 @@ void main() {
       await scrollTo(tester, personen);
       await tester.enterText(personen, '6');
 
-      // Enable the PV plant (reveals the kWp field), then save.
-      await scrollTo(tester, find.text('PV-Anlage geplant'));
-      // The PV switch is the first one *after* the Keller/Haushalt switches.
-      final pvSwitch = find.ancestor(
-        of: find.text('PV-Anlage geplant'),
-        matching: find.byType(SwitchListTile),
-      ).last;
-      await tester.tap(pvSwitch);
-      await tester.pumpAndSettle();
-      final kwp = find.widgetWithText(TextField, 'PV-Größe (kWp)');
-      await scrollTo(tester, kwp);
-      await tester.enterText(kwp, '15.0');
-
       // Unfocus so the dialog actions are tappable (tall-dialog gotcha).
       await tester.tap(find.byType(Scaffold), warnIfMissed: false);
       await tester.pumpAndSettle();
@@ -182,12 +164,9 @@ void main() {
       final p = await projectRow();
       expect(p.name, 'Umbenannt');
       expect(p.personen, 6);
-      expect(p.pvAnlage, isTrue);
-      expect(p.pvKwp, 15.0);
 
       // Untouched defaults survive the round-trip.
       expect(p.gridPhases, 3);
-      expect(p.batAnlage, isFalse);
     });
 
     testWidgets('cancelling keeps the project unchanged', (tester) async {

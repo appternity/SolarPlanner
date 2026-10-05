@@ -60,6 +60,10 @@ void main() {
     // Let the controller's initial load() finish.
     await tester.pumpAndSettle();
 
+    // Switch to the PV tab (index 1) so the control panel is visible.
+    await tester.tap(find.widgetWithText(InkWell, 'PV'));
+    await tester.pumpAndSettle();
+
     // The icon is present on the roof row.
     final icon = find.byTooltip('Ertragstabelle (Ausrichtung & Neigung)');
     expect(icon, findsOneWidget);
@@ -78,6 +82,10 @@ void main() {
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(wrap(db));
+    await tester.pumpAndSettle();
+
+    // Switch to the PV tab (index 1) so the control panel is visible.
+    await tester.tap(find.widgetWithText(InkWell, 'PV'));
     await tester.pumpAndSettle();
 
     // The selected bar uses primaryColor at 60% alpha (see _roofSelectionRow).

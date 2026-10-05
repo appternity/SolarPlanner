@@ -54,6 +54,10 @@ void main() {
     await tester.pumpWidget(wrap(db));
     await tester.pumpAndSettle();
 
+    // Switch to the PV tab (index 1) so the canvas + control panel are visible.
+    await tester.tap(find.widgetWithText(InkWell, 'PV'));
+    await tester.pumpAndSettle();
+
     expect(find.byKey(handleKey), findsOneWidget);
 
     // Hovering the handle shows the resize cursor (MouseRegion reverts to
@@ -83,6 +87,10 @@ void main() {
     await tester.pumpWidget(wrap(db));
     await tester.pumpAndSettle();
 
+    // Switch to the PV tab (index 1) so the canvas + control panel are visible.
+    await tester.tap(find.widgetWithText(InkWell, 'PV'));
+    await tester.pumpAndSettle();
+
     // Widen first, then drag far right — must stop at the 340 minimum.
     await tester.drag(find.byKey(handleKey), const Offset(-200, 0));
     await tester.pumpAndSettle();
@@ -103,12 +111,17 @@ void main() {
     await tester.pumpWidget(wrap(db));
     await tester.pumpAndSettle();
 
+    // Switch to the PV tab (index 1) so the canvas + control panel are visible.
+    await tester.tap(find.widgetWithText(InkWell, 'PV'));
+    await tester.pumpAndSettle();
+
     // Drag far left: the panel may only grow to window - handle - canvas min.
     await tester.drag(find.byKey(handleKey), const Offset(-2000, 0));
     await tester.pumpAndSettle();
 
     // No RenderFlex overflow exception may have been reported.
     expect(tester.takeException(), isNull);
-    expect(panelWidth(tester), 1400.0 - 8.0 - 200.0);
+    // The left system-tab rail (264 px) also takes space from the Row.
+    expect(panelWidth(tester), 1400.0 - 264.0 - 8.0 - 200.0);
   });
 }

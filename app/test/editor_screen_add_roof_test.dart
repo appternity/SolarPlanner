@@ -43,6 +43,10 @@ void main() {
     // Let the controller's initial load() finish.
     await tester.pumpAndSettle();
 
+    // Switch to the PV tab (index 1) so the control panel is visible.
+    await tester.tap(find.widgetWithText(InkWell, 'PV'));
+    await tester.pumpAndSettle();
+
     // No roof yet.
     expect(db.roofsOf(1), completion(isEmpty));
 
@@ -95,6 +99,10 @@ void main() {
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(wrap(db));
+    await tester.pumpAndSettle();
+
+    // Switch to the PV tab (index 1) so the control panel is visible.
+    await tester.tap(find.widgetWithText(InkWell, 'PV'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Dach hinzufügen'));

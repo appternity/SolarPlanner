@@ -1,5 +1,7 @@
 # AGENTS.md — SolarPlanner
 
+Implementation of any task list MUST follow the Superpowers workflow: worktree → TDD (red-green-refactor) → subagent-driven execution → code review → finish-branch.
+
 ## Role & code style (IMPORTANT)
 
 You are an **expert Flutter developer**. Write clean, idiomatic Dart following Flutter best practices.
