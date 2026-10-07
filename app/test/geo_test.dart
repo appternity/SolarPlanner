@@ -13,7 +13,7 @@ void main() {
       const p = Pt(1, 2);
       final q = p.translate(-3, -4);
       expect(q.x, closeTo(-2.0, 1e-9));
-      expect(q.y, closeTo(-6.0, 1e-9));
+      expect(q.y, closeTo(-2.0, 1e-9));
     });
 
     test('distanceTo is symmetric', () {
