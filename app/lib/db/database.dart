@@ -7,6 +7,7 @@ import 'package:drift/native.dart';
 import 'package:sqlite3/sqlite3.dart' show OpenMode, sqlite3;
 
 import 'electrical.dart' show mcbRatingForInverter;
+import 'seed.dart' as seed show seedIfEmpty;
 import 'tables.dart';
 
 part 'database.g.dart';
@@ -28,6 +29,37 @@ part 'database.g.dart';
   StringModules,
   Scenarios,
   ScenarioResults,
+  HeatPumps,
+  HeatLoops,
+  // Heat pump components inventory (27 tables + shared status).
+  InventoryItems,
+  ComponentStatusTable,
+  Boiler,
+  HwVerteiler,
+  Zirkulationspumpe,
+  Rueckflussverhinderer,
+  Schmutzfanger,
+  Durchflusswaechter,
+  Pufferspeicher,
+  Plattenwaermetauscher,
+  SafetyValve,
+  Membranausdehnungsgefaess,
+  Entluftungsventil,
+  Heizkreispumpe,
+  Absperrventil,
+  FbhVerteiler,
+  FbhSchleife,
+  Mischbatterie,
+  RfvGartenanschluss,
+  FuellwasserZuleitung,
+  KaltwasserVerbraucher,
+  LsSchalter,
+  FiSchutzschalter,
+  ZuleitungStarkstrom,
+  Trennschalter,
+  Klemmenleiste,
+  PeAnschluss,
+  HpaAnschluss,
 ])
 class AppDatabase extends _$AppDatabase {
   /// Whether this connection is a read-only snapshot (reader mode).
@@ -47,7 +79,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -278,9 +310,82 @@ class AppDatabase extends _$AppDatabase {
                 "INTEGER NOT NULL DEFAULT 0");
             await _addColumnIfMissing('projects', 'wp_anlage',
                 "INTEGER NOT NULL DEFAULT 0");
+            await _addColumnIfMissing('projects', 'active_heat_pump_id',
+                'INTEGER');
+          }
+
+          if (from < 13) {
+            // v10 -> v12: Add heat_pumps and heat_loops tables with correct column names.
+            // When upgrading from v11 that already has heat_pumps with old column names
+            // (a7w35 instead of a7_w35, weightKg instead of weight_kg, etc.),
+            // detect and rename columns by recreating the table and preserving data.
+            // Check whether heat_pumps table exists and has old column names.
+            try {
+              final pragma = await customSelect(
+                  'PRAGMA table_info(heat_pumps)',
+              ).get();
+              final colNames = pragma.map((r) => r.data['name'] as String).toList();
+              final hasOldCols = colNames.any((c) =>
+                  c.contains('a7w35') ||
+                  c.contains('a2w35') ||
+                  c == 'weightKg' ||
+                  c.contains('_35C55C'));
+              if (hasOldCols) {
+                // Migrate old data: copy old columns to new ones.
+                await customStatement(
+                    'CREATE TABLE heat_pumps_migrate AS SELECT id, display_name, manufacturer, series_name, model_number, heating_capacity_kw_a7w35 AS c_a7, electrical_consumption_kw_a7w35 AS e_a7, cop_ratio_a7w35 AS cop_a7, heating_capacity_kw_a2w35 AS c_a2, electrical_consumption_kw_a2w35 AS e_a2, cop_ratio_a2w35 AS cop_a2, heating_capacity_kw_partial_load, electrical_consumption_kw_partial_load, cop_ratio_partial_load, cooling_capacity_kw, electrical_consumption_kw_cooling, eer_ratio, annual_heating_efficiency_percent, compressor_voltage_nominal_volts, compressor_frequency_hz, sound_level_erp_db_a, max_sound_level_day_night_db_a, dimensions_unpacked_width_mm, dimensions_unpacked_depth_mm, dimensions_unpacked_height_mm, weightKg AS w_kg, refrigerant_type, gwp_eu_regulation_value, refrigerant_quantity_kg_co2_equivalent, co2_equivalent_per_ton, energy_efficiency_class_35C55C AS e_class FROM heat_pumps');
+                await customStatement('DROP TABLE heat_pumps');
+                await customStatement(
+                    'CREATE TABLE heat_pumps (id INTEGER PRIMARY KEY AUTOINCREMENT, display_name TEXT NOT NULL, manufacturer TEXT NOT NULL, series_name TEXT NOT NULL, model_number TEXT NOT NULL, heating_capacity_kw_a7_w35 REAL NOT NULL, electrical_consumption_kw_a7_w35 REAL NOT NULL, cop_ratio_a7_w35 REAL NOT NULL, heating_capacity_kw_a2_w35 REAL NOT NULL, electrical_consumption_kw_a2_w35 REAL NOT NULL, cop_ratio_a2_w35 REAL NOT NULL, heating_capacity_kw_partial_load REAL NOT NULL, electrical_consumption_kw_partial_load REAL NOT NULL, cop_ratio_partial_load REAL NOT NULL, cooling_capacity_kw REAL, electrical_consumption_kw_cooling REAL, eer_ratio REAL, annual_heating_efficiency_percent TEXT NOT NULL, compressor_voltage_nominal_volts INTEGER NOT NULL, compressor_frequency_hz INTEGER NOT NULL, sound_level_erp_db_a REAL NOT NULL, max_sound_level_day_night_db_a TEXT NOT NULL, dimensions_unpacked_width_mm INTEGER NOT NULL, dimensions_unpacked_depth_mm INTEGER NOT NULL, dimensions_unpacked_height_mm INTEGER NOT NULL, weight_kg REAL NOT NULL, refrigerant_type TEXT NOT NULL, gwp_eu_regulation_value REAL NOT NULL, refrigerant_quantity_kg_co2_equivalent REAL NOT NULL, co2_equivalent_per_ton REAL NOT NULL, energy_efficiency_class35_c55_c TEXT NOT NULL)');
+                await customStatement(
+                    'INSERT INTO heat_pumps (id, display_name, manufacturer, series_name, model_number, heating_capacity_kw_a7_w35, electrical_consumption_kw_a7_w35, cop_ratio_a7_w35, heating_capacity_kw_a2_w35, electrical_consumption_kw_a2_w35, cop_ratio_a2_w35, heating_capacity_kw_partial_load, electrical_consumption_kw_partial_load, cop_ratio_partial_load, cooling_capacity_kw, electrical_consumption_kw_cooling, eer_ratio, annual_heating_efficiency_percent, compressor_voltage_nominal_volts, compressor_frequency_hz, sound_level_erp_db_a, max_sound_level_day_night_db_a, dimensions_unpacked_width_mm, dimensions_unpacked_depth_mm, dimensions_unpacked_height_mm, weight_kg, refrigerant_type, gwp_eu_regulation_value, refrigerant_quantity_kg_co2_equivalent, co2_equivalent_per_ton, energy_efficiency_class35_c55_c) SELECT id, display_name, manufacturer, series_name, model_number, c_a7, e_a7, cop_a7, c_a2, e_a2, cop_a2, heating_capacity_kw_partial_load, electrical_consumption_kw_partial_load, cop_ratio_partial_load, cooling_capacity_kw, electrical_consumption_kw_cooling, eer_ratio, annual_heating_efficiency_percent, compressor_voltage_nominal_volts, compressor_frequency_hz, sound_level_erp_db_a, max_sound_level_day_night_db_a, dimensions_unpacked_width_mm, dimensions_unpacked_depth_mm, dimensions_unpacked_height_mm, w_kg, refrigerant_type, gwp_eu_regulation_value, refrigerant_quantity_kg_co2_equivalent, co2_equivalent_per_ton, e_class FROM heat_pumps_migrate');
+                await customStatement('DROP TABLE heat_pumps_migrate');
+              }
+            } on Exception catch (_) {
+              // Table does not exist yet (fresh DB) � just create it.
+            }
+            await customStatement('DROP TABLE IF EXISTS heat_pumps');
+            await customStatement(
+                'CREATE TABLE heat_pumps (id INTEGER PRIMARY KEY AUTOINCREMENT, display_name TEXT NOT NULL, manufacturer TEXT NOT NULL, series_name TEXT NOT NULL, model_number TEXT NOT NULL, heating_capacity_kw_a7_w35 REAL NOT NULL, electrical_consumption_kw_a7_w35 REAL NOT NULL, cop_ratio_a7_w35 REAL NOT NULL, heating_capacity_kw_a2_w35 REAL NOT NULL, electrical_consumption_kw_a2_w35 REAL NOT NULL, cop_ratio_a2_w35 REAL NOT NULL, heating_capacity_kw_partial_load REAL NOT NULL, electrical_consumption_kw_partial_load REAL NOT NULL, cop_ratio_partial_load REAL NOT NULL, cooling_capacity_kw REAL, electrical_consumption_kw_cooling REAL, eer_ratio REAL, annual_heating_efficiency_percent TEXT NOT NULL, compressor_voltage_nominal_volts INTEGER NOT NULL, compressor_frequency_hz INTEGER NOT NULL, sound_level_erp_db_a REAL NOT NULL, max_sound_level_day_night_db_a TEXT NOT NULL, dimensions_unpacked_width_mm INTEGER NOT NULL, dimensions_unpacked_depth_mm INTEGER NOT NULL, dimensions_unpacked_height_mm INTEGER NOT NULL, weight_kg REAL NOT NULL, refrigerant_type TEXT NOT NULL, gwp_eu_regulation_value REAL NOT NULL, refrigerant_quantity_kg_co2_equivalent REAL NOT NULL, co2_equivalent_per_ton REAL NOT NULL, energy_efficiency_class35_c55_c TEXT NOT NULL)');
+            await customStatement('DROP TABLE IF EXISTS heat_loops');
+            await customStatement(
+                'CREATE TABLE heat_loops (id INTEGER PRIMARY KEY AUTOINCREMENT, project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE, name TEXT NOT NULL, loop_type TEXT NOT NULL DEFAULT ' + "'radiator'" + ', nominal_kw REAL NOT NULL DEFAULT 0, flow_temp_c INTEGER NOT NULL DEFAULT 55)');
+            // Add active_heat_pump_id to projects table (used by heat pump
+            // selection).  Existing databases created at v12 lack this column.
+            await _addColumnIfMissing(
+                'projects', 'active_heat_pump_id', 'INTEGER');
+          }
+          if (from < 14) {
+            // v13 -> v14: Heat pump components inventory.
+            // Creates 27 inventory tables (one per component type) +
+            // shared `inventory_items` table + `component_status` table.
+            await customStatement('''
+              CREATE TABLE IF NOT EXISTS inventory_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                manufacturer TEXT NOT NULL DEFAULT '',
+                series_name TEXT NOT NULL DEFAULT '',
+                model_number TEXT NOT NULL DEFAULT '',
+                component_type TEXT NOT NULL
+              )
+            ''');
+
+            await customStatement('''
+              CREATE TABLE IF NOT EXISTS component_status_table (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                inventory_item_id INTEGER REFERENCES inventory_items(id),
+                status TEXT NOT NULL DEFAULT 'Offen',
+                required INTEGER NOT NULL DEFAULT 0,
+                quantity INTEGER NOT NULL DEFAULT 0
+              )
+            ''');
+
+            await _createInventoryTables();
           }
         },
-        beforeOpen: (details) async {
+
+beforeOpen: (details) async {
           // Setting foreign_keys is a write and would fail on a read-only
           // snapshot, so only enable it for the local working copy.
           if (!readOnly) {
@@ -314,6 +419,19 @@ class AppDatabase extends _$AppDatabase {
   // ---------------------------------------------------------------------
 
   Stream<List<Project>> watchProjects() => (select(projects)
+        ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+      .watch();
+
+  Stream<List<HeatPump>> watchHeatPumps() => (select(heatPumps)
+        ..orderBy([(t) => OrderingTerm.asc(t.displayName)]))
+      .watch();
+
+  Future<List<HeatLoop>> heatLoopsOf(int projectId) =>
+      (select(heatLoops)..where((t) => t.projectId.equals(projectId))).get();
+
+  Stream<List<HeatLoop>> watchHeatLoopsOf(int projectId) =>
+      (select(heatLoops)
+        ..where((t) => t.projectId.equals(projectId))
         ..orderBy([(t) => OrderingTerm.asc(t.name)]))
       .watch();
 
@@ -365,6 +483,178 @@ class AppDatabase extends _$AppDatabase {
     await customStatement('ALTER TABLE $table DROP COLUMN $column');
   }
 
+  /// Creates all 27 heat pump component inventory tables.
+  Future<void> _createInventoryTables() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS boiler (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        volume_litres INTEGER NOT NULL DEFAULT 200)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS hw_verteiler (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        zones INTEGER NOT NULL DEFAULT 1)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS zirkulationspumpe (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        flow_rate_l_min REAL NOT NULL DEFAULT 0,
+        head_pressure_m REAL NOT NULL DEFAULT 0,
+        eei_rating REAL NOT NULL DEFAULT 0.2)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS rueckflussverhinderer (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        dn_size INTEGER NOT NULL DEFAULT 25)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS schmutzfanger (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        filter_size_mm REAL NOT NULL DEFAULT 2)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS durchflusswaechter (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        min_flow_m3h REAL NOT NULL DEFAULT 0.5)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS pufferspeicher (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        volume_litres INTEGER NOT NULL DEFAULT 500)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS plattenwaermetauscher (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        plates INTEGER NOT NULL DEFAULT 30, area_m2 REAL NOT NULL DEFAULT 2.0)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS safety_valve (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        opening_pressure_bar REAL NOT NULL DEFAULT 3)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS membranausdehnungsgefaess (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        volume_litres INTEGER NOT NULL DEFAULT 10)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS entluftungsventil (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        dn_size INTEGER NOT NULL DEFAULT 25)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS heizkreispumpe (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        flow_rate_l_min REAL NOT NULL DEFAULT 0,
+        head_pressure_m REAL NOT NULL DEFAULT 0,
+        eei_rating REAL NOT NULL DEFAULT 0.2)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS absperrventil (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        dn_size INTEGER NOT NULL DEFAULT 25)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS fbh_verteiler (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        zones INTEGER NOT NULL DEFAULT 1)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS fbh_schleife (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        pipe_length_m REAL NOT NULL DEFAULT 0,
+        pipe_diameter_mm INTEGER NOT NULL DEFAULT 16)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS mischbatterie (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        dn_size INTEGER NOT NULL DEFAULT 25)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS rfv_gartenanschluss (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        dn_size INTEGER NOT NULL DEFAULT 25)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS fuellwasser_zuleitung (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        pipe_diameter_mm INTEGER NOT NULL DEFAULT 20)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS kaltwasser_verbraucher (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        count INTEGER NOT NULL DEFAULT 1)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS ls_schalter (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        current_rating_a INTEGER NOT NULL DEFAULT 16,
+        pole_count INTEGER NOT NULL DEFAULT 3,
+        char_type TEXT NOT NULL DEFAULT 'B')
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS fi_schutzschalter (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        current_rating_a INTEGER NOT NULL DEFAULT 40,
+        sensitivity_ma INTEGER NOT NULL DEFAULT 30,
+        type TEXT NOT NULL DEFAULT 'A')
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS zuleitung_starkstrom (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        cross_section_mm2 INTEGER NOT NULL DEFAULT 6,
+        length_m REAL NOT NULL DEFAULT 0,
+        conductor_material TEXT NOT NULL DEFAULT 'Cu')
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS trennschalter (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        current_rating_a INTEGER NOT NULL DEFAULT 16,
+        pole_count INTEGER NOT NULL DEFAULT 3)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS klemmenleiste (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        bus_width INTEGER NOT NULL DEFAULT 12)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS pe_anschluss (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        wire_cross_section_mm2 INTEGER NOT NULL DEFAULT 4)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS hpa_anschluss (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL, manufacturer TEXT NOT NULL DEFAULT '',
+        series_name TEXT NOT NULL DEFAULT '', model_number TEXT NOT NULL DEFAULT '',
+        conductor_cross_section_mm2 INTEGER NOT NULL DEFAULT 4)
+    ''');
+  }
+
   Future<void> touchProject(int projectId) async {
     await (update(projects)..where((t) => t.id.equals(projectId))).write(
       ProjectsCompanion(
@@ -372,4 +662,7 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
   }
+
+  /// Seed inventory tables when the database is completely empty.
+  Future<void> seedIfEmpty() => seed.seedIfEmpty(this);
 }

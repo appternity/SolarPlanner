@@ -219,6 +219,9 @@ class Projects extends Table {
 
   /// Heat pump is planned for this project?
   BoolColumn get wpAnlage => boolean().withDefault(const Constant(false))();
+
+  /// The heat pump from the inventory used for this project (null = none).
+  IntColumn get activeHeatPumpId => integer().nullable()();
 }
 
 /// Roof type: flat roof or one slope of a gabled (pitched) roof.
@@ -399,4 +402,601 @@ class ScenarioResults extends Table {
   RealColumn get specificYieldKwhPerKwp => real()();
   /// Epoch milliseconds.
   IntColumn get computedAt => integer()();
+}
+
+/// Inventory table for heat pumps (Wärmepumpen), seeded from the silver
+/// layer (`data/datenblatt/silver/HYD.HEI.Waermepumpe/`).
+class HeatPumps extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Display name, e.g. "Vaillant aroTHERM pro VWL 55/7.1 A 230V".
+  TextColumn get displayName => text()();
+
+  /// Manufacturer, e.g. "Vaillant".
+  TextColumn get manufacturer => text()();
+
+  /// Series name, e.g. "aroTHERM pro".
+  TextColumn get seriesName => text()();
+
+  /// Model number, e.g. "VWL 55/7.1 A 230V".
+  TextColumn get modelNumber => text()();
+
+  /// Heating capacity in kW at A7/W35.
+  RealColumn get heatingCapacityKwA7W35 => real()();
+
+  /// Electrical consumption in kW at A7/W35.
+  RealColumn get electricalConsumptionKwA7W35 => real()();
+
+  /// COP ratio at A7/W35.
+  RealColumn get copRatioA7W35 => real()();
+
+  /// Heating capacity in kW at A2/W35.
+  RealColumn get heatingCapacityKwA2W35 => real()();
+
+  /// Electrical consumption in kW at A2/W35.
+  RealColumn get electricalConsumptionKwA2W35 => real()();
+
+  /// COP ratio at A2/W35.
+  RealColumn get copRatioA2W35 => real()();
+
+  /// Heating capacity in kW at partial load.
+  RealColumn get heatingCapacityKwPartialLoad => real()();
+
+  /// Electrical consumption in kW at partial load.
+  RealColumn get electricalConsumptionKwPartialLoad => real()();
+
+  /// COP ratio at partial load.
+  RealColumn get copRatioPartialLoad => real()();
+
+  /// Cooling capacity in kW (null if not available).
+  RealColumn get coolingCapacityKw => real().nullable()();
+
+  /// Electrical consumption in kW for cooling.
+  RealColumn get electricalConsumptionKwCooling => real().nullable()();
+
+  /// EER ratio (null if not available).
+  RealColumn get eerRatio => real().nullable()();
+
+  /// Annual heating efficiency in percent (as string, e.g. "198 / 145").
+  TextColumn get annualHeatingEfficiencyPercent => text()();
+
+  /// Compressor nominal voltage (V).
+  IntColumn get compressorVoltageNominalVolts => integer()();
+
+  /// Compressor frequency in Hz.
+  IntColumn get compressorFrequencyHz => integer()();
+
+  /// Sound level (ERP) in dB(A).
+  RealColumn get soundLevelErpDbA => real()();
+
+  /// Max sound level day/night in dB(A) (as string, e.g. "57.7 / 48.2").
+  TextColumn get maxSoundLevelDayNightDbA => text()();
+
+  /// Dimensions unpacked (mm): width.
+  IntColumn get dimensionsUnpackedWidthMm => integer()();
+
+  /// Dimensions unpacked (mm): depth.
+  IntColumn get dimensionsUnpackedDepthMm => integer()();
+
+  /// Dimensions unpacked (mm): height.
+  IntColumn get dimensionsUnpackedHeightMm => integer()();
+
+  /// Weight in kg.
+  RealColumn get weightKg => real()();
+
+  /// Refrigerant type, e.g. "R290".
+  TextColumn get refrigerantType => text()();
+
+  /// GWP (EU regulation) value.
+  RealColumn get gwpEuRegulationValue => real()();
+
+  /// Refrigerant quantity in kg CO2 equivalent.
+  RealColumn get refrigerantQuantityKgCo2Equivalent => real()();
+
+  /// CO2 equivalent per ton.
+  RealColumn get co2EquivalentPerTon => real()();
+
+  /// Energy efficiency class at 35°C/55°C (e.g. "III", empty if not classified).
+  TextColumn get energyEfficiencyClass35C55C => text()();
+}
+
+/// Heating loops (Heizschleifen) for a project.
+class HeatLoops extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// The project this loop belongs to.
+  IntColumn get projectId => integer().references(Projects, #id)();
+
+  /// Name of the loop (e.g. "Erdgeschoss Fußboden").
+  TextColumn get name => text()();
+
+  /// Loop type: "radiator" or "underfloor".
+  TextColumn get loopType => text().withDefault(const Constant('radiator'))();
+
+  /// Nominal heating power in kW.
+  RealColumn get nominalKw => real().withDefault(const Constant(0))();
+
+  /// Flow temperature in °C.
+  IntColumn get flowTempC => integer().withDefault(const Constant(55))();
+}
+
+// ===========================================================================
+// Heat Pump Components Inventory (27 tables + shared status table)
+// ===========================================================================
+
+/// Component status values used by the state machine.
+///
+/// Each status is project-scoped via the [ComponentStatus] table.
+enum ComponentStatus {
+  /// Nothing assigned yet, but component is required.
+  offen,
+
+  /// A manufacturer/model is assigned, but not yet installed.
+  inPlanung,
+
+  /// Planned but no specific manufacturer/model known.
+  geplant,
+
+  /// Installed, manufacturer/model assigned.
+  eingebaut,
+
+  /// Neither planned nor required.
+  nichtBenotigt,
+}
+
+/// All 28 component types from `komponenten.md` assigned to the Wärmepumpe
+/// system (plus shared components visible in the Projekt tab).
+///
+/// This enum provides type-safe references to every component type.
+enum ComponentType {
+  // -- Hydraulische Komponenten (22) --
+  boilerTww,
+  hwVerteiler,
+  zirkulationspumpe,
+  // Waermepumpe → reuses existing `HeatPumps` table (skip)
+  rueckflussverhinderer,
+  schmutzfanger,
+  durchflusswaechter,
+  pufferspeicher,
+  plattenwaermetauscher,
+  safetyValve,
+  membranausdehnungsgefaess,
+  entluftungsventil,
+  heizkreispumpe,
+  absperrventil,
+  fbhVerteiler,
+  fbhSchleife,
+  mischbatterie,
+  rfvGartenanschluss,
+  fuellwasserZuleitung,
+  kaltwasserVerbraucher,
+  // -- Elektrische Komponenten (6) --
+  lsSchalter,
+  fiSchutzschalter,
+  zuleitungStarkstrom,
+  trennschalter,
+  klemmenleiste,
+  peAnschluss,
+  // -- Shared components --
+  hpaAnschluss,
+}
+
+/// Returns the component type ID string (e.g. "HYD.WAR.Boiler_TWW").
+extension ComponentTypeExt on ComponentType {
+  String get idString {
+    switch (this) {
+      case ComponentType.boilerTww:
+        return 'HYD.WAR.Boiler_TWW';
+      case ComponentType.hwVerteiler:
+        return 'HYD.WAR.HW_Verteiler';
+      case ComponentType.zirkulationspumpe:
+        return 'HYD.WAR.Zirkulationspumpe';
+      case ComponentType.rueckflussverhinderer:
+        return 'HYD.HEI.Rueckflussverhinderer';
+      case ComponentType.schmutzfanger:
+        return 'HYD.HEI.Schmutzfanger_Filter';
+      case ComponentType.durchflusswaechter:
+        return 'HYD.HEI.Durchflusswaechter';
+      case ComponentType.pufferspeicher:
+        return 'HYD.HEI.Pufferspeicher';
+      case ComponentType.plattenwaermetauscher:
+        return 'HYD.HEI.Plattenwaermetauscher';
+      case ComponentType.safetyValve:
+        return 'HYD.HEI.Sicherheitsventil_3bar';
+      case ComponentType.membranausdehnungsgefaess:
+        return 'HYD.HEI.Membranausdehnungsgefaess';
+      case ComponentType.entluftungsventil:
+        return 'HYD.HEI.Entluftungsventil_auto';
+      case ComponentType.heizkreispumpe:
+        return 'HYD.HEI.Pumpe_Heizkreis';
+      case ComponentType.absperrventil:
+        return 'HYD.HEI.Absperrventil_Vorlauf';
+      case ComponentType.fbhVerteiler:
+        return 'HYD.HEI.FBH_Verteiler';
+      case ComponentType.fbhSchleife:
+        return 'HYD.HEI.FBH_Schleife';
+      case ComponentType.mischbatterie:
+        return 'HYD.WAR.Mischbatterie';
+      case ComponentType.rfvGartenanschluss:
+        return 'HYD.KAL.RFV_Gartenanschluss';
+      case ComponentType.fuellwasserZuleitung:
+        return 'HYD.HEI.Zuleitung_Fuellwasser';
+      case ComponentType.kaltwasserVerbraucher:
+        return 'HYD.KAL.Verbraucher_nur_KW';
+      case ComponentType.lsSchalter:
+        return 'ELE.STK.LS_Schalter_WP';
+      case ComponentType.fiSchutzschalter:
+        return 'ELE.STK.FI_Schutzschalter';
+      case ComponentType.zuleitungStarkstrom:
+        return 'ELE.STK.Zuleitung_Starkstrom';
+      case ComponentType.trennschalter:
+        return 'ELE.SCH.Trennschalter';
+      case ComponentType.klemmenleiste:
+        return 'ELE.SCH.Klemmenleiste';
+      case ComponentType.peAnschluss:
+        return 'ELE.ERD.PE_Anschluss';
+      case ComponentType.hpaAnschluss:
+        return 'ELE.ERD.HPA_Anschluss';
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case ComponentType.boilerTww:
+        return 'Warmwasser-Boiler';
+      case ComponentType.hwVerteiler:
+        return 'HW-Verteiler';
+      case ComponentType.zirkulationspumpe:
+        return 'Zirkulationspumpe';
+      case ComponentType.rueckflussverhinderer:
+        return 'Rückflussverhinderer';
+      case ComponentType.schmutzfanger:
+        return 'Schmutzfänger';
+      case ComponentType.durchflusswaechter:
+        return 'Durchflusswächter';
+      case ComponentType.pufferspeicher:
+        return 'Pufferspeicher';
+      case ComponentType.plattenwaermetauscher:
+        return 'Plattenwärmetauscher';
+      case ComponentType.safetyValve:
+        return 'Sicherheitsventil 3 bar';
+      case ComponentType.membranausdehnungsgefaess:
+        return 'Membranausdehnungsgefäß';
+      case ComponentType.entluftungsventil:
+        return 'Entlüftungsventil';
+      case ComponentType.heizkreispumpe:
+        return 'Heizkreispumpe';
+      case ComponentType.absperrventil:
+        return 'Absperrventil';
+      case ComponentType.fbhVerteiler:
+        return 'FBH-Verteiler';
+      case ComponentType.fbhSchleife:
+        return 'FBH-Schleife';
+      case ComponentType.mischbatterie:
+        return 'Mischbatterie';
+      case ComponentType.rfvGartenanschluss:
+        return 'RFV Gartenanschluss';
+      case ComponentType.fuellwasserZuleitung:
+        return 'Füllwasser-Zuleitung';
+      case ComponentType.kaltwasserVerbraucher:
+        return 'Kaltwasser-Verbraucher';
+      case ComponentType.lsSchalter:
+        return 'LS-Schalter WP';
+      case ComponentType.fiSchutzschalter:
+        return 'FI-Schutzschalter';
+      case ComponentType.zuleitungStarkstrom:
+        return 'Zuleitung Starkstrom';
+      case ComponentType.trennschalter:
+        return 'Trennschalter';
+      case ComponentType.klemmenleiste:
+        return 'Klemmenleiste';
+      case ComponentType.peAnschluss:
+        return 'PE-Anschluss';
+      case ComponentType.hpaAnschluss:
+        return 'HPA-Anschluss';
+    }
+  }
+}
+
+/// Shared inventory items table — all 28 component types share this table.
+///
+/// Each row represents one inventory item (manufacturer/model) that can be
+/// assigned to any component type. The [componentType] column identifies
+/// which of the 28 types this item belongs to.
+class InventoryItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Display name, e.g. "Vaillant aroTHERM pro VWL 115".
+  TextColumn get name => text()();
+
+  /// Manufacturer, e.g. "Vaillant".
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+
+  /// Series name.
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+
+  /// Model number.
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+
+  /// Which of the 28 component types this item belongs to.
+  TextColumn get componentType => text()();
+}
+
+/// Status mapping table — project-scoped state machine.
+///
+/// Each row maps a project + inventory item to a status. This is the single
+/// source of truth for the component state machine.
+class ComponentStatusTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// The project this status belongs to.
+  IntColumn get projectId => integer().references(Projects, #id)();
+
+  /// Reference to the inventory item (from [InventoryItems]).
+  IntColumn get inventoryItemId => integer().references(InventoryItems, #id)();
+
+  /// Current status: Offen, In Planung, Geplant, Eingebaut, Nicht Benötigt.
+  TextColumn get status => text().withDefault(const Constant('Offen'))();
+
+  /// Is this component required for the project?
+  BoolColumn get required => boolean().withDefault(const Constant(false))();
+
+  /// Calculated quantity (from formulas).
+  IntColumn get quantity => integer().withDefault(const Constant(0))();
+}
+
+// -- 27 inventory tables (one per component type) --
+
+class Boiler extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  /// Nominal volume in litres (CALC_Boiler_Volumen).
+  IntColumn get volumeLitres => integer().withDefault(const Constant(200))();
+}
+
+class HwVerteiler extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  /// Number of zones served.
+  IntColumn get zones => integer().withDefault(const Constant(1))();
+}
+
+class Zirkulationspumpe extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  RealColumn get flowRateLMin => real().withDefault(const Constant(0))();
+  RealColumn get headPressureM => real().withDefault(const Constant(0))();
+  RealColumn get eeiRating => real().withDefault(const Constant(0.2))();
+}
+
+class Rueckflussverhinderer extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get dnSize => integer().withDefault(const Constant(25))();
+}
+
+class Schmutzfanger extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  /// Filter mesh size in mm (typically 2).
+  RealColumn get filterSizeMm => real().withDefault(const Constant(2))();
+}
+
+class Durchflusswaechter extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  /// Minimum flow rate in m³/h (CALC_Min_Durchfluss).
+  RealColumn get minFlowM3H => real().withDefault(const Constant(0.5))();
+}
+
+class Pufferspeicher extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  /// Volume in litres (CALC_Puffer_Volumen).
+  IntColumn get volumeLitres => integer().withDefault(const Constant(500))();
+}
+
+class Plattenwaermetauscher extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get plates => integer().withDefault(const Constant(30))();
+  RealColumn get areaM2 => real().withDefault(const Constant(2.0))();
+}
+
+class SafetyValve extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  /// Opening pressure in bar (default 3).
+  RealColumn get openingPressureBar => real().withDefault(const Constant(3))();
+}
+
+class Membranausdehnungsgefaess extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  /// Volume in litres (CALC_MAG_Volumen).
+  IntColumn get volumeLitres => integer().withDefault(const Constant(10))();
+}
+
+class Entluftungsventil extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get dnSize => integer().withDefault(const Constant(25))();
+}
+
+class Heizkreispumpe extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  RealColumn get flowRateLMin => real().withDefault(const Constant(0))();
+  RealColumn get headPressureM => real().withDefault(const Constant(0))();
+  RealColumn get eeiRating => real().withDefault(const Constant(0.2))();
+}
+
+class Absperrventil extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get dnSize => integer().withDefault(const Constant(25))();
+}
+
+class FbhVerteiler extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get zones => integer().withDefault(const Constant(1))();
+}
+
+class FbhSchleife extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  RealColumn get pipeLengthM => real().withDefault(const Constant(0))();
+  IntColumn get pipeDiameterMm => integer().withDefault(const Constant(16))();
+}
+
+class Mischbatterie extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get dnSize => integer().withDefault(const Constant(25))();
+}
+
+class RfvGartenanschluss extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get dnSize => integer().withDefault(const Constant(25))();
+}
+
+class FuellwasserZuleitung extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get pipeDiameterMm => integer().withDefault(const Constant(20))();
+}
+
+class KaltwasserVerbraucher extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get count => integer().withDefault(const Constant(1))();
+}
+
+class LsSchalter extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get currentRatingA => integer().withDefault(const Constant(16))();
+  IntColumn get poleCount => integer().withDefault(const Constant(3))();
+  TextColumn get charType => text().withDefault(const Constant('B'))();
+}
+
+class FiSchutzschalter extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get currentRatingA => integer().withDefault(const Constant(40))();
+  IntColumn get sensitivityMa => integer().withDefault(const Constant(30))();
+  TextColumn get type => text().withDefault(const Constant('A'))();
+}
+
+class ZuleitungStarkstrom extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get crossSectionMm2 => integer().withDefault(const Constant(6))();
+  RealColumn get lengthM => real().withDefault(const Constant(0))();
+  TextColumn get conductorMaterial => text().withDefault(const Constant('Cu'))();
+}
+
+class Trennschalter extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get currentRatingA => integer().withDefault(const Constant(16))();
+  IntColumn get poleCount => integer().withDefault(const Constant(3))();
+}
+
+class Klemmenleiste extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get busWidth => integer().withDefault(const Constant(12))();
+}
+
+class PeAnschluss extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get wireCrossSectionMm2 => integer().withDefault(const Constant(4))();
+}
+
+class HpaAnschluss extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get manufacturer => text().withDefault(const Constant(''))();
+  TextColumn get seriesName => text().withDefault(const Constant(''))();
+  TextColumn get modelNumber => text().withDefault(const Constant(''))();
+  IntColumn get conductorCrossSectionMm2 => integer().withDefault(const Constant(4))();
 }

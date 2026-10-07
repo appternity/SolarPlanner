@@ -11,6 +11,491 @@ import 'electrical.dart' show mcbRatingForInverter;
 ///   gold    → this file → SQLite via `seedIfEmpty`
 ///
 /// Only runs when the database is completely empty (first start).
+
+
+
+// ===========================================================================
+// Heat pump inventory (3 Vaillant aroTHERM pro models)
+// ===========================================================================
+
+Future<void> _seedHeatPumps(AppDatabase db) async {
+  final existing = await db.select(db.heatPumps).get();
+  if (existing.isNotEmpty) return;
+
+  await db.into(db.heatPumps).insert(HeatPumpsCompanion.insert(
+    displayName: 'Vaillant aroTHERM pro VWL 55/7.1 A 230V',
+    manufacturer: 'Vaillant',
+    seriesName: 'aroTHERM pro',
+    modelNumber: 'VWL 55/7.1 A 230V',
+    heatingCapacityKwA7W35: 4.84,
+    electricalConsumptionKwA7W35: 1.7,
+    copRatioA7W35: 2.91,
+    heatingCapacityKwA2W35: 2.36,
+    electricalConsumptionKwA2W35: 0.56,
+    copRatioA2W35: 4.21,
+    heatingCapacityKwPartialLoad: 2.99,
+    electricalConsumptionKwPartialLoad: 0.59,
+    copRatioPartialLoad: 4.99,
+    annualHeatingEfficiencyPercent: 'A+',
+    compressorVoltageNominalVolts: 230,
+    compressorFrequencyHz: 50,
+    soundLevelErpDbA: 43.0,
+    maxSoundLevelDayNightDbA: 'B',
+    dimensionsUnpackedWidthMm: 1120,
+    dimensionsUnpackedDepthMm: 360,
+    dimensionsUnpackedHeightMm: 1990,
+    weightKg: 115,
+    refrigerantType: 'R32',
+    gwpEuRegulationValue: 675.0,
+    refrigerantQuantityKgCo2Equivalent: 2.0,
+    co2EquivalentPerTon: 1350.0,
+    energyEfficiencyClass35C55C: 'A++',
+  ));
+  await db.into(db.heatPumps).insert(HeatPumpsCompanion.insert(
+    displayName: 'Vaillant aroTHERM pro VWL 65/9.2 A 400V',
+    manufacturer: 'Vaillant',
+    seriesName: 'aroTHERM pro',
+    modelNumber: 'VWL 65/9.2 A 400V',
+    heatingCapacityKwA7W35: 6.50,
+    electricalConsumptionKwA7W35: 1.9,
+    copRatioA7W35: 3.42,
+    heatingCapacityKwA2W35: 3.20,
+    electricalConsumptionKwA2W35: 0.65,
+    copRatioA2W35: 4.92,
+    heatingCapacityKwPartialLoad: 4.00,
+    electricalConsumptionKwPartialLoad: 0.70,
+    copRatioPartialLoad: 5.71,
+    annualHeatingEfficiencyPercent: 'A+',
+    compressorVoltageNominalVolts: 400,
+    compressorFrequencyHz: 50,
+    soundLevelErpDbA: 45.0,
+    maxSoundLevelDayNightDbA: 'B',
+    dimensionsUnpackedWidthMm: 1120,
+    dimensionsUnpackedDepthMm: 360,
+    dimensionsUnpackedHeightMm: 1990,
+    weightKg: 125,
+    refrigerantType: 'R32',
+    gwpEuRegulationValue: 675.0,
+    refrigerantQuantityKgCo2Equivalent: 2.5,
+    co2EquivalentPerTon: 1687.5,
+    energyEfficiencyClass35C55C: 'A++',
+  ));
+  await db.into(db.heatPumps).insert(HeatPumpsCompanion.insert(
+    displayName: 'Vaillant aroTHERM pro VWL 71/10.5 A 400V',
+    manufacturer: 'Vaillant',
+    seriesName: 'aroTHERM pro',
+    modelNumber: 'VWL 71/10.5 A 400V',
+    heatingCapacityKwA7W35: 7.10,
+    electricalConsumptionKwA7W35: 2.0,
+    copRatioA7W35: 3.55,
+    heatingCapacityKwA2W35: 3.50,
+    electricalConsumptionKwA2W35: 0.70,
+    copRatioA2W35: 5.00,
+    heatingCapacityKwPartialLoad: 4.50,
+    electricalConsumptionKwPartialLoad: 0.75,
+    copRatioPartialLoad: 6.00,
+    annualHeatingEfficiencyPercent: 'A+',
+    compressorVoltageNominalVolts: 400,
+    compressorFrequencyHz: 50,
+    soundLevelErpDbA: 46.0,
+    maxSoundLevelDayNightDbA: 'B',
+    dimensionsUnpackedWidthMm: 1120,
+    dimensionsUnpackedDepthMm: 360,
+    dimensionsUnpackedHeightMm: 1990,
+    weightKg: 130,
+    refrigerantType: 'R32',
+    gwpEuRegulationValue: 675.0,
+    refrigerantQuantityKgCo2Equivalent: 2.5,
+    co2EquivalentPerTon: 1687.5,
+    energyEfficiencyClass35C55C: 'A++',
+  ));
+}
+
+// Heat Pump Components Inventory - 28 generic placeholder items
+// ===========================================================================
+
+Future<void> _seedInventoryItems(AppDatabase db) async {
+  final existing = await db.select(db.inventoryItems).get();
+  if (existing.isNotEmpty) return;
+
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Warmwasser-Boiler Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.WAR.Boiler_TWW',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'HW-Verteiler Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.WAR.HW_Verteiler',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Zirkulationspumpe Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.WAR.Zirkulationspumpe',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Ruckflussverhinderer Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Rueckflussverhinderer',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Schmutzfanger Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Schmutzfanger_Filter',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Durchflusswachtler Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Durchflusswaechter',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Pufferspeicher Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Pufferspeicher',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Plattenwarmetauscher Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Plattenwaermetauscher',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Sicherheitsventil 3 bar',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Sicherheitsventil_3bar',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Membranausdehnungsgefaess Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Membranausdehnungsgefaess',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Entluftungsventil Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Entluftungsventil_auto',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Heizkreispumpe Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Pumpe_Heizkreis',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Absperrventil Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Absperrventil_Vorlauf',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'FBH-Verteiler Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.FBH_Verteiler',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'FBH-Schleife Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.FBH_Schleife',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Mischbatterie Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.WAR.Mischbatterie',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'RFV Gartenanschluss Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.KAL.RFV_Gartenanschluss',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Fuellwasser-Zuleitung Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.HEI.Zuleitung_Fuellwasser',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Kaltwasser-Verbraucher Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'HYD.KAL.Verbraucher_nur_KW',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'LS-Schalter B16 Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'ELE.STK.LS_Schalter_WP',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'FI-Schutzschalter Typ A 40A',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'ELE.STK.FI_Schutzschalter',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Zuleitung NYM-J 5x6 Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'ELE.STK.Zuleitung_Starkstrom',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Trennschalter B16 Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'ELE.SCH.Trennschalter',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'Klemmenleiste Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'ELE.SCH.Klemmenleiste',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'PE-Anschluss 4mm2 Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'ELE.ERD.PE_Anschluss',
+  ));
+  await db.into(db.inventoryItems).insert(InventoryItemsCompanion.insert(
+    name: 'HPA-Anschluss Standard',
+    manufacturer: const Value(''),
+    seriesName: const Value(''),
+    modelNumber: const Value(''),
+    componentType: 'ELE.ERD.HPA_Anschluss',
+  ));
+}
+
+Future<void> _seedBoiler(AppDatabase db) async {
+  await db.into(db.boiler).insert(BoilerCompanion.insert(
+    name: 'Warmwasser-Boiler Standard 200L',
+    volumeLitres: const Value(200),
+  ));
+}
+
+Future<void> _seedHwVerteiler(AppDatabase db) async {
+  await db.into(db.hwVerteiler).insert(HwVerteilerCompanion.insert(
+    name: 'HW-Verteiler Standard',
+    zones: const Value(1),
+  ));
+}
+
+Future<void> _seedZirkulationspumpe(AppDatabase db) async {
+  await db.into(db.zirkulationspumpe).insert(ZirkulationspumpeCompanion.insert(
+    name: 'Zirkulationspumpe Standard',
+    flowRateLMin: const Value(3.0),
+    headPressureM: const Value(6.0),
+    eeiRating: const Value(0.15),
+  ));
+}
+
+Future<void> _seedRueckflussverhinderer(AppDatabase db) async {
+  await db.into(db.rueckflussverhinderer).insert(RueckflussverhindererCompanion.insert(
+    name: 'Ruckflussverhinderer Standard DN25',
+    dnSize: const Value(25),
+  ));
+}
+
+Future<void> _seedSchmutzfanger(AppDatabase db) async {
+  await db.into(db.schmutzfanger).insert(SchmutzfangerCompanion.insert(
+    name: 'Schmutzfanger Standard 2mm',
+    filterSizeMm: const Value(2.0),
+  ));
+}
+
+Future<void> _seedDurchflusswaechter(AppDatabase db) async {
+  await db.into(db.durchflusswaechter).insert(DurchflusswaechterCompanion.insert(
+    name: 'Durchflusswachtler Standard',
+    minFlowM3H: const Value(0.5),
+  ));
+}
+
+Future<void> _seedPufferspeicher(AppDatabase db) async {
+  await db.into(db.pufferspeicher).insert(PufferspeicherCompanion.insert(
+    name: 'Pufferspeicher Standard 500L',
+    volumeLitres: const Value(500),
+  ));
+}
+
+Future<void> _seedPlattenwaermetauscher(AppDatabase db) async {
+  await db.into(db.plattenwaermetauscher).insert(PlattenwaermetauscherCompanion.insert(
+    name: 'Plattenwarmetauscher Standard',
+    plates: const Value(30),
+    areaM2: const Value(2.0),
+  ));
+}
+
+Future<void> _seedSafetyValve(AppDatabase db) async {
+  await db.into(db.safetyValve).insert(SafetyValveCompanion.insert(
+    name: 'Sicherheitsventil 3 bar',
+    openingPressureBar: const Value(3.0),
+  ));
+}
+
+Future<void> _seedMembranausdehnungsgefaess(AppDatabase db) async {
+  await db.into(db.membranausdehnungsgefaess).insert(MembranausdehnungsgefaessCompanion.insert(
+    name: 'Membranausdehnungsgefaess 10L',
+    volumeLitres: const Value(10),
+  ));
+}
+
+Future<void> _seedEntluftungsventil(AppDatabase db) async {
+  await db.into(db.entluftungsventil).insert(EntluftungsventilCompanion.insert(
+    name: 'Entluftungsventil Standard DN25',
+    dnSize: const Value(25),
+  ));
+}
+
+Future<void> _seedHeizkreispumpe(AppDatabase db) async {
+  await db.into(db.heizkreispumpe).insert(HeizkreispumpeCompanion.insert(
+    name: 'Heizkreispumpe Standard',
+    flowRateLMin: const Value(5.0),
+    headPressureM: const Value(6.0),
+    eeiRating: const Value(0.15),
+  ));
+}
+
+Future<void> _seedAbsperrventil(AppDatabase db) async {
+  await db.into(db.absperrventil).insert(AbsperrventilCompanion.insert(
+    name: 'Absperrventil Standard DN25',
+    dnSize: const Value(25),
+  ));
+}
+
+Future<void> _seedFbhVerteiler(AppDatabase db) async {
+  await db.into(db.fbhVerteiler).insert(FbhVerteilerCompanion.insert(
+    name: 'FBH-Verteiler Standard',
+    zones: const Value(1),
+  ));
+}
+
+Future<void> _seedFbhSchleife(AppDatabase db) async {
+  await db.into(db.fbhSchleife).insert(FbhSchleifeCompanion.insert(
+    name: 'FBH-Schleife Standard 16mm',
+    pipeDiameterMm: const Value(16),
+  ));
+}
+
+Future<void> _seedMischbatterie(AppDatabase db) async {
+  await db.into(db.mischbatterie).insert(MischbatterieCompanion.insert(
+    name: 'Mischbatterie Standard DN25',
+    dnSize: const Value(25),
+  ));
+}
+
+Future<void> _seedRfvGartenanschluss(AppDatabase db) async {
+  await db.into(db.rfvGartenanschluss).insert(RfvGartenanschlussCompanion.insert(
+    name: 'RFV Gartenanschluss Standard DN25',
+    dnSize: const Value(25),
+  ));
+}
+
+Future<void> _seedFuellwasserZuleitung(AppDatabase db) async {
+  await db.into(db.fuellwasserZuleitung).insert(FuellwasserZuleitungCompanion.insert(
+    name: 'Fuellwasser-Zuleitung Standard 20mm',
+    pipeDiameterMm: const Value(20),
+  ));
+}
+
+Future<void> _seedKaltwasserVerbraucher(AppDatabase db) async {
+  await db.into(db.kaltwasserVerbraucher).insert(KaltwasserVerbraucherCompanion.insert(
+    name: 'Kaltwasser-Verbraucher Standard',
+    count: const Value(1),
+  ));
+}
+
+Future<void> _seedLsSchalter(AppDatabase db) async {
+  await db.into(db.lsSchalter).insert(LsSchalterCompanion.insert(
+    name: 'LS-Schalter B16 3P',
+    currentRatingA: const Value(16),
+    poleCount: const Value(3),
+    charType: const Value('B'),
+  ));
+}
+
+Future<void> _seedFiSchutzschalter(AppDatabase db) async {
+  await db.into(db.fiSchutzschalter).insert(FiSchutzschalterCompanion.insert(
+    name: 'FI-Schutzschalter Typ A 40A',
+    currentRatingA: const Value(40),
+    sensitivityMa: const Value(30),
+    type: const Value('A'),
+  ));
+}
+
+Future<void> _seedZuleitungStarkstrom(AppDatabase db) async {
+  await db.into(db.zuleitungStarkstrom).insert(ZuleitungStarkstromCompanion.insert(
+    name: 'Zuleitung NYM-J 5x6 Standard',
+    crossSectionMm2: const Value(6),
+    conductorMaterial: const Value('Cu'),
+  ));
+}
+
+Future<void> _seedTrennschalter(AppDatabase db) async {
+  await db.into(db.trennschalter).insert(TrennschalterCompanion.insert(
+    name: 'Trennschalter B16 3P',
+    currentRatingA: const Value(16),
+    poleCount: const Value(3),
+  ));
+}
+
+Future<void> _seedKlemmenleiste(AppDatabase db) async {
+  await db.into(db.klemmenleiste).insert(KlemmenleisteCompanion.insert(
+    name: 'Klemmenleiste Standard 12-polig',
+    busWidth: const Value(12),
+  ));
+}
+
+Future<void> _seedPeAnschluss(AppDatabase db) async {
+  await db.into(db.peAnschluss).insert(PeAnschlussCompanion.insert(
+    name: 'PE-Anschluss 4mm2',
+    wireCrossSectionMm2: const Value(4),
+  ));
+}
+
+Future<void> _seedHpaAnschluss(AppDatabase db) async {
+  await db.into(db.hpaAnschluss).insert(HpaAnschlussCompanion.insert(
+    name: 'HPA-Anschluss Standard 4mm2',
+    conductorCrossSectionMm2: const Value(4),
+  ));
+}
+
+
 Future<void> seedIfEmpty(AppDatabase db) async {
   final projectCount = await db.select(db.projects).get();
   if (projectCount.isNotEmpty) return;
@@ -514,6 +999,41 @@ Future<void> seedIfEmpty(AppDatabase db) async {
     powerKw: 11,
     phases: const Value(3),
   ));
+
+  // ------------------------------------------------------------------
+  // Heat pump inventory (3 Vaillant aroTHERM pro models)
+  // ------------------------------------------------------------------
+  await _seedHeatPumps(db);
+
+  // Seed 28 generic inventory items (one per component type).
+  await _seedInventoryItems(db);
+  // Seed 27 type-specific inventory tables with defaults.
+  await _seedBoiler(db);
+  await _seedHwVerteiler(db);
+  await _seedZirkulationspumpe(db);
+  await _seedRueckflussverhinderer(db);
+  await _seedSchmutzfanger(db);
+  await _seedDurchflusswaechter(db);
+  await _seedPufferspeicher(db);
+  await _seedPlattenwaermetauscher(db);
+  await _seedSafetyValve(db);
+  await _seedMembranausdehnungsgefaess(db);
+  await _seedEntluftungsventil(db);
+  await _seedHeizkreispumpe(db);
+  await _seedAbsperrventil(db);
+  await _seedFbhVerteiler(db);
+  await _seedFbhSchleife(db);
+  await _seedMischbatterie(db);
+  await _seedRfvGartenanschluss(db);
+  await _seedFuellwasserZuleitung(db);
+  await _seedKaltwasserVerbraucher(db);
+  await _seedLsSchalter(db);
+  await _seedFiSchutzschalter(db);
+  await _seedZuleitungStarkstrom(db);
+  await _seedTrennschalter(db);
+  await _seedKlemmenleiste(db);
+  await _seedPeAnschluss(db);
+  await _seedHpaAnschluss(db);
 
   // ------------------------------------------------------------------
   // Example project

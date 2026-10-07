@@ -1,4 +1,6 @@
 {
+  "defaultProvider": "lmstudio",
+  "defaultModel": "qwen/qwen3.6-35b-a3b",
   "enableSkillCommands": true,
   "packages": [
     "npm:pi-loop-police",
@@ -8,17 +10,17 @@
   ],
   "compaction": {
     "enabled": true,
-    "reserveTokens": 16384,
-    "keepRecentTokens": 20000
+    "reserveTokens": 12000,
+    "keepRecentTokens": 30000
   },
   "thresholds": {
-    "checkpoint": 65,
-    "standard": 70,
-    "hard": 90
+    "checkpoint": 75,
+    "standard": 80,
+    "hard": 92
   },
   "cooldownMs": 120000,
   "experimentalToolOutputPruning": true,
   "toolOutputPruningMode": "agent-message",
-  "toolOutputSummaryStrategy": "llm",
+  "toolOutputSummaryStrategy": "truncate",
   "toolOutputPruneStrategy": "stub"
 }

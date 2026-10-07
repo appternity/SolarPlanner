@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../db/database.dart';
+import '../../db/tables.dart' show ComponentStatus, ComponentType, ComponentTypeExt;
 import 'editor_controller.dart';
 import '../../core/efficiency_table.dart';
 import 'roof_canvas.dart';
 import 'roof_dialogs.dart' show confirmDeleteRoof, showAddRoofDialog, showEditRoofDialog;
+import 'heat_loop_dialogs.dart'
+    show showAddHeatLoopDialog, showEditHeatLoopDialog, confirmDeleteHeatLoop;
 import 'efficiency_dialog.dart';
 import 'project_properties_dialog.dart'
     show ProjectPropertiesResult, showProjectPropertiesDialog;
+import 'component_calculator.dart';
 
 
 /// Full-screen project editor: roof canvas + control panel.
@@ -58,7 +62,12 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void initState() {
     super.initState();
-    _controller.load();
+    _controller.load().then((_) {
+      // Force a rebuild now that the controller has loaded its data.
+      // The ListenableBuilder in _ProjectTabBody and _HeatPumpTabBody
+      // will pick up the updated project/heatPumps/heatLoops.
+      setState(() {});
+    });
   }
 
   @override
@@ -94,6 +103,9 @@ class _EditorScreenState extends State<EditorScreen> {
             child: switch (_activeSystem) {
               0 => _ProjectTabBody(controller: _controller, readOnly: widget.readOnly),
               1 => _buildPvBody(),
+              2 => const _SystemPlaceholder(),
+              3 => const _SystemPlaceholder(),
+              4 => _HeatPumpTabBody(controller: _controller, readOnly: widget.readOnly),
               _ => const _SystemPlaceholder(),
             },
           ),
@@ -311,7 +323,9 @@ class _ProjectTabBody extends StatelessWidget {
       listenable: controller,
       builder: (context, _) {
         final p = controller.project;
-        if (p == null) return const SizedBox.shrink();
+        if (p == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
         final coord = '${p.latitude.toStringAsFixed(4)}, ${p.longitude.toStringAsFixed(4)}';
         return ListView(
           padding: const EdgeInsets.all(16),
@@ -409,6 +423,11 @@ class _ProjectTabBody extends StatelessWidget {
               detail: p.wpKw > 0 ? '${p.wpKw.toStringAsFixed(1)} kW' : 'Keine Planung',
               onChanged: readOnly ? null : (v) => controller.updateProjectProperties(wpAnlage: v),
             ),
+
+            const Divider(),
+
+            // ── Komponentenstatus (Inventory) ────────────────────
+            _SystemStatusSection(controller: controller, readOnly: readOnly),
           ],
         );
       },
@@ -1276,5 +1295,994 @@ class _ViolationsPanel extends StatelessWidget {
             ),
       ],
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+/// Wärmepumpe (Heat Pump) tab body.
+///
+/// Three sections: model selector, hydraulic overview, electrical overview.
+// ---------------------------------------------------------------------------
+
+class _HeatPumpTabBody extends StatelessWidget {
+  const _HeatPumpTabBody({
+    required this.controller,
+    required this.readOnly,
+  });
+
+  final EditorController controller;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _HeatPumpModelSection(controller: controller, readOnly: readOnly),
+            const SizedBox(height: 24),
+            _HydraulicFlowSection(controller: controller),
+            const SizedBox(height: 24),
+            _ElectricalFlowSection(controller: controller),
+            const SizedBox(height: 24),
+            _HeatPumpInventorySection(controller: controller, readOnly: readOnly),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Section 1: Heat pump model selector.
+///
+/// Dropdown from the seeded inventory, persisted to
+/// `Projects.activeHeatPumpId`.
+class _HeatPumpModelSection extends StatelessWidget {
+  const _HeatPumpModelSection({
+    required this.controller,
+    required this.readOnly,
+  });
+
+  final EditorController controller;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    if (controller.project == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final activeId = controller.project!.activeHeatPumpId;
+    final selected = controller.heatPumps
+        .where((h) => h.id == activeId)
+        .firstOrNull;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle('Wärmepumpe auswählen'),
+        if (controller.heatPumps.isEmpty) ...[
+          const SizedBox(height: 8),
+          const Text(
+            'Keine Wärmepumpen im Inventar.',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ] else ...[
+          const SizedBox(height: 8),
+          DropdownButton<int>(
+          value: activeId,
+          isExpanded: true,
+          hint: const Text('Wärmepumpe auswählen …'),
+          items: controller.heatPumps.map((hp) {
+            return DropdownMenuItem<int>(
+              value: hp.id,
+              child: Text(hp.displayName),
+            );
+          }).toList(),
+          onChanged: readOnly
+              ? null
+              : (id) => controller.setHeatPumpId(id),
+        ),
+        ],
+        if (selected != null) ...[
+          const SizedBox(height: 12),
+          _HeatPumpSpecsCard(specs: selected),
+        ],
+      ],
+    );
+  }
+}
+
+/// Displays key specs of a selected heat pump model.
+class _HeatPumpSpecsCard extends StatelessWidget {
+  const _HeatPumpSpecsCard({required this.specs});
+
+  final HeatPump specs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              specs.displayName,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 8),
+            _SpecRow('Leistung (kW)', '${specs.heatingCapacityKwA7W35}'),
+            _SpecRow('COP', '${specs.copRatioA7W35}'),
+            _SpecRow('Gewicht (kg)', '${specs.weightKg}'),
+            if (specs.coolingCapacityKw != null)
+              _SpecRow('Kühlleistung (kW)', '${specs.coolingCapacityKw}'),
+            if (specs.dimensionsUnpackedWidthMm != 0 &&
+                specs.dimensionsUnpackedHeightMm != 0 &&
+                specs.dimensionsUnpackedDepthMm != 0) ...[
+              _SpecRow('Maße (B×T×H)',
+                  '${specs.dimensionsUnpackedWidthMm}×${specs.dimensionsUnpackedDepthMm}×${specs.dimensionsUnpackedHeightMm} mm'),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SpecRow extends StatelessWidget {
+  const _SpecRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+          ),
+          const SizedBox(width: 8),
+          Text(value,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  )),
+        ],
+      ),
+    );
+  }
+}
+
+/// Section 2: Hydraulic flow overview (read-only).
+///
+/// Displays a summary of the hydraulic system based on the
+/// `hydraulischer-fluss.md` reference document.
+class _HydraulicFlowSection extends StatelessWidget {
+  const _HydraulicFlowSection({required this.controller});
+
+  final EditorController controller;
+
+  bool get _readOnly => controller.project == null || !controller.canEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle('Hydraulischer Fluss'),
+        const SizedBox(height: 8),
+        if (controller.heatLoops.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'Keine Heizkreise vorhanden. Erstellen Sie einen Heizkreis, um die hydraulische Darstellung zu sehen.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        if (!_readOnly)
+          OutlinedButton.icon(
+            icon: const Icon(Icons.thermostat, size: 18),
+            label: const Text('Heizkreis hinzufügen'),
+            onPressed: () async {
+              final result = await showAddHeatLoopDialog(context);
+              if (result != null) {
+                await controller.insertHeatLoop(
+                  name: result.name,
+                  loopType: result.loopType,
+                  nominalKw: result.nominalKw,
+                  flowTempC: result.flowTempC,
+                );
+              }
+            },
+          ),
+        if (controller.heatLoops.isNotEmpty)
+          ...controller.heatLoops.map((loop) => _HeatLoopCard(
+                loop: loop, readOnly: _readOnly, controller: controller)),
+      ],
+    );
+  }
+}
+
+class _HeatLoopCard extends StatelessWidget {
+  const _HeatLoopCard({
+    required this.loop,
+    required this.readOnly,
+    required this.controller,
+  });
+
+  final HeatLoop loop;
+  final bool readOnly;
+  final EditorController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(loop.name,
+                      style: Theme.of(context).textTheme.titleSmall),
+                ),
+                if (!readOnly)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, size: 18),
+                        tooltip: 'Heizkreis bearbeiten',
+                        onPressed: () async {
+                          final result =
+                              await showEditHeatLoopDialog(context, loop);
+                          if (result != null) {
+                            await controller.updateHeatLoop(loop.id,
+                                name: result.name,
+                                loopType: result.loopType,
+                                nominalKw: result.nominalKw,
+                                flowTempC: result.flowTempC);
+                          }
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, size: 18),
+                        tooltip: 'Heizkreis löschen',
+                        onPressed: () async {
+                          final confirmed =
+                              await confirmDeleteHeatLoop(context, loop);
+                          if (confirmed) {
+                            await controller.deleteHeatLoop(loop.id);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            _SpecRow('Typ', loop.loopType),
+            _SpecRow('Nennleistung (kW)', '${loop.nominalKw}'),
+            _SpecRow('Vorlauftemp. (°C)', '${loop.flowTempC}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Section 3: Electrical flow overview (read-only).
+///
+/// Displays the electrical connection diagram for the heat pump
+/// based on `STROMLAUFPLAN_WAERMEPUMPE.md`.
+class _ElectricalFlowSection extends StatelessWidget {
+  const _ElectricalFlowSection({required this.controller});
+
+  final EditorController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasWp = controller.project?.wpAnlage == true;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle('Elektrischer Fluss'),
+        const SizedBox(height: 8),
+        if (hasWp) ..._electricalFlowDiagram(context)
+        else
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'Wärmepumpe noch nicht aktiviert. Aktivieren Sie die Wärmepumpe in den Projekteigenschaften.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+      ],
+    );
+  }
+
+  List<Widget> _electricalFlowDiagram(BuildContext context) {
+    // Simplified electrical flow visualization based on
+    // STROMLAUFPLAN_WAERMEPUMPE.md component hierarchy.
+    return [
+      Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Netzbetreiber → HAK → WP-Stromkreis',
+                  style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 8),
+              _ElectricalNode('Netzbetreiber', '3~ Netz, 400V'),
+              _ElectricalArrow(),
+              _ElectricalNode('HAK (Zählerschrank)',
+                  'Hauptzähler, Hauptschalter, LS-Reihen'),
+              _ElectricalArrow(),
+              _ElectricalNode('WP-Stromkreis',
+                  'LS-Schutz, FI Typ B (Pflicht), WP-Anschluss'),
+              _ElectricalArrow(),
+              _ElectricalNode('Wärmepumpe', 'Klimaschutz, Verdichter'),
+            ],
+          ),
+        ),
+      ),
+    ];
+  }
+}
+
+class _ElectricalNode extends StatelessWidget {
+  const _ElectricalNode(this.name, this.detail);
+
+  final String name;
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.blueAccent,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    style: Theme.of(context).textTheme.bodyMedium),
+                Text(detail,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        )),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ElectricalArrow extends StatelessWidget {
+  const _ElectricalArrow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Icon(Icons.arrow_downward, size: 16, color: Colors.grey[400]),
+    );
+  }
+}
+
+// ===========================================================================
+// Task 5: Projekt Tab — Systemstatus section (System Completeness)
+// ===========================================================================
+
+/// Displays per-system completeness progress bars and shared component status
+/// badges on the Projekt tab.
+class _SystemStatusSection extends StatelessWidget {
+  const _SystemStatusSection({required this.controller, required this.readOnly});
+
+  final EditorController controller;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    final completeness = controller.calculator
+        .getSystemCompleteness(controller.projectId)
+        .then((map) => map);
+
+    return FutureBuilder<Map<String, SystemCompleteness>>(
+      future: completeness,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
+
+        final data = snapshot.data!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _SectionTitle('Komponentenstatus'),
+            Text(
+              'Fortschritt der Planung und Installation aller Komponenten nach System.',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 12),
+
+            // Per-system completeness progress bars.
+            ...data.entries.map((e) => _CompletenessBar(
+              systemName: e.key,
+              completeness: e.value,
+            )),
+
+            const SizedBox(height: 16),
+
+            // Shared components (HA, Schaltschrank, Erdung).
+            const _SectionTitle('Gemeinsame Komponenten'),
+            _SharedComponentsRow(
+              controller: controller,
+              readOnly: readOnly,
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _CompletenessBar extends StatelessWidget {
+  const _CompletenessBar({
+    required this.systemName,
+    required this.completeness,
+  });
+
+  final String systemName;
+  final SystemCompleteness completeness;
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = completeness.completionPct;
+    final color = pct >= 1.0
+        ? Colors.green
+        : pct > 0.5
+            ? Colors.orange
+            : Colors.red;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(systemName,
+                  style: const TextStyle(fontWeight: FontWeight.w500)),
+              const SizedBox(width: 8),
+              Text(
+                '${completeness.completedComponents}/${completeness.totalComponents}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: color,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${(pct * 100).toStringAsFixed(0)}%',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (completeness.warnings.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Tooltip(
+                    message: completeness.warnings.join('\n'),
+                    child: Icon(Icons.warning_amber_rounded,
+                        size: 16, color: color),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: pct,
+              minHeight: 8,
+              backgroundColor: Colors.grey.shade200,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SharedComponentsRow extends StatelessWidget {
+  const _SharedComponentsRow({
+    required this.controller,
+    required this.readOnly,
+  });
+
+  final EditorController controller;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    // Shared components: PE-Anschluss, HPA-Anschluss.
+    final statuses = controller.componentStatuses
+        .where((s) => s.projectId == controller.projectId)
+        .toList();
+
+    final peItem = statuses
+        .where((s) => controller.inventoryItems
+            .any((i) => i.id == s.inventoryItemId &&
+                i.componentType == ComponentType.peAnschluss.idString))
+        .firstOrNull;
+
+    final hpaItem = statuses
+        .where((s) => controller.inventoryItems
+            .any((i) => i.id == s.inventoryItemId &&
+                i.componentType == ComponentType.hpaAnschluss.idString))
+        .firstOrNull;
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _StatusBadge(
+          label: 'PE-Anschluss',
+          status: peItem,
+          inventoryItemId: peItem?.inventoryItemId,
+          readOnly: readOnly,
+          controller: controller,
+        ),
+        _StatusBadge(
+          label: 'HPA-Anschluss',
+          status: hpaItem,
+          inventoryItemId: hpaItem?.inventoryItemId,
+          readOnly: readOnly,
+          controller: controller,
+        ),
+      ],
+    );
+  }
+}
+
+// ===========================================================================
+// Task 6: Wärmepumpe Tab — Full Inventory UI (28 components)
+// ===========================================================================
+
+/// Displays all 28 heat pump components grouped by category (Hydraulik + Elektrik).
+/// Each component card shows name, status badge, quantity, and inventory dropdown.
+class _HeatPumpInventorySection extends StatelessWidget {
+  const _HeatPumpInventorySection({
+    required this.controller,
+    required this.readOnly,
+  });
+
+  final EditorController controller;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<ComponentType, ComponentCalculation>>(
+      future: controller.calculator.calculate(controller.projectId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
+
+        final calculations = snapshot.data!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _SectionTitle('Wärmepumpen-Komponenten'),
+            Text(
+              'Hier können Sie den Status und die Ausstattung jeder Komponente festlegen.',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 12),
+
+            // Group by category.
+            _InventoryCategory(
+              title: 'Hydraulische Komponenten',
+              components: ComponentType.values
+                  .where((t) => t.idString.startsWith('HYD'))
+                  .toList(),
+              calculations: calculations,
+              controller: controller,
+              readOnly: readOnly,
+            ),
+            const SizedBox(height: 24),
+            _InventoryCategory(
+              title: 'Elektrische Komponenten',
+              components: ComponentType.values
+                  .where((t) =>
+                      t.idString.startsWith('ELE.STK') ||
+                      t.idString.startsWith('ELE.SCH') ||
+                      t.idString.startsWith('ELE.ERD'))
+                  .toList(),
+              calculations: calculations,
+              controller: controller,
+              readOnly: readOnly,
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _InventoryCategory extends StatelessWidget {
+  const _InventoryCategory({
+    required this.title,
+    required this.components,
+    required this.calculations,
+    required this.controller,
+    required this.readOnly,
+  });
+
+  final String title;
+  final List<ComponentType> components;
+  final Map<ComponentType, ComponentCalculation> calculations;
+  final EditorController controller;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(title),
+        const SizedBox(height: 8),
+        ...components.map((type) {
+          final calc = calculations[type];
+          final status = calc == null
+              ? null
+              : controller.componentStatuses
+                  .where((s) => s.inventoryItemId ==
+                      (calc.formulaResult['inventoryItemId'] as int?))
+                  .firstOrNull;
+
+          // Conditional visibility: Pufferspeicher and Zirkulationspumpe
+          // are only shown when relevant.
+          if (type == ComponentType.pufferspeicher) {
+            // Always show puffer (required for all WP).
+          } else if (type == ComponentType.zirkulationspumpe) {
+            // Show only if DHW consumers > 0 (check project).
+            final p = controller.project;
+            if (p != null && p.baeder == 0) {
+              return const SizedBox.shrink();
+            }
+          } else if (type == ComponentType.fuellwasserZuleitung) {
+            // Show only if there are heat loops.
+            if (controller.heatLoops.isEmpty) {
+              return const SizedBox.shrink();
+            }
+          }
+
+          return _InventoryCard(
+            type: type,
+            status: status,
+            calculation: calc,
+            readOnly: readOnly,
+            controller: controller,
+            hasWarnings: calc != null && calc.warnings.isNotEmpty,
+          );
+        }),
+      ],
+    );
+  }
+}
+
+class _InventoryCard extends StatelessWidget {
+  const _InventoryCard({
+    required this.type,
+    required this.status,
+    required this.calculation,
+    required this.readOnly,
+    required this.controller,
+    required this.hasWarnings,
+  });
+
+  final ComponentType type;
+  final ComponentStatusTableData? status;
+  final ComponentCalculation? calculation;
+  final bool readOnly;
+  final EditorController controller;
+  final bool hasWarnings;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = type.displayName;
+    final quantity = calculation?.quantity ?? 0;
+    final statusValue = status?.status ?? 'Offen';
+    // When no status row exists, get the inventory item ID from the calculation
+    // so the status badge can create a new row.
+    final inventoryItemId = status?.inventoryItemId ??
+        (calculation?.formulaResult['inventoryItemId'] as int?);
+
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header: name + status badge + warning icon.
+            Row(
+              children: [
+                Expanded(
+                  child: Text(name,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                ),
+                _StatusBadge(
+                  label: statusValue,
+                  status: status,
+                  inventoryItemId: inventoryItemId,
+                  readOnly: readOnly,
+                  controller: controller,
+                ),
+                if (quantity > 0 && statusValue == 'Offen')
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Tooltip(
+                      message: 'Pflichtkomponente: Offen',
+                      child: Icon(Icons.priority_high,
+                          size: 18, color: Colors.red[400]),
+                    ),
+                  ),
+                if (quantity > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Chip(
+                      label: Text('x$quantity',
+                          style: const TextStyle(fontSize: 11)),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+              ],
+            ),
+            if (hasWarnings && quantity == 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  calculation!.warnings.join('; '),
+                  style: TextStyle(fontSize: 11, color: Colors.orange[700]),
+                ),
+              ),
+            const SizedBox(height: 8),
+
+            // Inventory dropdown (if not read-only).
+            if (!readOnly) ...[
+              const Text('Inventar:',
+                  style: TextStyle(fontSize: 11, color: Colors.grey)),
+              const SizedBox(height: 4),
+              _InventoryDropdown(
+                type: type,
+                currentStatus: status,
+                inventoryItemId: inventoryItemId,
+                controller: controller,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Status badge widget used across Systemstatus and Inventory.
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({
+    required this.label,
+    required this.status,
+    required this.inventoryItemId,
+    required this.readOnly,
+    required this.controller,
+  });
+
+  final String label;
+  final ComponentStatusTableData? status;
+  final int? inventoryItemId;
+  final bool readOnly;
+  final EditorController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _statusColor(label);
+
+    return readOnly
+        ? _Chip(label: label, color: color)
+        : _editableStatusBadge;
+  }
+
+  Widget get _editableStatusBadge {
+    // The dropdown value is the status display name, not the component label.
+    final currentStatusName = status != null
+        ? _statusDisplayName(ComponentStatus.values.firstWhere(
+            (s) => s.name == status!.status,
+            orElse: () => ComponentStatus.offen,
+          ))
+        : _statusDisplayName(ComponentStatus.offen);
+
+    return DropdownButton<String>(
+      value: currentStatusName,
+      items: ComponentStatus.values.map((s) {
+        final displayName = _statusDisplayName(s);
+        return DropdownMenuItem<String>(
+          value: displayName,
+          child: _Chip(label: displayName, color: _statusColor(displayName)),
+        );
+      }).toList(),
+      onChanged: (value) {
+        if (value == null) return;
+        final newStatus = ComponentStatus.values.firstWhere(
+          (s) => _statusDisplayName(s) == value,
+          orElse: () => ComponentStatus.offen,
+        );
+        // Use the inventoryItemId from the calculation (when no status row exists)
+        // or from the existing status row.
+        final id = inventoryItemId ?? status?.inventoryItemId;
+        if (id == null) return;
+        controller.updateComponentStatus(
+          inventoryItemId: id,
+          status: newStatus.name,
+          required: status?.required == true ? 1 : 0,
+          quantity: status?.quantity ?? 1,
+        );
+      },
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({required this.label, required this.color});
+
+  final String label;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color?.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color ?? Colors.grey.shade400, width: 1),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 11,
+              color: color ?? Colors.grey.shade600,
+              fontWeight: FontWeight.w500)),
+    );
+  }
+}
+
+class _InventoryDropdown extends StatelessWidget {
+  const _InventoryDropdown({
+    required this.type,
+    required this.currentStatus,
+    required this.inventoryItemId,
+    required this.controller,
+  });
+
+  final ComponentType type;
+  final ComponentStatusTableData? currentStatus;
+  final int? inventoryItemId;
+  final EditorController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = controller.inventoryItems
+        .where((i) => i.componentType == type.idString)
+        .toList();
+
+    if (items.isEmpty) {
+      return Text('Kein Inventar verfügbar',
+          style: TextStyle(fontSize: 11, color: Colors.grey.shade500));
+    }
+
+    final currentItemId = currentStatus?.inventoryItemId;
+    final currentValue = currentItemId != null
+        ? items.firstWhere((i) => i.id == currentItemId, orElse: () => items.first)
+        : items.first;
+
+    return DropdownButton<int>(
+      value: currentValue.id,
+      isExpanded: true,
+      hint: const Text('Wählen …'),
+      items: items.map((item) {
+        return DropdownMenuItem<int>(
+          value: item.id,
+          child: Text(
+            item.name,
+            style: const TextStyle(fontSize: 12),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      }).toList(),
+      onChanged: (id) {
+        if (id == null) return;
+        // When no status row exists yet, use the inventoryItemId from the
+        // calculation so a new status row is created on selection.
+        final invItemId = inventoryItemId ?? currentStatus?.inventoryItemId;
+        if (invItemId == null) return;
+        controller.updateComponentStatus(
+          inventoryItemId: invItemId,
+          status: currentStatus?.status ?? 'offen',
+          required: currentStatus?.required == true ? 1 : 0,
+          quantity: currentStatus?.quantity ?? 1,
+        );
+      },
+    );
+  }
+}
+
+// -- Helpers --
+
+Color _statusColor(String label) {
+  switch (label) {
+    case 'Eingebaut':
+      return Colors.green;
+    case 'In Planung':
+      return Colors.blue;
+    case 'Geplant':
+      return Colors.orange;
+    case 'Offen':
+      return Colors.red;
+    case 'Nicht benötigt':
+      return Colors.grey;
+    default:
+      return Colors.grey;
+  }
+}
+
+String _statusDisplayName(ComponentStatus s) {
+  switch (s) {
+    case ComponentStatus.offen:
+      return 'Offen';
+    case ComponentStatus.inPlanung:
+      return 'In Planung';
+    case ComponentStatus.geplant:
+      return 'Geplant';
+    case ComponentStatus.eingebaut:
+      return 'Eingebaut';
+    case ComponentStatus.nichtBenotigt:
+      return 'Nicht benötigt';
   }
 }

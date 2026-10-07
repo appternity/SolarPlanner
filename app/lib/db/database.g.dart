@@ -3327,6 +3327,17 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _activeHeatPumpIdMeta = const VerificationMeta(
+    'activeHeatPumpId',
+  );
+  @override
+  late final GeneratedColumn<int> activeHeatPumpId = GeneratedColumn<int>(
+    'active_heat_pump_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3370,6 +3381,7 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     batAnlage,
     wbAnlage,
     wpAnlage,
+    activeHeatPumpId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3662,6 +3674,15 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         wpAnlage.isAcceptableOrUnknown(data['wp_anlage']!, _wpAnlageMeta),
       );
     }
+    if (data.containsKey('active_heat_pump_id')) {
+      context.handle(
+        _activeHeatPumpIdMeta,
+        activeHeatPumpId.isAcceptableOrUnknown(
+          data['active_heat_pump_id']!,
+          _activeHeatPumpIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3835,6 +3856,10 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         DriftSqlType.bool,
         data['${effectivePrefix}wp_anlage'],
       )!,
+      activeHeatPumpId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}active_heat_pump_id'],
+      ),
     );
   }
 
@@ -3963,6 +3988,9 @@ class Project extends DataClass implements Insertable<Project> {
 
   /// Heat pump is planned for this project?
   final bool wpAnlage;
+
+  /// The heat pump from the inventory used for this project (null = none).
+  final int? activeHeatPumpId;
   const Project({
     required this.id,
     required this.name,
@@ -4005,6 +4033,7 @@ class Project extends DataClass implements Insertable<Project> {
     required this.batAnlage,
     required this.wbAnlage,
     required this.wpAnlage,
+    this.activeHeatPumpId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4056,6 +4085,9 @@ class Project extends DataClass implements Insertable<Project> {
     map['bat_anlage'] = Variable<bool>(batAnlage);
     map['wb_anlage'] = Variable<bool>(wbAnlage);
     map['wp_anlage'] = Variable<bool>(wpAnlage);
+    if (!nullToAbsent || activeHeatPumpId != null) {
+      map['active_heat_pump_id'] = Variable<int>(activeHeatPumpId);
+    }
     return map;
   }
 
@@ -4108,6 +4140,9 @@ class Project extends DataClass implements Insertable<Project> {
       batAnlage: Value(batAnlage),
       wbAnlage: Value(wbAnlage),
       wpAnlage: Value(wpAnlage),
+      activeHeatPumpId: activeHeatPumpId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(activeHeatPumpId),
     );
   }
 
@@ -4160,6 +4195,7 @@ class Project extends DataClass implements Insertable<Project> {
       batAnlage: serializer.fromJson<bool>(json['batAnlage']),
       wbAnlage: serializer.fromJson<bool>(json['wbAnlage']),
       wpAnlage: serializer.fromJson<bool>(json['wpAnlage']),
+      activeHeatPumpId: serializer.fromJson<int?>(json['activeHeatPumpId']),
     );
   }
   @override
@@ -4207,6 +4243,7 @@ class Project extends DataClass implements Insertable<Project> {
       'batAnlage': serializer.toJson<bool>(batAnlage),
       'wbAnlage': serializer.toJson<bool>(wbAnlage),
       'wpAnlage': serializer.toJson<bool>(wpAnlage),
+      'activeHeatPumpId': serializer.toJson<int?>(activeHeatPumpId),
     };
   }
 
@@ -4252,6 +4289,7 @@ class Project extends DataClass implements Insertable<Project> {
     bool? batAnlage,
     bool? wbAnlage,
     bool? wpAnlage,
+    Value<int?> activeHeatPumpId = const Value.absent(),
   }) => Project(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -4298,6 +4336,9 @@ class Project extends DataClass implements Insertable<Project> {
     batAnlage: batAnlage ?? this.batAnlage,
     wbAnlage: wbAnlage ?? this.wbAnlage,
     wpAnlage: wpAnlage ?? this.wpAnlage,
+    activeHeatPumpId: activeHeatPumpId.present
+        ? activeHeatPumpId.value
+        : this.activeHeatPumpId,
   );
   Project copyWithCompanion(ProjectsCompanion data) {
     return Project(
@@ -4366,6 +4407,9 @@ class Project extends DataClass implements Insertable<Project> {
       batAnlage: data.batAnlage.present ? data.batAnlage.value : this.batAnlage,
       wbAnlage: data.wbAnlage.present ? data.wbAnlage.value : this.wbAnlage,
       wpAnlage: data.wpAnlage.present ? data.wpAnlage.value : this.wpAnlage,
+      activeHeatPumpId: data.activeHeatPumpId.present
+          ? data.activeHeatPumpId.value
+          : this.activeHeatPumpId,
     );
   }
 
@@ -4412,7 +4456,8 @@ class Project extends DataClass implements Insertable<Project> {
           ..write('pvAnlage: $pvAnlage, ')
           ..write('batAnlage: $batAnlage, ')
           ..write('wbAnlage: $wbAnlage, ')
-          ..write('wpAnlage: $wpAnlage')
+          ..write('wpAnlage: $wpAnlage, ')
+          ..write('activeHeatPumpId: $activeHeatPumpId')
           ..write(')'))
         .toString();
   }
@@ -4460,6 +4505,7 @@ class Project extends DataClass implements Insertable<Project> {
     batAnlage,
     wbAnlage,
     wpAnlage,
+    activeHeatPumpId,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -4505,7 +4551,8 @@ class Project extends DataClass implements Insertable<Project> {
           other.pvAnlage == this.pvAnlage &&
           other.batAnlage == this.batAnlage &&
           other.wbAnlage == this.wbAnlage &&
-          other.wpAnlage == this.wpAnlage);
+          other.wpAnlage == this.wpAnlage &&
+          other.activeHeatPumpId == this.activeHeatPumpId);
 }
 
 class ProjectsCompanion extends UpdateCompanion<Project> {
@@ -4550,6 +4597,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   final Value<bool> batAnlage;
   final Value<bool> wbAnlage;
   final Value<bool> wpAnlage;
+  final Value<int?> activeHeatPumpId;
   const ProjectsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -4592,6 +4640,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.batAnlage = const Value.absent(),
     this.wbAnlage = const Value.absent(),
     this.wpAnlage = const Value.absent(),
+    this.activeHeatPumpId = const Value.absent(),
   });
   ProjectsCompanion.insert({
     this.id = const Value.absent(),
@@ -4635,6 +4684,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.batAnlage = const Value.absent(),
     this.wbAnlage = const Value.absent(),
     this.wpAnlage = const Value.absent(),
+    this.activeHeatPumpId = const Value.absent(),
   }) : name = Value(name),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
@@ -4680,6 +4730,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Expression<bool>? batAnlage,
     Expression<bool>? wbAnlage,
     Expression<bool>? wpAnlage,
+    Expression<int>? activeHeatPumpId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4725,6 +4776,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       if (batAnlage != null) 'bat_anlage': batAnlage,
       if (wbAnlage != null) 'wb_anlage': wbAnlage,
       if (wpAnlage != null) 'wp_anlage': wpAnlage,
+      if (activeHeatPumpId != null) 'active_heat_pump_id': activeHeatPumpId,
     });
   }
 
@@ -4770,6 +4822,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Value<bool>? batAnlage,
     Value<bool>? wbAnlage,
     Value<bool>? wpAnlage,
+    Value<int?>? activeHeatPumpId,
   }) {
     return ProjectsCompanion(
       id: id ?? this.id,
@@ -4813,6 +4866,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       batAnlage: batAnlage ?? this.batAnlage,
       wbAnlage: wbAnlage ?? this.wbAnlage,
       wpAnlage: wpAnlage ?? this.wpAnlage,
+      activeHeatPumpId: activeHeatPumpId ?? this.activeHeatPumpId,
     );
   }
 
@@ -4944,6 +4998,9 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     if (wpAnlage.present) {
       map['wp_anlage'] = Variable<bool>(wpAnlage.value);
     }
+    if (activeHeatPumpId.present) {
+      map['active_heat_pump_id'] = Variable<int>(activeHeatPumpId.value);
+    }
     return map;
   }
 
@@ -4990,7 +5047,8 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
           ..write('pvAnlage: $pvAnlage, ')
           ..write('batAnlage: $batAnlage, ')
           ..write('wbAnlage: $wbAnlage, ')
-          ..write('wpAnlage: $wpAnlage')
+          ..write('wpAnlage: $wpAnlage, ')
+          ..write('activeHeatPumpId: $activeHeatPumpId')
           ..write(')'))
         .toString();
   }
@@ -8957,6 +9015,14637 @@ class ScenarioResultsCompanion extends UpdateCompanion<ScenarioResult> {
   }
 }
 
+class $HeatPumpsTable extends HeatPumps
+    with TableInfo<$HeatPumpsTable, HeatPump> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HeatPumpsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _heatingCapacityKwA7W35Meta =
+      const VerificationMeta('heatingCapacityKwA7W35');
+  @override
+  late final GeneratedColumn<double> heatingCapacityKwA7W35 =
+      GeneratedColumn<double>(
+        'heating_capacity_kw_a7_w35',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _electricalConsumptionKwA7W35Meta =
+      const VerificationMeta('electricalConsumptionKwA7W35');
+  @override
+  late final GeneratedColumn<double> electricalConsumptionKwA7W35 =
+      GeneratedColumn<double>(
+        'electrical_consumption_kw_a7_w35',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _copRatioA7W35Meta = const VerificationMeta(
+    'copRatioA7W35',
+  );
+  @override
+  late final GeneratedColumn<double> copRatioA7W35 = GeneratedColumn<double>(
+    'cop_ratio_a7_w35',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _heatingCapacityKwA2W35Meta =
+      const VerificationMeta('heatingCapacityKwA2W35');
+  @override
+  late final GeneratedColumn<double> heatingCapacityKwA2W35 =
+      GeneratedColumn<double>(
+        'heating_capacity_kw_a2_w35',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _electricalConsumptionKwA2W35Meta =
+      const VerificationMeta('electricalConsumptionKwA2W35');
+  @override
+  late final GeneratedColumn<double> electricalConsumptionKwA2W35 =
+      GeneratedColumn<double>(
+        'electrical_consumption_kw_a2_w35',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _copRatioA2W35Meta = const VerificationMeta(
+    'copRatioA2W35',
+  );
+  @override
+  late final GeneratedColumn<double> copRatioA2W35 = GeneratedColumn<double>(
+    'cop_ratio_a2_w35',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _heatingCapacityKwPartialLoadMeta =
+      const VerificationMeta('heatingCapacityKwPartialLoad');
+  @override
+  late final GeneratedColumn<double> heatingCapacityKwPartialLoad =
+      GeneratedColumn<double>(
+        'heating_capacity_kw_partial_load',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _electricalConsumptionKwPartialLoadMeta =
+      const VerificationMeta('electricalConsumptionKwPartialLoad');
+  @override
+  late final GeneratedColumn<double> electricalConsumptionKwPartialLoad =
+      GeneratedColumn<double>(
+        'electrical_consumption_kw_partial_load',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _copRatioPartialLoadMeta =
+      const VerificationMeta('copRatioPartialLoad');
+  @override
+  late final GeneratedColumn<double> copRatioPartialLoad =
+      GeneratedColumn<double>(
+        'cop_ratio_partial_load',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _coolingCapacityKwMeta = const VerificationMeta(
+    'coolingCapacityKw',
+  );
+  @override
+  late final GeneratedColumn<double> coolingCapacityKw =
+      GeneratedColumn<double>(
+        'cooling_capacity_kw',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _electricalConsumptionKwCoolingMeta =
+      const VerificationMeta('electricalConsumptionKwCooling');
+  @override
+  late final GeneratedColumn<double> electricalConsumptionKwCooling =
+      GeneratedColumn<double>(
+        'electrical_consumption_kw_cooling',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _eerRatioMeta = const VerificationMeta(
+    'eerRatio',
+  );
+  @override
+  late final GeneratedColumn<double> eerRatio = GeneratedColumn<double>(
+    'eer_ratio',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _annualHeatingEfficiencyPercentMeta =
+      const VerificationMeta('annualHeatingEfficiencyPercent');
+  @override
+  late final GeneratedColumn<String> annualHeatingEfficiencyPercent =
+      GeneratedColumn<String>(
+        'annual_heating_efficiency_percent',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _compressorVoltageNominalVoltsMeta =
+      const VerificationMeta('compressorVoltageNominalVolts');
+  @override
+  late final GeneratedColumn<int> compressorVoltageNominalVolts =
+      GeneratedColumn<int>(
+        'compressor_voltage_nominal_volts',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _compressorFrequencyHzMeta =
+      const VerificationMeta('compressorFrequencyHz');
+  @override
+  late final GeneratedColumn<int> compressorFrequencyHz = GeneratedColumn<int>(
+    'compressor_frequency_hz',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _soundLevelErpDbAMeta = const VerificationMeta(
+    'soundLevelErpDbA',
+  );
+  @override
+  late final GeneratedColumn<double> soundLevelErpDbA = GeneratedColumn<double>(
+    'sound_level_erp_db_a',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _maxSoundLevelDayNightDbAMeta =
+      const VerificationMeta('maxSoundLevelDayNightDbA');
+  @override
+  late final GeneratedColumn<String> maxSoundLevelDayNightDbA =
+      GeneratedColumn<String>(
+        'max_sound_level_day_night_db_a',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _dimensionsUnpackedWidthMmMeta =
+      const VerificationMeta('dimensionsUnpackedWidthMm');
+  @override
+  late final GeneratedColumn<int> dimensionsUnpackedWidthMm =
+      GeneratedColumn<int>(
+        'dimensions_unpacked_width_mm',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _dimensionsUnpackedDepthMmMeta =
+      const VerificationMeta('dimensionsUnpackedDepthMm');
+  @override
+  late final GeneratedColumn<int> dimensionsUnpackedDepthMm =
+      GeneratedColumn<int>(
+        'dimensions_unpacked_depth_mm',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _dimensionsUnpackedHeightMmMeta =
+      const VerificationMeta('dimensionsUnpackedHeightMm');
+  @override
+  late final GeneratedColumn<int> dimensionsUnpackedHeightMm =
+      GeneratedColumn<int>(
+        'dimensions_unpacked_height_mm',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _weightKgMeta = const VerificationMeta(
+    'weightKg',
+  );
+  @override
+  late final GeneratedColumn<double> weightKg = GeneratedColumn<double>(
+    'weight_kg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _refrigerantTypeMeta = const VerificationMeta(
+    'refrigerantType',
+  );
+  @override
+  late final GeneratedColumn<String> refrigerantType = GeneratedColumn<String>(
+    'refrigerant_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _gwpEuRegulationValueMeta =
+      const VerificationMeta('gwpEuRegulationValue');
+  @override
+  late final GeneratedColumn<double> gwpEuRegulationValue =
+      GeneratedColumn<double>(
+        'gwp_eu_regulation_value',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _refrigerantQuantityKgCo2EquivalentMeta =
+      const VerificationMeta('refrigerantQuantityKgCo2Equivalent');
+  @override
+  late final GeneratedColumn<double> refrigerantQuantityKgCo2Equivalent =
+      GeneratedColumn<double>(
+        'refrigerant_quantity_kg_co2_equivalent',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _co2EquivalentPerTonMeta =
+      const VerificationMeta('co2EquivalentPerTon');
+  @override
+  late final GeneratedColumn<double> co2EquivalentPerTon =
+      GeneratedColumn<double>(
+        'co2_equivalent_per_ton',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _energyEfficiencyClass35C55CMeta =
+      const VerificationMeta('energyEfficiencyClass35C55C');
+  @override
+  late final GeneratedColumn<String> energyEfficiencyClass35C55C =
+      GeneratedColumn<String>(
+        'energy_efficiency_class35_c55_c',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    displayName,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    heatingCapacityKwA7W35,
+    electricalConsumptionKwA7W35,
+    copRatioA7W35,
+    heatingCapacityKwA2W35,
+    electricalConsumptionKwA2W35,
+    copRatioA2W35,
+    heatingCapacityKwPartialLoad,
+    electricalConsumptionKwPartialLoad,
+    copRatioPartialLoad,
+    coolingCapacityKw,
+    electricalConsumptionKwCooling,
+    eerRatio,
+    annualHeatingEfficiencyPercent,
+    compressorVoltageNominalVolts,
+    compressorFrequencyHz,
+    soundLevelErpDbA,
+    maxSoundLevelDayNightDbA,
+    dimensionsUnpackedWidthMm,
+    dimensionsUnpackedDepthMm,
+    dimensionsUnpackedHeightMm,
+    weightKg,
+    refrigerantType,
+    gwpEuRegulationValue,
+    refrigerantQuantityKgCo2Equivalent,
+    co2EquivalentPerTon,
+    energyEfficiencyClass35C55C,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'heat_pumps';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HeatPump> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_manufacturerMeta);
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_seriesNameMeta);
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_modelNumberMeta);
+    }
+    if (data.containsKey('heating_capacity_kw_a7_w35')) {
+      context.handle(
+        _heatingCapacityKwA7W35Meta,
+        heatingCapacityKwA7W35.isAcceptableOrUnknown(
+          data['heating_capacity_kw_a7_w35']!,
+          _heatingCapacityKwA7W35Meta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_heatingCapacityKwA7W35Meta);
+    }
+    if (data.containsKey('electrical_consumption_kw_a7_w35')) {
+      context.handle(
+        _electricalConsumptionKwA7W35Meta,
+        electricalConsumptionKwA7W35.isAcceptableOrUnknown(
+          data['electrical_consumption_kw_a7_w35']!,
+          _electricalConsumptionKwA7W35Meta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_electricalConsumptionKwA7W35Meta);
+    }
+    if (data.containsKey('cop_ratio_a7_w35')) {
+      context.handle(
+        _copRatioA7W35Meta,
+        copRatioA7W35.isAcceptableOrUnknown(
+          data['cop_ratio_a7_w35']!,
+          _copRatioA7W35Meta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_copRatioA7W35Meta);
+    }
+    if (data.containsKey('heating_capacity_kw_a2_w35')) {
+      context.handle(
+        _heatingCapacityKwA2W35Meta,
+        heatingCapacityKwA2W35.isAcceptableOrUnknown(
+          data['heating_capacity_kw_a2_w35']!,
+          _heatingCapacityKwA2W35Meta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_heatingCapacityKwA2W35Meta);
+    }
+    if (data.containsKey('electrical_consumption_kw_a2_w35')) {
+      context.handle(
+        _electricalConsumptionKwA2W35Meta,
+        electricalConsumptionKwA2W35.isAcceptableOrUnknown(
+          data['electrical_consumption_kw_a2_w35']!,
+          _electricalConsumptionKwA2W35Meta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_electricalConsumptionKwA2W35Meta);
+    }
+    if (data.containsKey('cop_ratio_a2_w35')) {
+      context.handle(
+        _copRatioA2W35Meta,
+        copRatioA2W35.isAcceptableOrUnknown(
+          data['cop_ratio_a2_w35']!,
+          _copRatioA2W35Meta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_copRatioA2W35Meta);
+    }
+    if (data.containsKey('heating_capacity_kw_partial_load')) {
+      context.handle(
+        _heatingCapacityKwPartialLoadMeta,
+        heatingCapacityKwPartialLoad.isAcceptableOrUnknown(
+          data['heating_capacity_kw_partial_load']!,
+          _heatingCapacityKwPartialLoadMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_heatingCapacityKwPartialLoadMeta);
+    }
+    if (data.containsKey('electrical_consumption_kw_partial_load')) {
+      context.handle(
+        _electricalConsumptionKwPartialLoadMeta,
+        electricalConsumptionKwPartialLoad.isAcceptableOrUnknown(
+          data['electrical_consumption_kw_partial_load']!,
+          _electricalConsumptionKwPartialLoadMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_electricalConsumptionKwPartialLoadMeta);
+    }
+    if (data.containsKey('cop_ratio_partial_load')) {
+      context.handle(
+        _copRatioPartialLoadMeta,
+        copRatioPartialLoad.isAcceptableOrUnknown(
+          data['cop_ratio_partial_load']!,
+          _copRatioPartialLoadMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_copRatioPartialLoadMeta);
+    }
+    if (data.containsKey('cooling_capacity_kw')) {
+      context.handle(
+        _coolingCapacityKwMeta,
+        coolingCapacityKw.isAcceptableOrUnknown(
+          data['cooling_capacity_kw']!,
+          _coolingCapacityKwMeta,
+        ),
+      );
+    }
+    if (data.containsKey('electrical_consumption_kw_cooling')) {
+      context.handle(
+        _electricalConsumptionKwCoolingMeta,
+        electricalConsumptionKwCooling.isAcceptableOrUnknown(
+          data['electrical_consumption_kw_cooling']!,
+          _electricalConsumptionKwCoolingMeta,
+        ),
+      );
+    }
+    if (data.containsKey('eer_ratio')) {
+      context.handle(
+        _eerRatioMeta,
+        eerRatio.isAcceptableOrUnknown(data['eer_ratio']!, _eerRatioMeta),
+      );
+    }
+    if (data.containsKey('annual_heating_efficiency_percent')) {
+      context.handle(
+        _annualHeatingEfficiencyPercentMeta,
+        annualHeatingEfficiencyPercent.isAcceptableOrUnknown(
+          data['annual_heating_efficiency_percent']!,
+          _annualHeatingEfficiencyPercentMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_annualHeatingEfficiencyPercentMeta);
+    }
+    if (data.containsKey('compressor_voltage_nominal_volts')) {
+      context.handle(
+        _compressorVoltageNominalVoltsMeta,
+        compressorVoltageNominalVolts.isAcceptableOrUnknown(
+          data['compressor_voltage_nominal_volts']!,
+          _compressorVoltageNominalVoltsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_compressorVoltageNominalVoltsMeta);
+    }
+    if (data.containsKey('compressor_frequency_hz')) {
+      context.handle(
+        _compressorFrequencyHzMeta,
+        compressorFrequencyHz.isAcceptableOrUnknown(
+          data['compressor_frequency_hz']!,
+          _compressorFrequencyHzMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_compressorFrequencyHzMeta);
+    }
+    if (data.containsKey('sound_level_erp_db_a')) {
+      context.handle(
+        _soundLevelErpDbAMeta,
+        soundLevelErpDbA.isAcceptableOrUnknown(
+          data['sound_level_erp_db_a']!,
+          _soundLevelErpDbAMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_soundLevelErpDbAMeta);
+    }
+    if (data.containsKey('max_sound_level_day_night_db_a')) {
+      context.handle(
+        _maxSoundLevelDayNightDbAMeta,
+        maxSoundLevelDayNightDbA.isAcceptableOrUnknown(
+          data['max_sound_level_day_night_db_a']!,
+          _maxSoundLevelDayNightDbAMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_maxSoundLevelDayNightDbAMeta);
+    }
+    if (data.containsKey('dimensions_unpacked_width_mm')) {
+      context.handle(
+        _dimensionsUnpackedWidthMmMeta,
+        dimensionsUnpackedWidthMm.isAcceptableOrUnknown(
+          data['dimensions_unpacked_width_mm']!,
+          _dimensionsUnpackedWidthMmMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dimensionsUnpackedWidthMmMeta);
+    }
+    if (data.containsKey('dimensions_unpacked_depth_mm')) {
+      context.handle(
+        _dimensionsUnpackedDepthMmMeta,
+        dimensionsUnpackedDepthMm.isAcceptableOrUnknown(
+          data['dimensions_unpacked_depth_mm']!,
+          _dimensionsUnpackedDepthMmMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dimensionsUnpackedDepthMmMeta);
+    }
+    if (data.containsKey('dimensions_unpacked_height_mm')) {
+      context.handle(
+        _dimensionsUnpackedHeightMmMeta,
+        dimensionsUnpackedHeightMm.isAcceptableOrUnknown(
+          data['dimensions_unpacked_height_mm']!,
+          _dimensionsUnpackedHeightMmMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dimensionsUnpackedHeightMmMeta);
+    }
+    if (data.containsKey('weight_kg')) {
+      context.handle(
+        _weightKgMeta,
+        weightKg.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_weightKgMeta);
+    }
+    if (data.containsKey('refrigerant_type')) {
+      context.handle(
+        _refrigerantTypeMeta,
+        refrigerantType.isAcceptableOrUnknown(
+          data['refrigerant_type']!,
+          _refrigerantTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_refrigerantTypeMeta);
+    }
+    if (data.containsKey('gwp_eu_regulation_value')) {
+      context.handle(
+        _gwpEuRegulationValueMeta,
+        gwpEuRegulationValue.isAcceptableOrUnknown(
+          data['gwp_eu_regulation_value']!,
+          _gwpEuRegulationValueMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_gwpEuRegulationValueMeta);
+    }
+    if (data.containsKey('refrigerant_quantity_kg_co2_equivalent')) {
+      context.handle(
+        _refrigerantQuantityKgCo2EquivalentMeta,
+        refrigerantQuantityKgCo2Equivalent.isAcceptableOrUnknown(
+          data['refrigerant_quantity_kg_co2_equivalent']!,
+          _refrigerantQuantityKgCo2EquivalentMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_refrigerantQuantityKgCo2EquivalentMeta);
+    }
+    if (data.containsKey('co2_equivalent_per_ton')) {
+      context.handle(
+        _co2EquivalentPerTonMeta,
+        co2EquivalentPerTon.isAcceptableOrUnknown(
+          data['co2_equivalent_per_ton']!,
+          _co2EquivalentPerTonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_co2EquivalentPerTonMeta);
+    }
+    if (data.containsKey('energy_efficiency_class35_c55_c')) {
+      context.handle(
+        _energyEfficiencyClass35C55CMeta,
+        energyEfficiencyClass35C55C.isAcceptableOrUnknown(
+          data['energy_efficiency_class35_c55_c']!,
+          _energyEfficiencyClass35C55CMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_energyEfficiencyClass35C55CMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HeatPump map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HeatPump(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      heatingCapacityKwA7W35: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}heating_capacity_kw_a7_w35'],
+      )!,
+      electricalConsumptionKwA7W35: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}electrical_consumption_kw_a7_w35'],
+      )!,
+      copRatioA7W35: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cop_ratio_a7_w35'],
+      )!,
+      heatingCapacityKwA2W35: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}heating_capacity_kw_a2_w35'],
+      )!,
+      electricalConsumptionKwA2W35: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}electrical_consumption_kw_a2_w35'],
+      )!,
+      copRatioA2W35: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cop_ratio_a2_w35'],
+      )!,
+      heatingCapacityKwPartialLoad: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}heating_capacity_kw_partial_load'],
+      )!,
+      electricalConsumptionKwPartialLoad: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}electrical_consumption_kw_partial_load'],
+      )!,
+      copRatioPartialLoad: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cop_ratio_partial_load'],
+      )!,
+      coolingCapacityKw: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cooling_capacity_kw'],
+      ),
+      electricalConsumptionKwCooling: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}electrical_consumption_kw_cooling'],
+      ),
+      eerRatio: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}eer_ratio'],
+      ),
+      annualHeatingEfficiencyPercent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}annual_heating_efficiency_percent'],
+      )!,
+      compressorVoltageNominalVolts: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compressor_voltage_nominal_volts'],
+      )!,
+      compressorFrequencyHz: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}compressor_frequency_hz'],
+      )!,
+      soundLevelErpDbA: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}sound_level_erp_db_a'],
+      )!,
+      maxSoundLevelDayNightDbA: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}max_sound_level_day_night_db_a'],
+      )!,
+      dimensionsUnpackedWidthMm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dimensions_unpacked_width_mm'],
+      )!,
+      dimensionsUnpackedDepthMm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dimensions_unpacked_depth_mm'],
+      )!,
+      dimensionsUnpackedHeightMm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dimensions_unpacked_height_mm'],
+      )!,
+      weightKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight_kg'],
+      )!,
+      refrigerantType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}refrigerant_type'],
+      )!,
+      gwpEuRegulationValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}gwp_eu_regulation_value'],
+      )!,
+      refrigerantQuantityKgCo2Equivalent: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}refrigerant_quantity_kg_co2_equivalent'],
+      )!,
+      co2EquivalentPerTon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}co2_equivalent_per_ton'],
+      )!,
+      energyEfficiencyClass35C55C: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}energy_efficiency_class35_c55_c'],
+      )!,
+    );
+  }
+
+  @override
+  $HeatPumpsTable createAlias(String alias) {
+    return $HeatPumpsTable(attachedDatabase, alias);
+  }
+}
+
+class HeatPump extends DataClass implements Insertable<HeatPump> {
+  final int id;
+
+  /// Display name, e.g. "Vaillant aroTHERM pro VWL 55/7.1 A 230V".
+  final String displayName;
+
+  /// Manufacturer, e.g. "Vaillant".
+  final String manufacturer;
+
+  /// Series name, e.g. "aroTHERM pro".
+  final String seriesName;
+
+  /// Model number, e.g. "VWL 55/7.1 A 230V".
+  final String modelNumber;
+
+  /// Heating capacity in kW at A7/W35.
+  final double heatingCapacityKwA7W35;
+
+  /// Electrical consumption in kW at A7/W35.
+  final double electricalConsumptionKwA7W35;
+
+  /// COP ratio at A7/W35.
+  final double copRatioA7W35;
+
+  /// Heating capacity in kW at A2/W35.
+  final double heatingCapacityKwA2W35;
+
+  /// Electrical consumption in kW at A2/W35.
+  final double electricalConsumptionKwA2W35;
+
+  /// COP ratio at A2/W35.
+  final double copRatioA2W35;
+
+  /// Heating capacity in kW at partial load.
+  final double heatingCapacityKwPartialLoad;
+
+  /// Electrical consumption in kW at partial load.
+  final double electricalConsumptionKwPartialLoad;
+
+  /// COP ratio at partial load.
+  final double copRatioPartialLoad;
+
+  /// Cooling capacity in kW (null if not available).
+  final double? coolingCapacityKw;
+
+  /// Electrical consumption in kW for cooling.
+  final double? electricalConsumptionKwCooling;
+
+  /// EER ratio (null if not available).
+  final double? eerRatio;
+
+  /// Annual heating efficiency in percent (as string, e.g. "198 / 145").
+  final String annualHeatingEfficiencyPercent;
+
+  /// Compressor nominal voltage (V).
+  final int compressorVoltageNominalVolts;
+
+  /// Compressor frequency in Hz.
+  final int compressorFrequencyHz;
+
+  /// Sound level (ERP) in dB(A).
+  final double soundLevelErpDbA;
+
+  /// Max sound level day/night in dB(A) (as string, e.g. "57.7 / 48.2").
+  final String maxSoundLevelDayNightDbA;
+
+  /// Dimensions unpacked (mm): width.
+  final int dimensionsUnpackedWidthMm;
+
+  /// Dimensions unpacked (mm): depth.
+  final int dimensionsUnpackedDepthMm;
+
+  /// Dimensions unpacked (mm): height.
+  final int dimensionsUnpackedHeightMm;
+
+  /// Weight in kg.
+  final double weightKg;
+
+  /// Refrigerant type, e.g. "R290".
+  final String refrigerantType;
+
+  /// GWP (EU regulation) value.
+  final double gwpEuRegulationValue;
+
+  /// Refrigerant quantity in kg CO2 equivalent.
+  final double refrigerantQuantityKgCo2Equivalent;
+
+  /// CO2 equivalent per ton.
+  final double co2EquivalentPerTon;
+
+  /// Energy efficiency class at 35°C/55°C (e.g. "III", empty if not classified).
+  final String energyEfficiencyClass35C55C;
+  const HeatPump({
+    required this.id,
+    required this.displayName,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.heatingCapacityKwA7W35,
+    required this.electricalConsumptionKwA7W35,
+    required this.copRatioA7W35,
+    required this.heatingCapacityKwA2W35,
+    required this.electricalConsumptionKwA2W35,
+    required this.copRatioA2W35,
+    required this.heatingCapacityKwPartialLoad,
+    required this.electricalConsumptionKwPartialLoad,
+    required this.copRatioPartialLoad,
+    this.coolingCapacityKw,
+    this.electricalConsumptionKwCooling,
+    this.eerRatio,
+    required this.annualHeatingEfficiencyPercent,
+    required this.compressorVoltageNominalVolts,
+    required this.compressorFrequencyHz,
+    required this.soundLevelErpDbA,
+    required this.maxSoundLevelDayNightDbA,
+    required this.dimensionsUnpackedWidthMm,
+    required this.dimensionsUnpackedDepthMm,
+    required this.dimensionsUnpackedHeightMm,
+    required this.weightKg,
+    required this.refrigerantType,
+    required this.gwpEuRegulationValue,
+    required this.refrigerantQuantityKgCo2Equivalent,
+    required this.co2EquivalentPerTon,
+    required this.energyEfficiencyClass35C55C,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['display_name'] = Variable<String>(displayName);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['heating_capacity_kw_a7_w35'] = Variable<double>(
+      heatingCapacityKwA7W35,
+    );
+    map['electrical_consumption_kw_a7_w35'] = Variable<double>(
+      electricalConsumptionKwA7W35,
+    );
+    map['cop_ratio_a7_w35'] = Variable<double>(copRatioA7W35);
+    map['heating_capacity_kw_a2_w35'] = Variable<double>(
+      heatingCapacityKwA2W35,
+    );
+    map['electrical_consumption_kw_a2_w35'] = Variable<double>(
+      electricalConsumptionKwA2W35,
+    );
+    map['cop_ratio_a2_w35'] = Variable<double>(copRatioA2W35);
+    map['heating_capacity_kw_partial_load'] = Variable<double>(
+      heatingCapacityKwPartialLoad,
+    );
+    map['electrical_consumption_kw_partial_load'] = Variable<double>(
+      electricalConsumptionKwPartialLoad,
+    );
+    map['cop_ratio_partial_load'] = Variable<double>(copRatioPartialLoad);
+    if (!nullToAbsent || coolingCapacityKw != null) {
+      map['cooling_capacity_kw'] = Variable<double>(coolingCapacityKw);
+    }
+    if (!nullToAbsent || electricalConsumptionKwCooling != null) {
+      map['electrical_consumption_kw_cooling'] = Variable<double>(
+        electricalConsumptionKwCooling,
+      );
+    }
+    if (!nullToAbsent || eerRatio != null) {
+      map['eer_ratio'] = Variable<double>(eerRatio);
+    }
+    map['annual_heating_efficiency_percent'] = Variable<String>(
+      annualHeatingEfficiencyPercent,
+    );
+    map['compressor_voltage_nominal_volts'] = Variable<int>(
+      compressorVoltageNominalVolts,
+    );
+    map['compressor_frequency_hz'] = Variable<int>(compressorFrequencyHz);
+    map['sound_level_erp_db_a'] = Variable<double>(soundLevelErpDbA);
+    map['max_sound_level_day_night_db_a'] = Variable<String>(
+      maxSoundLevelDayNightDbA,
+    );
+    map['dimensions_unpacked_width_mm'] = Variable<int>(
+      dimensionsUnpackedWidthMm,
+    );
+    map['dimensions_unpacked_depth_mm'] = Variable<int>(
+      dimensionsUnpackedDepthMm,
+    );
+    map['dimensions_unpacked_height_mm'] = Variable<int>(
+      dimensionsUnpackedHeightMm,
+    );
+    map['weight_kg'] = Variable<double>(weightKg);
+    map['refrigerant_type'] = Variable<String>(refrigerantType);
+    map['gwp_eu_regulation_value'] = Variable<double>(gwpEuRegulationValue);
+    map['refrigerant_quantity_kg_co2_equivalent'] = Variable<double>(
+      refrigerantQuantityKgCo2Equivalent,
+    );
+    map['co2_equivalent_per_ton'] = Variable<double>(co2EquivalentPerTon);
+    map['energy_efficiency_class35_c55_c'] = Variable<String>(
+      energyEfficiencyClass35C55C,
+    );
+    return map;
+  }
+
+  HeatPumpsCompanion toCompanion(bool nullToAbsent) {
+    return HeatPumpsCompanion(
+      id: Value(id),
+      displayName: Value(displayName),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      heatingCapacityKwA7W35: Value(heatingCapacityKwA7W35),
+      electricalConsumptionKwA7W35: Value(electricalConsumptionKwA7W35),
+      copRatioA7W35: Value(copRatioA7W35),
+      heatingCapacityKwA2W35: Value(heatingCapacityKwA2W35),
+      electricalConsumptionKwA2W35: Value(electricalConsumptionKwA2W35),
+      copRatioA2W35: Value(copRatioA2W35),
+      heatingCapacityKwPartialLoad: Value(heatingCapacityKwPartialLoad),
+      electricalConsumptionKwPartialLoad: Value(
+        electricalConsumptionKwPartialLoad,
+      ),
+      copRatioPartialLoad: Value(copRatioPartialLoad),
+      coolingCapacityKw: coolingCapacityKw == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coolingCapacityKw),
+      electricalConsumptionKwCooling:
+          electricalConsumptionKwCooling == null && nullToAbsent
+          ? const Value.absent()
+          : Value(electricalConsumptionKwCooling),
+      eerRatio: eerRatio == null && nullToAbsent
+          ? const Value.absent()
+          : Value(eerRatio),
+      annualHeatingEfficiencyPercent: Value(annualHeatingEfficiencyPercent),
+      compressorVoltageNominalVolts: Value(compressorVoltageNominalVolts),
+      compressorFrequencyHz: Value(compressorFrequencyHz),
+      soundLevelErpDbA: Value(soundLevelErpDbA),
+      maxSoundLevelDayNightDbA: Value(maxSoundLevelDayNightDbA),
+      dimensionsUnpackedWidthMm: Value(dimensionsUnpackedWidthMm),
+      dimensionsUnpackedDepthMm: Value(dimensionsUnpackedDepthMm),
+      dimensionsUnpackedHeightMm: Value(dimensionsUnpackedHeightMm),
+      weightKg: Value(weightKg),
+      refrigerantType: Value(refrigerantType),
+      gwpEuRegulationValue: Value(gwpEuRegulationValue),
+      refrigerantQuantityKgCo2Equivalent: Value(
+        refrigerantQuantityKgCo2Equivalent,
+      ),
+      co2EquivalentPerTon: Value(co2EquivalentPerTon),
+      energyEfficiencyClass35C55C: Value(energyEfficiencyClass35C55C),
+    );
+  }
+
+  factory HeatPump.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HeatPump(
+      id: serializer.fromJson<int>(json['id']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      heatingCapacityKwA7W35: serializer.fromJson<double>(
+        json['heatingCapacityKwA7W35'],
+      ),
+      electricalConsumptionKwA7W35: serializer.fromJson<double>(
+        json['electricalConsumptionKwA7W35'],
+      ),
+      copRatioA7W35: serializer.fromJson<double>(json['copRatioA7W35']),
+      heatingCapacityKwA2W35: serializer.fromJson<double>(
+        json['heatingCapacityKwA2W35'],
+      ),
+      electricalConsumptionKwA2W35: serializer.fromJson<double>(
+        json['electricalConsumptionKwA2W35'],
+      ),
+      copRatioA2W35: serializer.fromJson<double>(json['copRatioA2W35']),
+      heatingCapacityKwPartialLoad: serializer.fromJson<double>(
+        json['heatingCapacityKwPartialLoad'],
+      ),
+      electricalConsumptionKwPartialLoad: serializer.fromJson<double>(
+        json['electricalConsumptionKwPartialLoad'],
+      ),
+      copRatioPartialLoad: serializer.fromJson<double>(
+        json['copRatioPartialLoad'],
+      ),
+      coolingCapacityKw: serializer.fromJson<double?>(
+        json['coolingCapacityKw'],
+      ),
+      electricalConsumptionKwCooling: serializer.fromJson<double?>(
+        json['electricalConsumptionKwCooling'],
+      ),
+      eerRatio: serializer.fromJson<double?>(json['eerRatio']),
+      annualHeatingEfficiencyPercent: serializer.fromJson<String>(
+        json['annualHeatingEfficiencyPercent'],
+      ),
+      compressorVoltageNominalVolts: serializer.fromJson<int>(
+        json['compressorVoltageNominalVolts'],
+      ),
+      compressorFrequencyHz: serializer.fromJson<int>(
+        json['compressorFrequencyHz'],
+      ),
+      soundLevelErpDbA: serializer.fromJson<double>(json['soundLevelErpDbA']),
+      maxSoundLevelDayNightDbA: serializer.fromJson<String>(
+        json['maxSoundLevelDayNightDbA'],
+      ),
+      dimensionsUnpackedWidthMm: serializer.fromJson<int>(
+        json['dimensionsUnpackedWidthMm'],
+      ),
+      dimensionsUnpackedDepthMm: serializer.fromJson<int>(
+        json['dimensionsUnpackedDepthMm'],
+      ),
+      dimensionsUnpackedHeightMm: serializer.fromJson<int>(
+        json['dimensionsUnpackedHeightMm'],
+      ),
+      weightKg: serializer.fromJson<double>(json['weightKg']),
+      refrigerantType: serializer.fromJson<String>(json['refrigerantType']),
+      gwpEuRegulationValue: serializer.fromJson<double>(
+        json['gwpEuRegulationValue'],
+      ),
+      refrigerantQuantityKgCo2Equivalent: serializer.fromJson<double>(
+        json['refrigerantQuantityKgCo2Equivalent'],
+      ),
+      co2EquivalentPerTon: serializer.fromJson<double>(
+        json['co2EquivalentPerTon'],
+      ),
+      energyEfficiencyClass35C55C: serializer.fromJson<String>(
+        json['energyEfficiencyClass35C55C'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'displayName': serializer.toJson<String>(displayName),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'heatingCapacityKwA7W35': serializer.toJson<double>(
+        heatingCapacityKwA7W35,
+      ),
+      'electricalConsumptionKwA7W35': serializer.toJson<double>(
+        electricalConsumptionKwA7W35,
+      ),
+      'copRatioA7W35': serializer.toJson<double>(copRatioA7W35),
+      'heatingCapacityKwA2W35': serializer.toJson<double>(
+        heatingCapacityKwA2W35,
+      ),
+      'electricalConsumptionKwA2W35': serializer.toJson<double>(
+        electricalConsumptionKwA2W35,
+      ),
+      'copRatioA2W35': serializer.toJson<double>(copRatioA2W35),
+      'heatingCapacityKwPartialLoad': serializer.toJson<double>(
+        heatingCapacityKwPartialLoad,
+      ),
+      'electricalConsumptionKwPartialLoad': serializer.toJson<double>(
+        electricalConsumptionKwPartialLoad,
+      ),
+      'copRatioPartialLoad': serializer.toJson<double>(copRatioPartialLoad),
+      'coolingCapacityKw': serializer.toJson<double?>(coolingCapacityKw),
+      'electricalConsumptionKwCooling': serializer.toJson<double?>(
+        electricalConsumptionKwCooling,
+      ),
+      'eerRatio': serializer.toJson<double?>(eerRatio),
+      'annualHeatingEfficiencyPercent': serializer.toJson<String>(
+        annualHeatingEfficiencyPercent,
+      ),
+      'compressorVoltageNominalVolts': serializer.toJson<int>(
+        compressorVoltageNominalVolts,
+      ),
+      'compressorFrequencyHz': serializer.toJson<int>(compressorFrequencyHz),
+      'soundLevelErpDbA': serializer.toJson<double>(soundLevelErpDbA),
+      'maxSoundLevelDayNightDbA': serializer.toJson<String>(
+        maxSoundLevelDayNightDbA,
+      ),
+      'dimensionsUnpackedWidthMm': serializer.toJson<int>(
+        dimensionsUnpackedWidthMm,
+      ),
+      'dimensionsUnpackedDepthMm': serializer.toJson<int>(
+        dimensionsUnpackedDepthMm,
+      ),
+      'dimensionsUnpackedHeightMm': serializer.toJson<int>(
+        dimensionsUnpackedHeightMm,
+      ),
+      'weightKg': serializer.toJson<double>(weightKg),
+      'refrigerantType': serializer.toJson<String>(refrigerantType),
+      'gwpEuRegulationValue': serializer.toJson<double>(gwpEuRegulationValue),
+      'refrigerantQuantityKgCo2Equivalent': serializer.toJson<double>(
+        refrigerantQuantityKgCo2Equivalent,
+      ),
+      'co2EquivalentPerTon': serializer.toJson<double>(co2EquivalentPerTon),
+      'energyEfficiencyClass35C55C': serializer.toJson<String>(
+        energyEfficiencyClass35C55C,
+      ),
+    };
+  }
+
+  HeatPump copyWith({
+    int? id,
+    String? displayName,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    double? heatingCapacityKwA7W35,
+    double? electricalConsumptionKwA7W35,
+    double? copRatioA7W35,
+    double? heatingCapacityKwA2W35,
+    double? electricalConsumptionKwA2W35,
+    double? copRatioA2W35,
+    double? heatingCapacityKwPartialLoad,
+    double? electricalConsumptionKwPartialLoad,
+    double? copRatioPartialLoad,
+    Value<double?> coolingCapacityKw = const Value.absent(),
+    Value<double?> electricalConsumptionKwCooling = const Value.absent(),
+    Value<double?> eerRatio = const Value.absent(),
+    String? annualHeatingEfficiencyPercent,
+    int? compressorVoltageNominalVolts,
+    int? compressorFrequencyHz,
+    double? soundLevelErpDbA,
+    String? maxSoundLevelDayNightDbA,
+    int? dimensionsUnpackedWidthMm,
+    int? dimensionsUnpackedDepthMm,
+    int? dimensionsUnpackedHeightMm,
+    double? weightKg,
+    String? refrigerantType,
+    double? gwpEuRegulationValue,
+    double? refrigerantQuantityKgCo2Equivalent,
+    double? co2EquivalentPerTon,
+    String? energyEfficiencyClass35C55C,
+  }) => HeatPump(
+    id: id ?? this.id,
+    displayName: displayName ?? this.displayName,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    heatingCapacityKwA7W35:
+        heatingCapacityKwA7W35 ?? this.heatingCapacityKwA7W35,
+    electricalConsumptionKwA7W35:
+        electricalConsumptionKwA7W35 ?? this.electricalConsumptionKwA7W35,
+    copRatioA7W35: copRatioA7W35 ?? this.copRatioA7W35,
+    heatingCapacityKwA2W35:
+        heatingCapacityKwA2W35 ?? this.heatingCapacityKwA2W35,
+    electricalConsumptionKwA2W35:
+        electricalConsumptionKwA2W35 ?? this.electricalConsumptionKwA2W35,
+    copRatioA2W35: copRatioA2W35 ?? this.copRatioA2W35,
+    heatingCapacityKwPartialLoad:
+        heatingCapacityKwPartialLoad ?? this.heatingCapacityKwPartialLoad,
+    electricalConsumptionKwPartialLoad:
+        electricalConsumptionKwPartialLoad ??
+        this.electricalConsumptionKwPartialLoad,
+    copRatioPartialLoad: copRatioPartialLoad ?? this.copRatioPartialLoad,
+    coolingCapacityKw: coolingCapacityKw.present
+        ? coolingCapacityKw.value
+        : this.coolingCapacityKw,
+    electricalConsumptionKwCooling: electricalConsumptionKwCooling.present
+        ? electricalConsumptionKwCooling.value
+        : this.electricalConsumptionKwCooling,
+    eerRatio: eerRatio.present ? eerRatio.value : this.eerRatio,
+    annualHeatingEfficiencyPercent:
+        annualHeatingEfficiencyPercent ?? this.annualHeatingEfficiencyPercent,
+    compressorVoltageNominalVolts:
+        compressorVoltageNominalVolts ?? this.compressorVoltageNominalVolts,
+    compressorFrequencyHz: compressorFrequencyHz ?? this.compressorFrequencyHz,
+    soundLevelErpDbA: soundLevelErpDbA ?? this.soundLevelErpDbA,
+    maxSoundLevelDayNightDbA:
+        maxSoundLevelDayNightDbA ?? this.maxSoundLevelDayNightDbA,
+    dimensionsUnpackedWidthMm:
+        dimensionsUnpackedWidthMm ?? this.dimensionsUnpackedWidthMm,
+    dimensionsUnpackedDepthMm:
+        dimensionsUnpackedDepthMm ?? this.dimensionsUnpackedDepthMm,
+    dimensionsUnpackedHeightMm:
+        dimensionsUnpackedHeightMm ?? this.dimensionsUnpackedHeightMm,
+    weightKg: weightKg ?? this.weightKg,
+    refrigerantType: refrigerantType ?? this.refrigerantType,
+    gwpEuRegulationValue: gwpEuRegulationValue ?? this.gwpEuRegulationValue,
+    refrigerantQuantityKgCo2Equivalent:
+        refrigerantQuantityKgCo2Equivalent ??
+        this.refrigerantQuantityKgCo2Equivalent,
+    co2EquivalentPerTon: co2EquivalentPerTon ?? this.co2EquivalentPerTon,
+    energyEfficiencyClass35C55C:
+        energyEfficiencyClass35C55C ?? this.energyEfficiencyClass35C55C,
+  );
+  HeatPump copyWithCompanion(HeatPumpsCompanion data) {
+    return HeatPump(
+      id: data.id.present ? data.id.value : this.id,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      heatingCapacityKwA7W35: data.heatingCapacityKwA7W35.present
+          ? data.heatingCapacityKwA7W35.value
+          : this.heatingCapacityKwA7W35,
+      electricalConsumptionKwA7W35: data.electricalConsumptionKwA7W35.present
+          ? data.electricalConsumptionKwA7W35.value
+          : this.electricalConsumptionKwA7W35,
+      copRatioA7W35: data.copRatioA7W35.present
+          ? data.copRatioA7W35.value
+          : this.copRatioA7W35,
+      heatingCapacityKwA2W35: data.heatingCapacityKwA2W35.present
+          ? data.heatingCapacityKwA2W35.value
+          : this.heatingCapacityKwA2W35,
+      electricalConsumptionKwA2W35: data.electricalConsumptionKwA2W35.present
+          ? data.electricalConsumptionKwA2W35.value
+          : this.electricalConsumptionKwA2W35,
+      copRatioA2W35: data.copRatioA2W35.present
+          ? data.copRatioA2W35.value
+          : this.copRatioA2W35,
+      heatingCapacityKwPartialLoad: data.heatingCapacityKwPartialLoad.present
+          ? data.heatingCapacityKwPartialLoad.value
+          : this.heatingCapacityKwPartialLoad,
+      electricalConsumptionKwPartialLoad:
+          data.electricalConsumptionKwPartialLoad.present
+          ? data.electricalConsumptionKwPartialLoad.value
+          : this.electricalConsumptionKwPartialLoad,
+      copRatioPartialLoad: data.copRatioPartialLoad.present
+          ? data.copRatioPartialLoad.value
+          : this.copRatioPartialLoad,
+      coolingCapacityKw: data.coolingCapacityKw.present
+          ? data.coolingCapacityKw.value
+          : this.coolingCapacityKw,
+      electricalConsumptionKwCooling:
+          data.electricalConsumptionKwCooling.present
+          ? data.electricalConsumptionKwCooling.value
+          : this.electricalConsumptionKwCooling,
+      eerRatio: data.eerRatio.present ? data.eerRatio.value : this.eerRatio,
+      annualHeatingEfficiencyPercent:
+          data.annualHeatingEfficiencyPercent.present
+          ? data.annualHeatingEfficiencyPercent.value
+          : this.annualHeatingEfficiencyPercent,
+      compressorVoltageNominalVolts: data.compressorVoltageNominalVolts.present
+          ? data.compressorVoltageNominalVolts.value
+          : this.compressorVoltageNominalVolts,
+      compressorFrequencyHz: data.compressorFrequencyHz.present
+          ? data.compressorFrequencyHz.value
+          : this.compressorFrequencyHz,
+      soundLevelErpDbA: data.soundLevelErpDbA.present
+          ? data.soundLevelErpDbA.value
+          : this.soundLevelErpDbA,
+      maxSoundLevelDayNightDbA: data.maxSoundLevelDayNightDbA.present
+          ? data.maxSoundLevelDayNightDbA.value
+          : this.maxSoundLevelDayNightDbA,
+      dimensionsUnpackedWidthMm: data.dimensionsUnpackedWidthMm.present
+          ? data.dimensionsUnpackedWidthMm.value
+          : this.dimensionsUnpackedWidthMm,
+      dimensionsUnpackedDepthMm: data.dimensionsUnpackedDepthMm.present
+          ? data.dimensionsUnpackedDepthMm.value
+          : this.dimensionsUnpackedDepthMm,
+      dimensionsUnpackedHeightMm: data.dimensionsUnpackedHeightMm.present
+          ? data.dimensionsUnpackedHeightMm.value
+          : this.dimensionsUnpackedHeightMm,
+      weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
+      refrigerantType: data.refrigerantType.present
+          ? data.refrigerantType.value
+          : this.refrigerantType,
+      gwpEuRegulationValue: data.gwpEuRegulationValue.present
+          ? data.gwpEuRegulationValue.value
+          : this.gwpEuRegulationValue,
+      refrigerantQuantityKgCo2Equivalent:
+          data.refrigerantQuantityKgCo2Equivalent.present
+          ? data.refrigerantQuantityKgCo2Equivalent.value
+          : this.refrigerantQuantityKgCo2Equivalent,
+      co2EquivalentPerTon: data.co2EquivalentPerTon.present
+          ? data.co2EquivalentPerTon.value
+          : this.co2EquivalentPerTon,
+      energyEfficiencyClass35C55C: data.energyEfficiencyClass35C55C.present
+          ? data.energyEfficiencyClass35C55C.value
+          : this.energyEfficiencyClass35C55C,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HeatPump(')
+          ..write('id: $id, ')
+          ..write('displayName: $displayName, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('heatingCapacityKwA7W35: $heatingCapacityKwA7W35, ')
+          ..write(
+            'electricalConsumptionKwA7W35: $electricalConsumptionKwA7W35, ',
+          )
+          ..write('copRatioA7W35: $copRatioA7W35, ')
+          ..write('heatingCapacityKwA2W35: $heatingCapacityKwA2W35, ')
+          ..write(
+            'electricalConsumptionKwA2W35: $electricalConsumptionKwA2W35, ',
+          )
+          ..write('copRatioA2W35: $copRatioA2W35, ')
+          ..write(
+            'heatingCapacityKwPartialLoad: $heatingCapacityKwPartialLoad, ',
+          )
+          ..write(
+            'electricalConsumptionKwPartialLoad: $electricalConsumptionKwPartialLoad, ',
+          )
+          ..write('copRatioPartialLoad: $copRatioPartialLoad, ')
+          ..write('coolingCapacityKw: $coolingCapacityKw, ')
+          ..write(
+            'electricalConsumptionKwCooling: $electricalConsumptionKwCooling, ',
+          )
+          ..write('eerRatio: $eerRatio, ')
+          ..write(
+            'annualHeatingEfficiencyPercent: $annualHeatingEfficiencyPercent, ',
+          )
+          ..write(
+            'compressorVoltageNominalVolts: $compressorVoltageNominalVolts, ',
+          )
+          ..write('compressorFrequencyHz: $compressorFrequencyHz, ')
+          ..write('soundLevelErpDbA: $soundLevelErpDbA, ')
+          ..write('maxSoundLevelDayNightDbA: $maxSoundLevelDayNightDbA, ')
+          ..write('dimensionsUnpackedWidthMm: $dimensionsUnpackedWidthMm, ')
+          ..write('dimensionsUnpackedDepthMm: $dimensionsUnpackedDepthMm, ')
+          ..write('dimensionsUnpackedHeightMm: $dimensionsUnpackedHeightMm, ')
+          ..write('weightKg: $weightKg, ')
+          ..write('refrigerantType: $refrigerantType, ')
+          ..write('gwpEuRegulationValue: $gwpEuRegulationValue, ')
+          ..write(
+            'refrigerantQuantityKgCo2Equivalent: $refrigerantQuantityKgCo2Equivalent, ',
+          )
+          ..write('co2EquivalentPerTon: $co2EquivalentPerTon, ')
+          ..write('energyEfficiencyClass35C55C: $energyEfficiencyClass35C55C')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    displayName,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    heatingCapacityKwA7W35,
+    electricalConsumptionKwA7W35,
+    copRatioA7W35,
+    heatingCapacityKwA2W35,
+    electricalConsumptionKwA2W35,
+    copRatioA2W35,
+    heatingCapacityKwPartialLoad,
+    electricalConsumptionKwPartialLoad,
+    copRatioPartialLoad,
+    coolingCapacityKw,
+    electricalConsumptionKwCooling,
+    eerRatio,
+    annualHeatingEfficiencyPercent,
+    compressorVoltageNominalVolts,
+    compressorFrequencyHz,
+    soundLevelErpDbA,
+    maxSoundLevelDayNightDbA,
+    dimensionsUnpackedWidthMm,
+    dimensionsUnpackedDepthMm,
+    dimensionsUnpackedHeightMm,
+    weightKg,
+    refrigerantType,
+    gwpEuRegulationValue,
+    refrigerantQuantityKgCo2Equivalent,
+    co2EquivalentPerTon,
+    energyEfficiencyClass35C55C,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HeatPump &&
+          other.id == this.id &&
+          other.displayName == this.displayName &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.heatingCapacityKwA7W35 == this.heatingCapacityKwA7W35 &&
+          other.electricalConsumptionKwA7W35 ==
+              this.electricalConsumptionKwA7W35 &&
+          other.copRatioA7W35 == this.copRatioA7W35 &&
+          other.heatingCapacityKwA2W35 == this.heatingCapacityKwA2W35 &&
+          other.electricalConsumptionKwA2W35 ==
+              this.electricalConsumptionKwA2W35 &&
+          other.copRatioA2W35 == this.copRatioA2W35 &&
+          other.heatingCapacityKwPartialLoad ==
+              this.heatingCapacityKwPartialLoad &&
+          other.electricalConsumptionKwPartialLoad ==
+              this.electricalConsumptionKwPartialLoad &&
+          other.copRatioPartialLoad == this.copRatioPartialLoad &&
+          other.coolingCapacityKw == this.coolingCapacityKw &&
+          other.electricalConsumptionKwCooling ==
+              this.electricalConsumptionKwCooling &&
+          other.eerRatio == this.eerRatio &&
+          other.annualHeatingEfficiencyPercent ==
+              this.annualHeatingEfficiencyPercent &&
+          other.compressorVoltageNominalVolts ==
+              this.compressorVoltageNominalVolts &&
+          other.compressorFrequencyHz == this.compressorFrequencyHz &&
+          other.soundLevelErpDbA == this.soundLevelErpDbA &&
+          other.maxSoundLevelDayNightDbA == this.maxSoundLevelDayNightDbA &&
+          other.dimensionsUnpackedWidthMm == this.dimensionsUnpackedWidthMm &&
+          other.dimensionsUnpackedDepthMm == this.dimensionsUnpackedDepthMm &&
+          other.dimensionsUnpackedHeightMm == this.dimensionsUnpackedHeightMm &&
+          other.weightKg == this.weightKg &&
+          other.refrigerantType == this.refrigerantType &&
+          other.gwpEuRegulationValue == this.gwpEuRegulationValue &&
+          other.refrigerantQuantityKgCo2Equivalent ==
+              this.refrigerantQuantityKgCo2Equivalent &&
+          other.co2EquivalentPerTon == this.co2EquivalentPerTon &&
+          other.energyEfficiencyClass35C55C ==
+              this.energyEfficiencyClass35C55C);
+}
+
+class HeatPumpsCompanion extends UpdateCompanion<HeatPump> {
+  final Value<int> id;
+  final Value<String> displayName;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<double> heatingCapacityKwA7W35;
+  final Value<double> electricalConsumptionKwA7W35;
+  final Value<double> copRatioA7W35;
+  final Value<double> heatingCapacityKwA2W35;
+  final Value<double> electricalConsumptionKwA2W35;
+  final Value<double> copRatioA2W35;
+  final Value<double> heatingCapacityKwPartialLoad;
+  final Value<double> electricalConsumptionKwPartialLoad;
+  final Value<double> copRatioPartialLoad;
+  final Value<double?> coolingCapacityKw;
+  final Value<double?> electricalConsumptionKwCooling;
+  final Value<double?> eerRatio;
+  final Value<String> annualHeatingEfficiencyPercent;
+  final Value<int> compressorVoltageNominalVolts;
+  final Value<int> compressorFrequencyHz;
+  final Value<double> soundLevelErpDbA;
+  final Value<String> maxSoundLevelDayNightDbA;
+  final Value<int> dimensionsUnpackedWidthMm;
+  final Value<int> dimensionsUnpackedDepthMm;
+  final Value<int> dimensionsUnpackedHeightMm;
+  final Value<double> weightKg;
+  final Value<String> refrigerantType;
+  final Value<double> gwpEuRegulationValue;
+  final Value<double> refrigerantQuantityKgCo2Equivalent;
+  final Value<double> co2EquivalentPerTon;
+  final Value<String> energyEfficiencyClass35C55C;
+  const HeatPumpsCompanion({
+    this.id = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.heatingCapacityKwA7W35 = const Value.absent(),
+    this.electricalConsumptionKwA7W35 = const Value.absent(),
+    this.copRatioA7W35 = const Value.absent(),
+    this.heatingCapacityKwA2W35 = const Value.absent(),
+    this.electricalConsumptionKwA2W35 = const Value.absent(),
+    this.copRatioA2W35 = const Value.absent(),
+    this.heatingCapacityKwPartialLoad = const Value.absent(),
+    this.electricalConsumptionKwPartialLoad = const Value.absent(),
+    this.copRatioPartialLoad = const Value.absent(),
+    this.coolingCapacityKw = const Value.absent(),
+    this.electricalConsumptionKwCooling = const Value.absent(),
+    this.eerRatio = const Value.absent(),
+    this.annualHeatingEfficiencyPercent = const Value.absent(),
+    this.compressorVoltageNominalVolts = const Value.absent(),
+    this.compressorFrequencyHz = const Value.absent(),
+    this.soundLevelErpDbA = const Value.absent(),
+    this.maxSoundLevelDayNightDbA = const Value.absent(),
+    this.dimensionsUnpackedWidthMm = const Value.absent(),
+    this.dimensionsUnpackedDepthMm = const Value.absent(),
+    this.dimensionsUnpackedHeightMm = const Value.absent(),
+    this.weightKg = const Value.absent(),
+    this.refrigerantType = const Value.absent(),
+    this.gwpEuRegulationValue = const Value.absent(),
+    this.refrigerantQuantityKgCo2Equivalent = const Value.absent(),
+    this.co2EquivalentPerTon = const Value.absent(),
+    this.energyEfficiencyClass35C55C = const Value.absent(),
+  });
+  HeatPumpsCompanion.insert({
+    this.id = const Value.absent(),
+    required String displayName,
+    required String manufacturer,
+    required String seriesName,
+    required String modelNumber,
+    required double heatingCapacityKwA7W35,
+    required double electricalConsumptionKwA7W35,
+    required double copRatioA7W35,
+    required double heatingCapacityKwA2W35,
+    required double electricalConsumptionKwA2W35,
+    required double copRatioA2W35,
+    required double heatingCapacityKwPartialLoad,
+    required double electricalConsumptionKwPartialLoad,
+    required double copRatioPartialLoad,
+    this.coolingCapacityKw = const Value.absent(),
+    this.electricalConsumptionKwCooling = const Value.absent(),
+    this.eerRatio = const Value.absent(),
+    required String annualHeatingEfficiencyPercent,
+    required int compressorVoltageNominalVolts,
+    required int compressorFrequencyHz,
+    required double soundLevelErpDbA,
+    required String maxSoundLevelDayNightDbA,
+    required int dimensionsUnpackedWidthMm,
+    required int dimensionsUnpackedDepthMm,
+    required int dimensionsUnpackedHeightMm,
+    required double weightKg,
+    required String refrigerantType,
+    required double gwpEuRegulationValue,
+    required double refrigerantQuantityKgCo2Equivalent,
+    required double co2EquivalentPerTon,
+    required String energyEfficiencyClass35C55C,
+  }) : displayName = Value(displayName),
+       manufacturer = Value(manufacturer),
+       seriesName = Value(seriesName),
+       modelNumber = Value(modelNumber),
+       heatingCapacityKwA7W35 = Value(heatingCapacityKwA7W35),
+       electricalConsumptionKwA7W35 = Value(electricalConsumptionKwA7W35),
+       copRatioA7W35 = Value(copRatioA7W35),
+       heatingCapacityKwA2W35 = Value(heatingCapacityKwA2W35),
+       electricalConsumptionKwA2W35 = Value(electricalConsumptionKwA2W35),
+       copRatioA2W35 = Value(copRatioA2W35),
+       heatingCapacityKwPartialLoad = Value(heatingCapacityKwPartialLoad),
+       electricalConsumptionKwPartialLoad = Value(
+         electricalConsumptionKwPartialLoad,
+       ),
+       copRatioPartialLoad = Value(copRatioPartialLoad),
+       annualHeatingEfficiencyPercent = Value(annualHeatingEfficiencyPercent),
+       compressorVoltageNominalVolts = Value(compressorVoltageNominalVolts),
+       compressorFrequencyHz = Value(compressorFrequencyHz),
+       soundLevelErpDbA = Value(soundLevelErpDbA),
+       maxSoundLevelDayNightDbA = Value(maxSoundLevelDayNightDbA),
+       dimensionsUnpackedWidthMm = Value(dimensionsUnpackedWidthMm),
+       dimensionsUnpackedDepthMm = Value(dimensionsUnpackedDepthMm),
+       dimensionsUnpackedHeightMm = Value(dimensionsUnpackedHeightMm),
+       weightKg = Value(weightKg),
+       refrigerantType = Value(refrigerantType),
+       gwpEuRegulationValue = Value(gwpEuRegulationValue),
+       refrigerantQuantityKgCo2Equivalent = Value(
+         refrigerantQuantityKgCo2Equivalent,
+       ),
+       co2EquivalentPerTon = Value(co2EquivalentPerTon),
+       energyEfficiencyClass35C55C = Value(energyEfficiencyClass35C55C);
+  static Insertable<HeatPump> custom({
+    Expression<int>? id,
+    Expression<String>? displayName,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<double>? heatingCapacityKwA7W35,
+    Expression<double>? electricalConsumptionKwA7W35,
+    Expression<double>? copRatioA7W35,
+    Expression<double>? heatingCapacityKwA2W35,
+    Expression<double>? electricalConsumptionKwA2W35,
+    Expression<double>? copRatioA2W35,
+    Expression<double>? heatingCapacityKwPartialLoad,
+    Expression<double>? electricalConsumptionKwPartialLoad,
+    Expression<double>? copRatioPartialLoad,
+    Expression<double>? coolingCapacityKw,
+    Expression<double>? electricalConsumptionKwCooling,
+    Expression<double>? eerRatio,
+    Expression<String>? annualHeatingEfficiencyPercent,
+    Expression<int>? compressorVoltageNominalVolts,
+    Expression<int>? compressorFrequencyHz,
+    Expression<double>? soundLevelErpDbA,
+    Expression<String>? maxSoundLevelDayNightDbA,
+    Expression<int>? dimensionsUnpackedWidthMm,
+    Expression<int>? dimensionsUnpackedDepthMm,
+    Expression<int>? dimensionsUnpackedHeightMm,
+    Expression<double>? weightKg,
+    Expression<String>? refrigerantType,
+    Expression<double>? gwpEuRegulationValue,
+    Expression<double>? refrigerantQuantityKgCo2Equivalent,
+    Expression<double>? co2EquivalentPerTon,
+    Expression<String>? energyEfficiencyClass35C55C,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (displayName != null) 'display_name': displayName,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (heatingCapacityKwA7W35 != null)
+        'heating_capacity_kw_a7_w35': heatingCapacityKwA7W35,
+      if (electricalConsumptionKwA7W35 != null)
+        'electrical_consumption_kw_a7_w35': electricalConsumptionKwA7W35,
+      if (copRatioA7W35 != null) 'cop_ratio_a7_w35': copRatioA7W35,
+      if (heatingCapacityKwA2W35 != null)
+        'heating_capacity_kw_a2_w35': heatingCapacityKwA2W35,
+      if (electricalConsumptionKwA2W35 != null)
+        'electrical_consumption_kw_a2_w35': electricalConsumptionKwA2W35,
+      if (copRatioA2W35 != null) 'cop_ratio_a2_w35': copRatioA2W35,
+      if (heatingCapacityKwPartialLoad != null)
+        'heating_capacity_kw_partial_load': heatingCapacityKwPartialLoad,
+      if (electricalConsumptionKwPartialLoad != null)
+        'electrical_consumption_kw_partial_load':
+            electricalConsumptionKwPartialLoad,
+      if (copRatioPartialLoad != null)
+        'cop_ratio_partial_load': copRatioPartialLoad,
+      if (coolingCapacityKw != null) 'cooling_capacity_kw': coolingCapacityKw,
+      if (electricalConsumptionKwCooling != null)
+        'electrical_consumption_kw_cooling': electricalConsumptionKwCooling,
+      if (eerRatio != null) 'eer_ratio': eerRatio,
+      if (annualHeatingEfficiencyPercent != null)
+        'annual_heating_efficiency_percent': annualHeatingEfficiencyPercent,
+      if (compressorVoltageNominalVolts != null)
+        'compressor_voltage_nominal_volts': compressorVoltageNominalVolts,
+      if (compressorFrequencyHz != null)
+        'compressor_frequency_hz': compressorFrequencyHz,
+      if (soundLevelErpDbA != null) 'sound_level_erp_db_a': soundLevelErpDbA,
+      if (maxSoundLevelDayNightDbA != null)
+        'max_sound_level_day_night_db_a': maxSoundLevelDayNightDbA,
+      if (dimensionsUnpackedWidthMm != null)
+        'dimensions_unpacked_width_mm': dimensionsUnpackedWidthMm,
+      if (dimensionsUnpackedDepthMm != null)
+        'dimensions_unpacked_depth_mm': dimensionsUnpackedDepthMm,
+      if (dimensionsUnpackedHeightMm != null)
+        'dimensions_unpacked_height_mm': dimensionsUnpackedHeightMm,
+      if (weightKg != null) 'weight_kg': weightKg,
+      if (refrigerantType != null) 'refrigerant_type': refrigerantType,
+      if (gwpEuRegulationValue != null)
+        'gwp_eu_regulation_value': gwpEuRegulationValue,
+      if (refrigerantQuantityKgCo2Equivalent != null)
+        'refrigerant_quantity_kg_co2_equivalent':
+            refrigerantQuantityKgCo2Equivalent,
+      if (co2EquivalentPerTon != null)
+        'co2_equivalent_per_ton': co2EquivalentPerTon,
+      if (energyEfficiencyClass35C55C != null)
+        'energy_efficiency_class35_c55_c': energyEfficiencyClass35C55C,
+    });
+  }
+
+  HeatPumpsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? displayName,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<double>? heatingCapacityKwA7W35,
+    Value<double>? electricalConsumptionKwA7W35,
+    Value<double>? copRatioA7W35,
+    Value<double>? heatingCapacityKwA2W35,
+    Value<double>? electricalConsumptionKwA2W35,
+    Value<double>? copRatioA2W35,
+    Value<double>? heatingCapacityKwPartialLoad,
+    Value<double>? electricalConsumptionKwPartialLoad,
+    Value<double>? copRatioPartialLoad,
+    Value<double?>? coolingCapacityKw,
+    Value<double?>? electricalConsumptionKwCooling,
+    Value<double?>? eerRatio,
+    Value<String>? annualHeatingEfficiencyPercent,
+    Value<int>? compressorVoltageNominalVolts,
+    Value<int>? compressorFrequencyHz,
+    Value<double>? soundLevelErpDbA,
+    Value<String>? maxSoundLevelDayNightDbA,
+    Value<int>? dimensionsUnpackedWidthMm,
+    Value<int>? dimensionsUnpackedDepthMm,
+    Value<int>? dimensionsUnpackedHeightMm,
+    Value<double>? weightKg,
+    Value<String>? refrigerantType,
+    Value<double>? gwpEuRegulationValue,
+    Value<double>? refrigerantQuantityKgCo2Equivalent,
+    Value<double>? co2EquivalentPerTon,
+    Value<String>? energyEfficiencyClass35C55C,
+  }) {
+    return HeatPumpsCompanion(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      heatingCapacityKwA7W35:
+          heatingCapacityKwA7W35 ?? this.heatingCapacityKwA7W35,
+      electricalConsumptionKwA7W35:
+          electricalConsumptionKwA7W35 ?? this.electricalConsumptionKwA7W35,
+      copRatioA7W35: copRatioA7W35 ?? this.copRatioA7W35,
+      heatingCapacityKwA2W35:
+          heatingCapacityKwA2W35 ?? this.heatingCapacityKwA2W35,
+      electricalConsumptionKwA2W35:
+          electricalConsumptionKwA2W35 ?? this.electricalConsumptionKwA2W35,
+      copRatioA2W35: copRatioA2W35 ?? this.copRatioA2W35,
+      heatingCapacityKwPartialLoad:
+          heatingCapacityKwPartialLoad ?? this.heatingCapacityKwPartialLoad,
+      electricalConsumptionKwPartialLoad:
+          electricalConsumptionKwPartialLoad ??
+          this.electricalConsumptionKwPartialLoad,
+      copRatioPartialLoad: copRatioPartialLoad ?? this.copRatioPartialLoad,
+      coolingCapacityKw: coolingCapacityKw ?? this.coolingCapacityKw,
+      electricalConsumptionKwCooling:
+          electricalConsumptionKwCooling ?? this.electricalConsumptionKwCooling,
+      eerRatio: eerRatio ?? this.eerRatio,
+      annualHeatingEfficiencyPercent:
+          annualHeatingEfficiencyPercent ?? this.annualHeatingEfficiencyPercent,
+      compressorVoltageNominalVolts:
+          compressorVoltageNominalVolts ?? this.compressorVoltageNominalVolts,
+      compressorFrequencyHz:
+          compressorFrequencyHz ?? this.compressorFrequencyHz,
+      soundLevelErpDbA: soundLevelErpDbA ?? this.soundLevelErpDbA,
+      maxSoundLevelDayNightDbA:
+          maxSoundLevelDayNightDbA ?? this.maxSoundLevelDayNightDbA,
+      dimensionsUnpackedWidthMm:
+          dimensionsUnpackedWidthMm ?? this.dimensionsUnpackedWidthMm,
+      dimensionsUnpackedDepthMm:
+          dimensionsUnpackedDepthMm ?? this.dimensionsUnpackedDepthMm,
+      dimensionsUnpackedHeightMm:
+          dimensionsUnpackedHeightMm ?? this.dimensionsUnpackedHeightMm,
+      weightKg: weightKg ?? this.weightKg,
+      refrigerantType: refrigerantType ?? this.refrigerantType,
+      gwpEuRegulationValue: gwpEuRegulationValue ?? this.gwpEuRegulationValue,
+      refrigerantQuantityKgCo2Equivalent:
+          refrigerantQuantityKgCo2Equivalent ??
+          this.refrigerantQuantityKgCo2Equivalent,
+      co2EquivalentPerTon: co2EquivalentPerTon ?? this.co2EquivalentPerTon,
+      energyEfficiencyClass35C55C:
+          energyEfficiencyClass35C55C ?? this.energyEfficiencyClass35C55C,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (heatingCapacityKwA7W35.present) {
+      map['heating_capacity_kw_a7_w35'] = Variable<double>(
+        heatingCapacityKwA7W35.value,
+      );
+    }
+    if (electricalConsumptionKwA7W35.present) {
+      map['electrical_consumption_kw_a7_w35'] = Variable<double>(
+        electricalConsumptionKwA7W35.value,
+      );
+    }
+    if (copRatioA7W35.present) {
+      map['cop_ratio_a7_w35'] = Variable<double>(copRatioA7W35.value);
+    }
+    if (heatingCapacityKwA2W35.present) {
+      map['heating_capacity_kw_a2_w35'] = Variable<double>(
+        heatingCapacityKwA2W35.value,
+      );
+    }
+    if (electricalConsumptionKwA2W35.present) {
+      map['electrical_consumption_kw_a2_w35'] = Variable<double>(
+        electricalConsumptionKwA2W35.value,
+      );
+    }
+    if (copRatioA2W35.present) {
+      map['cop_ratio_a2_w35'] = Variable<double>(copRatioA2W35.value);
+    }
+    if (heatingCapacityKwPartialLoad.present) {
+      map['heating_capacity_kw_partial_load'] = Variable<double>(
+        heatingCapacityKwPartialLoad.value,
+      );
+    }
+    if (electricalConsumptionKwPartialLoad.present) {
+      map['electrical_consumption_kw_partial_load'] = Variable<double>(
+        electricalConsumptionKwPartialLoad.value,
+      );
+    }
+    if (copRatioPartialLoad.present) {
+      map['cop_ratio_partial_load'] = Variable<double>(
+        copRatioPartialLoad.value,
+      );
+    }
+    if (coolingCapacityKw.present) {
+      map['cooling_capacity_kw'] = Variable<double>(coolingCapacityKw.value);
+    }
+    if (electricalConsumptionKwCooling.present) {
+      map['electrical_consumption_kw_cooling'] = Variable<double>(
+        electricalConsumptionKwCooling.value,
+      );
+    }
+    if (eerRatio.present) {
+      map['eer_ratio'] = Variable<double>(eerRatio.value);
+    }
+    if (annualHeatingEfficiencyPercent.present) {
+      map['annual_heating_efficiency_percent'] = Variable<String>(
+        annualHeatingEfficiencyPercent.value,
+      );
+    }
+    if (compressorVoltageNominalVolts.present) {
+      map['compressor_voltage_nominal_volts'] = Variable<int>(
+        compressorVoltageNominalVolts.value,
+      );
+    }
+    if (compressorFrequencyHz.present) {
+      map['compressor_frequency_hz'] = Variable<int>(
+        compressorFrequencyHz.value,
+      );
+    }
+    if (soundLevelErpDbA.present) {
+      map['sound_level_erp_db_a'] = Variable<double>(soundLevelErpDbA.value);
+    }
+    if (maxSoundLevelDayNightDbA.present) {
+      map['max_sound_level_day_night_db_a'] = Variable<String>(
+        maxSoundLevelDayNightDbA.value,
+      );
+    }
+    if (dimensionsUnpackedWidthMm.present) {
+      map['dimensions_unpacked_width_mm'] = Variable<int>(
+        dimensionsUnpackedWidthMm.value,
+      );
+    }
+    if (dimensionsUnpackedDepthMm.present) {
+      map['dimensions_unpacked_depth_mm'] = Variable<int>(
+        dimensionsUnpackedDepthMm.value,
+      );
+    }
+    if (dimensionsUnpackedHeightMm.present) {
+      map['dimensions_unpacked_height_mm'] = Variable<int>(
+        dimensionsUnpackedHeightMm.value,
+      );
+    }
+    if (weightKg.present) {
+      map['weight_kg'] = Variable<double>(weightKg.value);
+    }
+    if (refrigerantType.present) {
+      map['refrigerant_type'] = Variable<String>(refrigerantType.value);
+    }
+    if (gwpEuRegulationValue.present) {
+      map['gwp_eu_regulation_value'] = Variable<double>(
+        gwpEuRegulationValue.value,
+      );
+    }
+    if (refrigerantQuantityKgCo2Equivalent.present) {
+      map['refrigerant_quantity_kg_co2_equivalent'] = Variable<double>(
+        refrigerantQuantityKgCo2Equivalent.value,
+      );
+    }
+    if (co2EquivalentPerTon.present) {
+      map['co2_equivalent_per_ton'] = Variable<double>(
+        co2EquivalentPerTon.value,
+      );
+    }
+    if (energyEfficiencyClass35C55C.present) {
+      map['energy_efficiency_class35_c55_c'] = Variable<String>(
+        energyEfficiencyClass35C55C.value,
+      );
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HeatPumpsCompanion(')
+          ..write('id: $id, ')
+          ..write('displayName: $displayName, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('heatingCapacityKwA7W35: $heatingCapacityKwA7W35, ')
+          ..write(
+            'electricalConsumptionKwA7W35: $electricalConsumptionKwA7W35, ',
+          )
+          ..write('copRatioA7W35: $copRatioA7W35, ')
+          ..write('heatingCapacityKwA2W35: $heatingCapacityKwA2W35, ')
+          ..write(
+            'electricalConsumptionKwA2W35: $electricalConsumptionKwA2W35, ',
+          )
+          ..write('copRatioA2W35: $copRatioA2W35, ')
+          ..write(
+            'heatingCapacityKwPartialLoad: $heatingCapacityKwPartialLoad, ',
+          )
+          ..write(
+            'electricalConsumptionKwPartialLoad: $electricalConsumptionKwPartialLoad, ',
+          )
+          ..write('copRatioPartialLoad: $copRatioPartialLoad, ')
+          ..write('coolingCapacityKw: $coolingCapacityKw, ')
+          ..write(
+            'electricalConsumptionKwCooling: $electricalConsumptionKwCooling, ',
+          )
+          ..write('eerRatio: $eerRatio, ')
+          ..write(
+            'annualHeatingEfficiencyPercent: $annualHeatingEfficiencyPercent, ',
+          )
+          ..write(
+            'compressorVoltageNominalVolts: $compressorVoltageNominalVolts, ',
+          )
+          ..write('compressorFrequencyHz: $compressorFrequencyHz, ')
+          ..write('soundLevelErpDbA: $soundLevelErpDbA, ')
+          ..write('maxSoundLevelDayNightDbA: $maxSoundLevelDayNightDbA, ')
+          ..write('dimensionsUnpackedWidthMm: $dimensionsUnpackedWidthMm, ')
+          ..write('dimensionsUnpackedDepthMm: $dimensionsUnpackedDepthMm, ')
+          ..write('dimensionsUnpackedHeightMm: $dimensionsUnpackedHeightMm, ')
+          ..write('weightKg: $weightKg, ')
+          ..write('refrigerantType: $refrigerantType, ')
+          ..write('gwpEuRegulationValue: $gwpEuRegulationValue, ')
+          ..write(
+            'refrigerantQuantityKgCo2Equivalent: $refrigerantQuantityKgCo2Equivalent, ',
+          )
+          ..write('co2EquivalentPerTon: $co2EquivalentPerTon, ')
+          ..write('energyEfficiencyClass35C55C: $energyEfficiencyClass35C55C')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HeatLoopsTable extends HeatLoops
+    with TableInfo<$HeatLoopsTable, HeatLoop> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HeatLoopsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<int> projectId = GeneratedColumn<int>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES projects (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _loopTypeMeta = const VerificationMeta(
+    'loopType',
+  );
+  @override
+  late final GeneratedColumn<String> loopType = GeneratedColumn<String>(
+    'loop_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('radiator'),
+  );
+  static const VerificationMeta _nominalKwMeta = const VerificationMeta(
+    'nominalKw',
+  );
+  @override
+  late final GeneratedColumn<double> nominalKw = GeneratedColumn<double>(
+    'nominal_kw',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _flowTempCMeta = const VerificationMeta(
+    'flowTempC',
+  );
+  @override
+  late final GeneratedColumn<int> flowTempC = GeneratedColumn<int>(
+    'flow_temp_c',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(55),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    projectId,
+    name,
+    loopType,
+    nominalKw,
+    flowTempC,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'heat_loops';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HeatLoop> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('loop_type')) {
+      context.handle(
+        _loopTypeMeta,
+        loopType.isAcceptableOrUnknown(data['loop_type']!, _loopTypeMeta),
+      );
+    }
+    if (data.containsKey('nominal_kw')) {
+      context.handle(
+        _nominalKwMeta,
+        nominalKw.isAcceptableOrUnknown(data['nominal_kw']!, _nominalKwMeta),
+      );
+    }
+    if (data.containsKey('flow_temp_c')) {
+      context.handle(
+        _flowTempCMeta,
+        flowTempC.isAcceptableOrUnknown(data['flow_temp_c']!, _flowTempCMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HeatLoop map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HeatLoop(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}project_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      loopType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}loop_type'],
+      )!,
+      nominalKw: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}nominal_kw'],
+      )!,
+      flowTempC: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}flow_temp_c'],
+      )!,
+    );
+  }
+
+  @override
+  $HeatLoopsTable createAlias(String alias) {
+    return $HeatLoopsTable(attachedDatabase, alias);
+  }
+}
+
+class HeatLoop extends DataClass implements Insertable<HeatLoop> {
+  final int id;
+
+  /// The project this loop belongs to.
+  final int projectId;
+
+  /// Name of the loop (e.g. "Erdgeschoss Fußboden").
+  final String name;
+
+  /// Loop type: "radiator" or "underfloor".
+  final String loopType;
+
+  /// Nominal heating power in kW.
+  final double nominalKw;
+
+  /// Flow temperature in °C.
+  final int flowTempC;
+  const HeatLoop({
+    required this.id,
+    required this.projectId,
+    required this.name,
+    required this.loopType,
+    required this.nominalKw,
+    required this.flowTempC,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['project_id'] = Variable<int>(projectId);
+    map['name'] = Variable<String>(name);
+    map['loop_type'] = Variable<String>(loopType);
+    map['nominal_kw'] = Variable<double>(nominalKw);
+    map['flow_temp_c'] = Variable<int>(flowTempC);
+    return map;
+  }
+
+  HeatLoopsCompanion toCompanion(bool nullToAbsent) {
+    return HeatLoopsCompanion(
+      id: Value(id),
+      projectId: Value(projectId),
+      name: Value(name),
+      loopType: Value(loopType),
+      nominalKw: Value(nominalKw),
+      flowTempC: Value(flowTempC),
+    );
+  }
+
+  factory HeatLoop.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HeatLoop(
+      id: serializer.fromJson<int>(json['id']),
+      projectId: serializer.fromJson<int>(json['projectId']),
+      name: serializer.fromJson<String>(json['name']),
+      loopType: serializer.fromJson<String>(json['loopType']),
+      nominalKw: serializer.fromJson<double>(json['nominalKw']),
+      flowTempC: serializer.fromJson<int>(json['flowTempC']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'projectId': serializer.toJson<int>(projectId),
+      'name': serializer.toJson<String>(name),
+      'loopType': serializer.toJson<String>(loopType),
+      'nominalKw': serializer.toJson<double>(nominalKw),
+      'flowTempC': serializer.toJson<int>(flowTempC),
+    };
+  }
+
+  HeatLoop copyWith({
+    int? id,
+    int? projectId,
+    String? name,
+    String? loopType,
+    double? nominalKw,
+    int? flowTempC,
+  }) => HeatLoop(
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    name: name ?? this.name,
+    loopType: loopType ?? this.loopType,
+    nominalKw: nominalKw ?? this.nominalKw,
+    flowTempC: flowTempC ?? this.flowTempC,
+  );
+  HeatLoop copyWithCompanion(HeatLoopsCompanion data) {
+    return HeatLoop(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      name: data.name.present ? data.name.value : this.name,
+      loopType: data.loopType.present ? data.loopType.value : this.loopType,
+      nominalKw: data.nominalKw.present ? data.nominalKw.value : this.nominalKw,
+      flowTempC: data.flowTempC.present ? data.flowTempC.value : this.flowTempC,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HeatLoop(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('name: $name, ')
+          ..write('loopType: $loopType, ')
+          ..write('nominalKw: $nominalKw, ')
+          ..write('flowTempC: $flowTempC')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, projectId, name, loopType, nominalKw, flowTempC);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HeatLoop &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.name == this.name &&
+          other.loopType == this.loopType &&
+          other.nominalKw == this.nominalKw &&
+          other.flowTempC == this.flowTempC);
+}
+
+class HeatLoopsCompanion extends UpdateCompanion<HeatLoop> {
+  final Value<int> id;
+  final Value<int> projectId;
+  final Value<String> name;
+  final Value<String> loopType;
+  final Value<double> nominalKw;
+  final Value<int> flowTempC;
+  const HeatLoopsCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.loopType = const Value.absent(),
+    this.nominalKw = const Value.absent(),
+    this.flowTempC = const Value.absent(),
+  });
+  HeatLoopsCompanion.insert({
+    this.id = const Value.absent(),
+    required int projectId,
+    required String name,
+    this.loopType = const Value.absent(),
+    this.nominalKw = const Value.absent(),
+    this.flowTempC = const Value.absent(),
+  }) : projectId = Value(projectId),
+       name = Value(name);
+  static Insertable<HeatLoop> custom({
+    Expression<int>? id,
+    Expression<int>? projectId,
+    Expression<String>? name,
+    Expression<String>? loopType,
+    Expression<double>? nominalKw,
+    Expression<int>? flowTempC,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (name != null) 'name': name,
+      if (loopType != null) 'loop_type': loopType,
+      if (nominalKw != null) 'nominal_kw': nominalKw,
+      if (flowTempC != null) 'flow_temp_c': flowTempC,
+    });
+  }
+
+  HeatLoopsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? projectId,
+    Value<String>? name,
+    Value<String>? loopType,
+    Value<double>? nominalKw,
+    Value<int>? flowTempC,
+  }) {
+    return HeatLoopsCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      name: name ?? this.name,
+      loopType: loopType ?? this.loopType,
+      nominalKw: nominalKw ?? this.nominalKw,
+      flowTempC: flowTempC ?? this.flowTempC,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (loopType.present) {
+      map['loop_type'] = Variable<String>(loopType.value);
+    }
+    if (nominalKw.present) {
+      map['nominal_kw'] = Variable<double>(nominalKw.value);
+    }
+    if (flowTempC.present) {
+      map['flow_temp_c'] = Variable<int>(flowTempC.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HeatLoopsCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('name: $name, ')
+          ..write('loopType: $loopType, ')
+          ..write('nominalKw: $nominalKw, ')
+          ..write('flowTempC: $flowTempC')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $InventoryItemsTable extends InventoryItems
+    with TableInfo<$InventoryItemsTable, InventoryItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InventoryItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _componentTypeMeta = const VerificationMeta(
+    'componentType',
+  );
+  @override
+  late final GeneratedColumn<String> componentType = GeneratedColumn<String>(
+    'component_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    componentType,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inventory_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<InventoryItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('component_type')) {
+      context.handle(
+        _componentTypeMeta,
+        componentType.isAcceptableOrUnknown(
+          data['component_type']!,
+          _componentTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_componentTypeMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InventoryItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InventoryItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      componentType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}component_type'],
+      )!,
+    );
+  }
+
+  @override
+  $InventoryItemsTable createAlias(String alias) {
+    return $InventoryItemsTable(attachedDatabase, alias);
+  }
+}
+
+class InventoryItem extends DataClass implements Insertable<InventoryItem> {
+  final int id;
+
+  /// Display name, e.g. "Vaillant aroTHERM pro VWL 115".
+  final String name;
+
+  /// Manufacturer, e.g. "Vaillant".
+  final String manufacturer;
+
+  /// Series name.
+  final String seriesName;
+
+  /// Model number.
+  final String modelNumber;
+
+  /// Which of the 28 component types this item belongs to.
+  final String componentType;
+  const InventoryItem({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.componentType,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['component_type'] = Variable<String>(componentType);
+    return map;
+  }
+
+  InventoryItemsCompanion toCompanion(bool nullToAbsent) {
+    return InventoryItemsCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      componentType: Value(componentType),
+    );
+  }
+
+  factory InventoryItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InventoryItem(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      componentType: serializer.fromJson<String>(json['componentType']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'componentType': serializer.toJson<String>(componentType),
+    };
+  }
+
+  InventoryItem copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    String? componentType,
+  }) => InventoryItem(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    componentType: componentType ?? this.componentType,
+  );
+  InventoryItem copyWithCompanion(InventoryItemsCompanion data) {
+    return InventoryItem(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      componentType: data.componentType.present
+          ? data.componentType.value
+          : this.componentType,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryItem(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('componentType: $componentType')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    componentType,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InventoryItem &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.componentType == this.componentType);
+}
+
+class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<String> componentType;
+  const InventoryItemsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.componentType = const Value.absent(),
+  });
+  InventoryItemsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    required String componentType,
+  }) : name = Value(name),
+       componentType = Value(componentType);
+  static Insertable<InventoryItem> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<String>? componentType,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (componentType != null) 'component_type': componentType,
+    });
+  }
+
+  InventoryItemsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<String>? componentType,
+  }) {
+    return InventoryItemsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      componentType: componentType ?? this.componentType,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (componentType.present) {
+      map['component_type'] = Variable<String>(componentType.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InventoryItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('componentType: $componentType')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ComponentStatusTableTable extends ComponentStatusTable
+    with TableInfo<$ComponentStatusTableTable, ComponentStatusTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ComponentStatusTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<int> projectId = GeneratedColumn<int>(
+    'project_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES projects (id)',
+    ),
+  );
+  static const VerificationMeta _inventoryItemIdMeta = const VerificationMeta(
+    'inventoryItemId',
+  );
+  @override
+  late final GeneratedColumn<int> inventoryItemId = GeneratedColumn<int>(
+    'inventory_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES inventory_items (id)',
+    ),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Offen'),
+  );
+  static const VerificationMeta _requiredMeta = const VerificationMeta(
+    'required',
+  );
+  @override
+  late final GeneratedColumn<bool> required = GeneratedColumn<bool>(
+    'required',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("required" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    projectId,
+    inventoryItemId,
+    status,
+    required,
+    quantity,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'component_status_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ComponentStatusTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('inventory_item_id')) {
+      context.handle(
+        _inventoryItemIdMeta,
+        inventoryItemId.isAcceptableOrUnknown(
+          data['inventory_item_id']!,
+          _inventoryItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_inventoryItemIdMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('required')) {
+      context.handle(
+        _requiredMeta,
+        required.isAcceptableOrUnknown(data['required']!, _requiredMeta),
+      );
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ComponentStatusTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ComponentStatusTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}project_id'],
+      )!,
+      inventoryItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}inventory_item_id'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      required: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}required'],
+      )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity'],
+      )!,
+    );
+  }
+
+  @override
+  $ComponentStatusTableTable createAlias(String alias) {
+    return $ComponentStatusTableTable(attachedDatabase, alias);
+  }
+}
+
+class ComponentStatusTableData extends DataClass
+    implements Insertable<ComponentStatusTableData> {
+  final int id;
+
+  /// The project this status belongs to.
+  final int projectId;
+
+  /// Reference to the inventory item (from [InventoryItems]).
+  final int inventoryItemId;
+
+  /// Current status: Offen, In Planung, Geplant, Eingebaut, Nicht Benötigt.
+  final String status;
+
+  /// Is this component required for the project?
+  final bool required;
+
+  /// Calculated quantity (from formulas).
+  final int quantity;
+  const ComponentStatusTableData({
+    required this.id,
+    required this.projectId,
+    required this.inventoryItemId,
+    required this.status,
+    required this.required,
+    required this.quantity,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['project_id'] = Variable<int>(projectId);
+    map['inventory_item_id'] = Variable<int>(inventoryItemId);
+    map['status'] = Variable<String>(status);
+    map['required'] = Variable<bool>(required);
+    map['quantity'] = Variable<int>(quantity);
+    return map;
+  }
+
+  ComponentStatusTableCompanion toCompanion(bool nullToAbsent) {
+    return ComponentStatusTableCompanion(
+      id: Value(id),
+      projectId: Value(projectId),
+      inventoryItemId: Value(inventoryItemId),
+      status: Value(status),
+      required: Value(required),
+      quantity: Value(quantity),
+    );
+  }
+
+  factory ComponentStatusTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ComponentStatusTableData(
+      id: serializer.fromJson<int>(json['id']),
+      projectId: serializer.fromJson<int>(json['projectId']),
+      inventoryItemId: serializer.fromJson<int>(json['inventoryItemId']),
+      status: serializer.fromJson<String>(json['status']),
+      required: serializer.fromJson<bool>(json['required']),
+      quantity: serializer.fromJson<int>(json['quantity']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'projectId': serializer.toJson<int>(projectId),
+      'inventoryItemId': serializer.toJson<int>(inventoryItemId),
+      'status': serializer.toJson<String>(status),
+      'required': serializer.toJson<bool>(required),
+      'quantity': serializer.toJson<int>(quantity),
+    };
+  }
+
+  ComponentStatusTableData copyWith({
+    int? id,
+    int? projectId,
+    int? inventoryItemId,
+    String? status,
+    bool? required,
+    int? quantity,
+  }) => ComponentStatusTableData(
+    id: id ?? this.id,
+    projectId: projectId ?? this.projectId,
+    inventoryItemId: inventoryItemId ?? this.inventoryItemId,
+    status: status ?? this.status,
+    required: required ?? this.required,
+    quantity: quantity ?? this.quantity,
+  );
+  ComponentStatusTableData copyWithCompanion(
+    ComponentStatusTableCompanion data,
+  ) {
+    return ComponentStatusTableData(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      inventoryItemId: data.inventoryItemId.present
+          ? data.inventoryItemId.value
+          : this.inventoryItemId,
+      status: data.status.present ? data.status.value : this.status,
+      required: data.required.present ? data.required.value : this.required,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ComponentStatusTableData(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('inventoryItemId: $inventoryItemId, ')
+          ..write('status: $status, ')
+          ..write('required: $required, ')
+          ..write('quantity: $quantity')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, projectId, inventoryItemId, status, required, quantity);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ComponentStatusTableData &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.inventoryItemId == this.inventoryItemId &&
+          other.status == this.status &&
+          other.required == this.required &&
+          other.quantity == this.quantity);
+}
+
+class ComponentStatusTableCompanion
+    extends UpdateCompanion<ComponentStatusTableData> {
+  final Value<int> id;
+  final Value<int> projectId;
+  final Value<int> inventoryItemId;
+  final Value<String> status;
+  final Value<bool> required;
+  final Value<int> quantity;
+  const ComponentStatusTableCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.inventoryItemId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.required = const Value.absent(),
+    this.quantity = const Value.absent(),
+  });
+  ComponentStatusTableCompanion.insert({
+    this.id = const Value.absent(),
+    required int projectId,
+    required int inventoryItemId,
+    this.status = const Value.absent(),
+    this.required = const Value.absent(),
+    this.quantity = const Value.absent(),
+  }) : projectId = Value(projectId),
+       inventoryItemId = Value(inventoryItemId);
+  static Insertable<ComponentStatusTableData> custom({
+    Expression<int>? id,
+    Expression<int>? projectId,
+    Expression<int>? inventoryItemId,
+    Expression<String>? status,
+    Expression<bool>? required,
+    Expression<int>? quantity,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (inventoryItemId != null) 'inventory_item_id': inventoryItemId,
+      if (status != null) 'status': status,
+      if (required != null) 'required': required,
+      if (quantity != null) 'quantity': quantity,
+    });
+  }
+
+  ComponentStatusTableCompanion copyWith({
+    Value<int>? id,
+    Value<int>? projectId,
+    Value<int>? inventoryItemId,
+    Value<String>? status,
+    Value<bool>? required,
+    Value<int>? quantity,
+  }) {
+    return ComponentStatusTableCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      inventoryItemId: inventoryItemId ?? this.inventoryItemId,
+      status: status ?? this.status,
+      required: required ?? this.required,
+      quantity: quantity ?? this.quantity,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (inventoryItemId.present) {
+      map['inventory_item_id'] = Variable<int>(inventoryItemId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (required.present) {
+      map['required'] = Variable<bool>(required.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<int>(quantity.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ComponentStatusTableCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('inventoryItemId: $inventoryItemId, ')
+          ..write('status: $status, ')
+          ..write('required: $required, ')
+          ..write('quantity: $quantity')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BoilerTable extends Boiler with TableInfo<$BoilerTable, BoilerData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BoilerTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _volumeLitresMeta = const VerificationMeta(
+    'volumeLitres',
+  );
+  @override
+  late final GeneratedColumn<int> volumeLitres = GeneratedColumn<int>(
+    'volume_litres',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(200),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    volumeLitres,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'boiler';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BoilerData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('volume_litres')) {
+      context.handle(
+        _volumeLitresMeta,
+        volumeLitres.isAcceptableOrUnknown(
+          data['volume_litres']!,
+          _volumeLitresMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BoilerData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BoilerData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      volumeLitres: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}volume_litres'],
+      )!,
+    );
+  }
+
+  @override
+  $BoilerTable createAlias(String alias) {
+    return $BoilerTable(attachedDatabase, alias);
+  }
+}
+
+class BoilerData extends DataClass implements Insertable<BoilerData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+
+  /// Nominal volume in litres (CALC_Boiler_Volumen).
+  final int volumeLitres;
+  const BoilerData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.volumeLitres,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['volume_litres'] = Variable<int>(volumeLitres);
+    return map;
+  }
+
+  BoilerCompanion toCompanion(bool nullToAbsent) {
+    return BoilerCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      volumeLitres: Value(volumeLitres),
+    );
+  }
+
+  factory BoilerData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BoilerData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      volumeLitres: serializer.fromJson<int>(json['volumeLitres']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'volumeLitres': serializer.toJson<int>(volumeLitres),
+    };
+  }
+
+  BoilerData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? volumeLitres,
+  }) => BoilerData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    volumeLitres: volumeLitres ?? this.volumeLitres,
+  );
+  BoilerData copyWithCompanion(BoilerCompanion data) {
+    return BoilerData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      volumeLitres: data.volumeLitres.present
+          ? data.volumeLitres.value
+          : this.volumeLitres,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BoilerData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('volumeLitres: $volumeLitres')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    volumeLitres,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BoilerData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.volumeLitres == this.volumeLitres);
+}
+
+class BoilerCompanion extends UpdateCompanion<BoilerData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> volumeLitres;
+  const BoilerCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.volumeLitres = const Value.absent(),
+  });
+  BoilerCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.volumeLitres = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<BoilerData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? volumeLitres,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (volumeLitres != null) 'volume_litres': volumeLitres,
+    });
+  }
+
+  BoilerCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? volumeLitres,
+  }) {
+    return BoilerCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      volumeLitres: volumeLitres ?? this.volumeLitres,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (volumeLitres.present) {
+      map['volume_litres'] = Variable<int>(volumeLitres.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BoilerCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('volumeLitres: $volumeLitres')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HwVerteilerTable extends HwVerteiler
+    with TableInfo<$HwVerteilerTable, HwVerteilerData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HwVerteilerTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _zonesMeta = const VerificationMeta('zones');
+  @override
+  late final GeneratedColumn<int> zones = GeneratedColumn<int>(
+    'zones',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    zones,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'hw_verteiler';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HwVerteilerData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('zones')) {
+      context.handle(
+        _zonesMeta,
+        zones.isAcceptableOrUnknown(data['zones']!, _zonesMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HwVerteilerData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HwVerteilerData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      zones: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}zones'],
+      )!,
+    );
+  }
+
+  @override
+  $HwVerteilerTable createAlias(String alias) {
+    return $HwVerteilerTable(attachedDatabase, alias);
+  }
+}
+
+class HwVerteilerData extends DataClass implements Insertable<HwVerteilerData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+
+  /// Number of zones served.
+  final int zones;
+  const HwVerteilerData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.zones,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['zones'] = Variable<int>(zones);
+    return map;
+  }
+
+  HwVerteilerCompanion toCompanion(bool nullToAbsent) {
+    return HwVerteilerCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      zones: Value(zones),
+    );
+  }
+
+  factory HwVerteilerData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HwVerteilerData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      zones: serializer.fromJson<int>(json['zones']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'zones': serializer.toJson<int>(zones),
+    };
+  }
+
+  HwVerteilerData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? zones,
+  }) => HwVerteilerData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    zones: zones ?? this.zones,
+  );
+  HwVerteilerData copyWithCompanion(HwVerteilerCompanion data) {
+    return HwVerteilerData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      zones: data.zones.present ? data.zones.value : this.zones,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HwVerteilerData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('zones: $zones')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, zones);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HwVerteilerData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.zones == this.zones);
+}
+
+class HwVerteilerCompanion extends UpdateCompanion<HwVerteilerData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> zones;
+  const HwVerteilerCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.zones = const Value.absent(),
+  });
+  HwVerteilerCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.zones = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<HwVerteilerData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? zones,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (zones != null) 'zones': zones,
+    });
+  }
+
+  HwVerteilerCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? zones,
+  }) {
+    return HwVerteilerCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      zones: zones ?? this.zones,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (zones.present) {
+      map['zones'] = Variable<int>(zones.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HwVerteilerCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('zones: $zones')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ZirkulationspumpeTable extends Zirkulationspumpe
+    with TableInfo<$ZirkulationspumpeTable, ZirkulationspumpeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ZirkulationspumpeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _flowRateLMinMeta = const VerificationMeta(
+    'flowRateLMin',
+  );
+  @override
+  late final GeneratedColumn<double> flowRateLMin = GeneratedColumn<double>(
+    'flow_rate_l_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _headPressureMMeta = const VerificationMeta(
+    'headPressureM',
+  );
+  @override
+  late final GeneratedColumn<double> headPressureM = GeneratedColumn<double>(
+    'head_pressure_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _eeiRatingMeta = const VerificationMeta(
+    'eeiRating',
+  );
+  @override
+  late final GeneratedColumn<double> eeiRating = GeneratedColumn<double>(
+    'eei_rating',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.2),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    flowRateLMin,
+    headPressureM,
+    eeiRating,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'zirkulationspumpe';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ZirkulationspumpeData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('flow_rate_l_min')) {
+      context.handle(
+        _flowRateLMinMeta,
+        flowRateLMin.isAcceptableOrUnknown(
+          data['flow_rate_l_min']!,
+          _flowRateLMinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('head_pressure_m')) {
+      context.handle(
+        _headPressureMMeta,
+        headPressureM.isAcceptableOrUnknown(
+          data['head_pressure_m']!,
+          _headPressureMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('eei_rating')) {
+      context.handle(
+        _eeiRatingMeta,
+        eeiRating.isAcceptableOrUnknown(data['eei_rating']!, _eeiRatingMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ZirkulationspumpeData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ZirkulationspumpeData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      flowRateLMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}flow_rate_l_min'],
+      )!,
+      headPressureM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}head_pressure_m'],
+      )!,
+      eeiRating: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}eei_rating'],
+      )!,
+    );
+  }
+
+  @override
+  $ZirkulationspumpeTable createAlias(String alias) {
+    return $ZirkulationspumpeTable(attachedDatabase, alias);
+  }
+}
+
+class ZirkulationspumpeData extends DataClass
+    implements Insertable<ZirkulationspumpeData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final double flowRateLMin;
+  final double headPressureM;
+  final double eeiRating;
+  const ZirkulationspumpeData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.flowRateLMin,
+    required this.headPressureM,
+    required this.eeiRating,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['flow_rate_l_min'] = Variable<double>(flowRateLMin);
+    map['head_pressure_m'] = Variable<double>(headPressureM);
+    map['eei_rating'] = Variable<double>(eeiRating);
+    return map;
+  }
+
+  ZirkulationspumpeCompanion toCompanion(bool nullToAbsent) {
+    return ZirkulationspumpeCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      flowRateLMin: Value(flowRateLMin),
+      headPressureM: Value(headPressureM),
+      eeiRating: Value(eeiRating),
+    );
+  }
+
+  factory ZirkulationspumpeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ZirkulationspumpeData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      flowRateLMin: serializer.fromJson<double>(json['flowRateLMin']),
+      headPressureM: serializer.fromJson<double>(json['headPressureM']),
+      eeiRating: serializer.fromJson<double>(json['eeiRating']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'flowRateLMin': serializer.toJson<double>(flowRateLMin),
+      'headPressureM': serializer.toJson<double>(headPressureM),
+      'eeiRating': serializer.toJson<double>(eeiRating),
+    };
+  }
+
+  ZirkulationspumpeData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    double? flowRateLMin,
+    double? headPressureM,
+    double? eeiRating,
+  }) => ZirkulationspumpeData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    flowRateLMin: flowRateLMin ?? this.flowRateLMin,
+    headPressureM: headPressureM ?? this.headPressureM,
+    eeiRating: eeiRating ?? this.eeiRating,
+  );
+  ZirkulationspumpeData copyWithCompanion(ZirkulationspumpeCompanion data) {
+    return ZirkulationspumpeData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      flowRateLMin: data.flowRateLMin.present
+          ? data.flowRateLMin.value
+          : this.flowRateLMin,
+      headPressureM: data.headPressureM.present
+          ? data.headPressureM.value
+          : this.headPressureM,
+      eeiRating: data.eeiRating.present ? data.eeiRating.value : this.eeiRating,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ZirkulationspumpeData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('flowRateLMin: $flowRateLMin, ')
+          ..write('headPressureM: $headPressureM, ')
+          ..write('eeiRating: $eeiRating')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    flowRateLMin,
+    headPressureM,
+    eeiRating,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ZirkulationspumpeData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.flowRateLMin == this.flowRateLMin &&
+          other.headPressureM == this.headPressureM &&
+          other.eeiRating == this.eeiRating);
+}
+
+class ZirkulationspumpeCompanion
+    extends UpdateCompanion<ZirkulationspumpeData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<double> flowRateLMin;
+  final Value<double> headPressureM;
+  final Value<double> eeiRating;
+  const ZirkulationspumpeCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.flowRateLMin = const Value.absent(),
+    this.headPressureM = const Value.absent(),
+    this.eeiRating = const Value.absent(),
+  });
+  ZirkulationspumpeCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.flowRateLMin = const Value.absent(),
+    this.headPressureM = const Value.absent(),
+    this.eeiRating = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<ZirkulationspumpeData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<double>? flowRateLMin,
+    Expression<double>? headPressureM,
+    Expression<double>? eeiRating,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (flowRateLMin != null) 'flow_rate_l_min': flowRateLMin,
+      if (headPressureM != null) 'head_pressure_m': headPressureM,
+      if (eeiRating != null) 'eei_rating': eeiRating,
+    });
+  }
+
+  ZirkulationspumpeCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<double>? flowRateLMin,
+    Value<double>? headPressureM,
+    Value<double>? eeiRating,
+  }) {
+    return ZirkulationspumpeCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      flowRateLMin: flowRateLMin ?? this.flowRateLMin,
+      headPressureM: headPressureM ?? this.headPressureM,
+      eeiRating: eeiRating ?? this.eeiRating,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (flowRateLMin.present) {
+      map['flow_rate_l_min'] = Variable<double>(flowRateLMin.value);
+    }
+    if (headPressureM.present) {
+      map['head_pressure_m'] = Variable<double>(headPressureM.value);
+    }
+    if (eeiRating.present) {
+      map['eei_rating'] = Variable<double>(eeiRating.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ZirkulationspumpeCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('flowRateLMin: $flowRateLMin, ')
+          ..write('headPressureM: $headPressureM, ')
+          ..write('eeiRating: $eeiRating')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RueckflussverhindererTable extends Rueckflussverhinderer
+    with TableInfo<$RueckflussverhindererTable, RueckflussverhindererData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RueckflussverhindererTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dnSizeMeta = const VerificationMeta('dnSize');
+  @override
+  late final GeneratedColumn<int> dnSize = GeneratedColumn<int>(
+    'dn_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    dnSize,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'rueckflussverhinderer';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RueckflussverhindererData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dn_size')) {
+      context.handle(
+        _dnSizeMeta,
+        dnSize.isAcceptableOrUnknown(data['dn_size']!, _dnSizeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RueckflussverhindererData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RueckflussverhindererData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      dnSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dn_size'],
+      )!,
+    );
+  }
+
+  @override
+  $RueckflussverhindererTable createAlias(String alias) {
+    return $RueckflussverhindererTable(attachedDatabase, alias);
+  }
+}
+
+class RueckflussverhindererData extends DataClass
+    implements Insertable<RueckflussverhindererData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int dnSize;
+  const RueckflussverhindererData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.dnSize,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['dn_size'] = Variable<int>(dnSize);
+    return map;
+  }
+
+  RueckflussverhindererCompanion toCompanion(bool nullToAbsent) {
+    return RueckflussverhindererCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      dnSize: Value(dnSize),
+    );
+  }
+
+  factory RueckflussverhindererData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RueckflussverhindererData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      dnSize: serializer.fromJson<int>(json['dnSize']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'dnSize': serializer.toJson<int>(dnSize),
+    };
+  }
+
+  RueckflussverhindererData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? dnSize,
+  }) => RueckflussverhindererData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    dnSize: dnSize ?? this.dnSize,
+  );
+  RueckflussverhindererData copyWithCompanion(
+    RueckflussverhindererCompanion data,
+  ) {
+    return RueckflussverhindererData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      dnSize: data.dnSize.present ? data.dnSize.value : this.dnSize,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RueckflussverhindererData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, dnSize);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RueckflussverhindererData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.dnSize == this.dnSize);
+}
+
+class RueckflussverhindererCompanion
+    extends UpdateCompanion<RueckflussverhindererData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> dnSize;
+  const RueckflussverhindererCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  });
+  RueckflussverhindererCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<RueckflussverhindererData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? dnSize,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (dnSize != null) 'dn_size': dnSize,
+    });
+  }
+
+  RueckflussverhindererCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? dnSize,
+  }) {
+    return RueckflussverhindererCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      dnSize: dnSize ?? this.dnSize,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (dnSize.present) {
+      map['dn_size'] = Variable<int>(dnSize.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RueckflussverhindererCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SchmutzfangerTable extends Schmutzfanger
+    with TableInfo<$SchmutzfangerTable, SchmutzfangerData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SchmutzfangerTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _filterSizeMmMeta = const VerificationMeta(
+    'filterSizeMm',
+  );
+  @override
+  late final GeneratedColumn<double> filterSizeMm = GeneratedColumn<double>(
+    'filter_size_mm',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    filterSizeMm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'schmutzfanger';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SchmutzfangerData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('filter_size_mm')) {
+      context.handle(
+        _filterSizeMmMeta,
+        filterSizeMm.isAcceptableOrUnknown(
+          data['filter_size_mm']!,
+          _filterSizeMmMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SchmutzfangerData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SchmutzfangerData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      filterSizeMm: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}filter_size_mm'],
+      )!,
+    );
+  }
+
+  @override
+  $SchmutzfangerTable createAlias(String alias) {
+    return $SchmutzfangerTable(attachedDatabase, alias);
+  }
+}
+
+class SchmutzfangerData extends DataClass
+    implements Insertable<SchmutzfangerData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+
+  /// Filter mesh size in mm (typically 2).
+  final double filterSizeMm;
+  const SchmutzfangerData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.filterSizeMm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['filter_size_mm'] = Variable<double>(filterSizeMm);
+    return map;
+  }
+
+  SchmutzfangerCompanion toCompanion(bool nullToAbsent) {
+    return SchmutzfangerCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      filterSizeMm: Value(filterSizeMm),
+    );
+  }
+
+  factory SchmutzfangerData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SchmutzfangerData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      filterSizeMm: serializer.fromJson<double>(json['filterSizeMm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'filterSizeMm': serializer.toJson<double>(filterSizeMm),
+    };
+  }
+
+  SchmutzfangerData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    double? filterSizeMm,
+  }) => SchmutzfangerData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    filterSizeMm: filterSizeMm ?? this.filterSizeMm,
+  );
+  SchmutzfangerData copyWithCompanion(SchmutzfangerCompanion data) {
+    return SchmutzfangerData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      filterSizeMm: data.filterSizeMm.present
+          ? data.filterSizeMm.value
+          : this.filterSizeMm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SchmutzfangerData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('filterSizeMm: $filterSizeMm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    filterSizeMm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SchmutzfangerData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.filterSizeMm == this.filterSizeMm);
+}
+
+class SchmutzfangerCompanion extends UpdateCompanion<SchmutzfangerData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<double> filterSizeMm;
+  const SchmutzfangerCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.filterSizeMm = const Value.absent(),
+  });
+  SchmutzfangerCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.filterSizeMm = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<SchmutzfangerData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<double>? filterSizeMm,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (filterSizeMm != null) 'filter_size_mm': filterSizeMm,
+    });
+  }
+
+  SchmutzfangerCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<double>? filterSizeMm,
+  }) {
+    return SchmutzfangerCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      filterSizeMm: filterSizeMm ?? this.filterSizeMm,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (filterSizeMm.present) {
+      map['filter_size_mm'] = Variable<double>(filterSizeMm.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SchmutzfangerCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('filterSizeMm: $filterSizeMm')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DurchflusswaechterTable extends Durchflusswaechter
+    with TableInfo<$DurchflusswaechterTable, DurchflusswaechterData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DurchflusswaechterTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _minFlowM3HMeta = const VerificationMeta(
+    'minFlowM3H',
+  );
+  @override
+  late final GeneratedColumn<double> minFlowM3H = GeneratedColumn<double>(
+    'min_flow_m3_h',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.5),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    minFlowM3H,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'durchflusswaechter';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DurchflusswaechterData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('min_flow_m3_h')) {
+      context.handle(
+        _minFlowM3HMeta,
+        minFlowM3H.isAcceptableOrUnknown(
+          data['min_flow_m3_h']!,
+          _minFlowM3HMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DurchflusswaechterData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DurchflusswaechterData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      minFlowM3H: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}min_flow_m3_h'],
+      )!,
+    );
+  }
+
+  @override
+  $DurchflusswaechterTable createAlias(String alias) {
+    return $DurchflusswaechterTable(attachedDatabase, alias);
+  }
+}
+
+class DurchflusswaechterData extends DataClass
+    implements Insertable<DurchflusswaechterData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+
+  /// Minimum flow rate in m³/h (CALC_Min_Durchfluss).
+  final double minFlowM3H;
+  const DurchflusswaechterData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.minFlowM3H,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['min_flow_m3_h'] = Variable<double>(minFlowM3H);
+    return map;
+  }
+
+  DurchflusswaechterCompanion toCompanion(bool nullToAbsent) {
+    return DurchflusswaechterCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      minFlowM3H: Value(minFlowM3H),
+    );
+  }
+
+  factory DurchflusswaechterData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DurchflusswaechterData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      minFlowM3H: serializer.fromJson<double>(json['minFlowM3H']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'minFlowM3H': serializer.toJson<double>(minFlowM3H),
+    };
+  }
+
+  DurchflusswaechterData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    double? minFlowM3H,
+  }) => DurchflusswaechterData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    minFlowM3H: minFlowM3H ?? this.minFlowM3H,
+  );
+  DurchflusswaechterData copyWithCompanion(DurchflusswaechterCompanion data) {
+    return DurchflusswaechterData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      minFlowM3H: data.minFlowM3H.present
+          ? data.minFlowM3H.value
+          : this.minFlowM3H,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurchflusswaechterData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('minFlowM3H: $minFlowM3H')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, minFlowM3H);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DurchflusswaechterData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.minFlowM3H == this.minFlowM3H);
+}
+
+class DurchflusswaechterCompanion
+    extends UpdateCompanion<DurchflusswaechterData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<double> minFlowM3H;
+  const DurchflusswaechterCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.minFlowM3H = const Value.absent(),
+  });
+  DurchflusswaechterCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.minFlowM3H = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<DurchflusswaechterData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<double>? minFlowM3H,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (minFlowM3H != null) 'min_flow_m3_h': minFlowM3H,
+    });
+  }
+
+  DurchflusswaechterCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<double>? minFlowM3H,
+  }) {
+    return DurchflusswaechterCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      minFlowM3H: minFlowM3H ?? this.minFlowM3H,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (minFlowM3H.present) {
+      map['min_flow_m3_h'] = Variable<double>(minFlowM3H.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DurchflusswaechterCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('minFlowM3H: $minFlowM3H')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PufferspeicherTable extends Pufferspeicher
+    with TableInfo<$PufferspeicherTable, PufferspeicherData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PufferspeicherTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _volumeLitresMeta = const VerificationMeta(
+    'volumeLitres',
+  );
+  @override
+  late final GeneratedColumn<int> volumeLitres = GeneratedColumn<int>(
+    'volume_litres',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(500),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    volumeLitres,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pufferspeicher';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PufferspeicherData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('volume_litres')) {
+      context.handle(
+        _volumeLitresMeta,
+        volumeLitres.isAcceptableOrUnknown(
+          data['volume_litres']!,
+          _volumeLitresMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PufferspeicherData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PufferspeicherData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      volumeLitres: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}volume_litres'],
+      )!,
+    );
+  }
+
+  @override
+  $PufferspeicherTable createAlias(String alias) {
+    return $PufferspeicherTable(attachedDatabase, alias);
+  }
+}
+
+class PufferspeicherData extends DataClass
+    implements Insertable<PufferspeicherData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+
+  /// Volume in litres (CALC_Puffer_Volumen).
+  final int volumeLitres;
+  const PufferspeicherData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.volumeLitres,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['volume_litres'] = Variable<int>(volumeLitres);
+    return map;
+  }
+
+  PufferspeicherCompanion toCompanion(bool nullToAbsent) {
+    return PufferspeicherCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      volumeLitres: Value(volumeLitres),
+    );
+  }
+
+  factory PufferspeicherData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PufferspeicherData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      volumeLitres: serializer.fromJson<int>(json['volumeLitres']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'volumeLitres': serializer.toJson<int>(volumeLitres),
+    };
+  }
+
+  PufferspeicherData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? volumeLitres,
+  }) => PufferspeicherData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    volumeLitres: volumeLitres ?? this.volumeLitres,
+  );
+  PufferspeicherData copyWithCompanion(PufferspeicherCompanion data) {
+    return PufferspeicherData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      volumeLitres: data.volumeLitres.present
+          ? data.volumeLitres.value
+          : this.volumeLitres,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PufferspeicherData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('volumeLitres: $volumeLitres')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    volumeLitres,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PufferspeicherData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.volumeLitres == this.volumeLitres);
+}
+
+class PufferspeicherCompanion extends UpdateCompanion<PufferspeicherData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> volumeLitres;
+  const PufferspeicherCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.volumeLitres = const Value.absent(),
+  });
+  PufferspeicherCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.volumeLitres = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<PufferspeicherData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? volumeLitres,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (volumeLitres != null) 'volume_litres': volumeLitres,
+    });
+  }
+
+  PufferspeicherCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? volumeLitres,
+  }) {
+    return PufferspeicherCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      volumeLitres: volumeLitres ?? this.volumeLitres,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (volumeLitres.present) {
+      map['volume_litres'] = Variable<int>(volumeLitres.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PufferspeicherCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('volumeLitres: $volumeLitres')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PlattenwaermetauscherTable extends Plattenwaermetauscher
+    with TableInfo<$PlattenwaermetauscherTable, PlattenwaermetauscherData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlattenwaermetauscherTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _platesMeta = const VerificationMeta('plates');
+  @override
+  late final GeneratedColumn<int> plates = GeneratedColumn<int>(
+    'plates',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(30),
+  );
+  static const VerificationMeta _areaM2Meta = const VerificationMeta('areaM2');
+  @override
+  late final GeneratedColumn<double> areaM2 = GeneratedColumn<double>(
+    'area_m2',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2.0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    plates,
+    areaM2,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'plattenwaermetauscher';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlattenwaermetauscherData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('plates')) {
+      context.handle(
+        _platesMeta,
+        plates.isAcceptableOrUnknown(data['plates']!, _platesMeta),
+      );
+    }
+    if (data.containsKey('area_m2')) {
+      context.handle(
+        _areaM2Meta,
+        areaM2.isAcceptableOrUnknown(data['area_m2']!, _areaM2Meta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PlattenwaermetauscherData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlattenwaermetauscherData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      plates: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}plates'],
+      )!,
+      areaM2: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}area_m2'],
+      )!,
+    );
+  }
+
+  @override
+  $PlattenwaermetauscherTable createAlias(String alias) {
+    return $PlattenwaermetauscherTable(attachedDatabase, alias);
+  }
+}
+
+class PlattenwaermetauscherData extends DataClass
+    implements Insertable<PlattenwaermetauscherData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int plates;
+  final double areaM2;
+  const PlattenwaermetauscherData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.plates,
+    required this.areaM2,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['plates'] = Variable<int>(plates);
+    map['area_m2'] = Variable<double>(areaM2);
+    return map;
+  }
+
+  PlattenwaermetauscherCompanion toCompanion(bool nullToAbsent) {
+    return PlattenwaermetauscherCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      plates: Value(plates),
+      areaM2: Value(areaM2),
+    );
+  }
+
+  factory PlattenwaermetauscherData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlattenwaermetauscherData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      plates: serializer.fromJson<int>(json['plates']),
+      areaM2: serializer.fromJson<double>(json['areaM2']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'plates': serializer.toJson<int>(plates),
+      'areaM2': serializer.toJson<double>(areaM2),
+    };
+  }
+
+  PlattenwaermetauscherData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? plates,
+    double? areaM2,
+  }) => PlattenwaermetauscherData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    plates: plates ?? this.plates,
+    areaM2: areaM2 ?? this.areaM2,
+  );
+  PlattenwaermetauscherData copyWithCompanion(
+    PlattenwaermetauscherCompanion data,
+  ) {
+    return PlattenwaermetauscherData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      plates: data.plates.present ? data.plates.value : this.plates,
+      areaM2: data.areaM2.present ? data.areaM2.value : this.areaM2,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlattenwaermetauscherData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('plates: $plates, ')
+          ..write('areaM2: $areaM2')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    plates,
+    areaM2,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlattenwaermetauscherData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.plates == this.plates &&
+          other.areaM2 == this.areaM2);
+}
+
+class PlattenwaermetauscherCompanion
+    extends UpdateCompanion<PlattenwaermetauscherData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> plates;
+  final Value<double> areaM2;
+  const PlattenwaermetauscherCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.plates = const Value.absent(),
+    this.areaM2 = const Value.absent(),
+  });
+  PlattenwaermetauscherCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.plates = const Value.absent(),
+    this.areaM2 = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<PlattenwaermetauscherData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? plates,
+    Expression<double>? areaM2,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (plates != null) 'plates': plates,
+      if (areaM2 != null) 'area_m2': areaM2,
+    });
+  }
+
+  PlattenwaermetauscherCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? plates,
+    Value<double>? areaM2,
+  }) {
+    return PlattenwaermetauscherCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      plates: plates ?? this.plates,
+      areaM2: areaM2 ?? this.areaM2,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (plates.present) {
+      map['plates'] = Variable<int>(plates.value);
+    }
+    if (areaM2.present) {
+      map['area_m2'] = Variable<double>(areaM2.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlattenwaermetauscherCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('plates: $plates, ')
+          ..write('areaM2: $areaM2')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SafetyValveTable extends SafetyValve
+    with TableInfo<$SafetyValveTable, SafetyValveData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SafetyValveTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _openingPressureBarMeta =
+      const VerificationMeta('openingPressureBar');
+  @override
+  late final GeneratedColumn<double> openingPressureBar =
+      GeneratedColumn<double>(
+        'opening_pressure_bar',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(3),
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    openingPressureBar,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'safety_valve';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SafetyValveData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('opening_pressure_bar')) {
+      context.handle(
+        _openingPressureBarMeta,
+        openingPressureBar.isAcceptableOrUnknown(
+          data['opening_pressure_bar']!,
+          _openingPressureBarMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SafetyValveData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SafetyValveData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      openingPressureBar: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}opening_pressure_bar'],
+      )!,
+    );
+  }
+
+  @override
+  $SafetyValveTable createAlias(String alias) {
+    return $SafetyValveTable(attachedDatabase, alias);
+  }
+}
+
+class SafetyValveData extends DataClass implements Insertable<SafetyValveData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+
+  /// Opening pressure in bar (default 3).
+  final double openingPressureBar;
+  const SafetyValveData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.openingPressureBar,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['opening_pressure_bar'] = Variable<double>(openingPressureBar);
+    return map;
+  }
+
+  SafetyValveCompanion toCompanion(bool nullToAbsent) {
+    return SafetyValveCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      openingPressureBar: Value(openingPressureBar),
+    );
+  }
+
+  factory SafetyValveData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SafetyValveData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      openingPressureBar: serializer.fromJson<double>(
+        json['openingPressureBar'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'openingPressureBar': serializer.toJson<double>(openingPressureBar),
+    };
+  }
+
+  SafetyValveData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    double? openingPressureBar,
+  }) => SafetyValveData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    openingPressureBar: openingPressureBar ?? this.openingPressureBar,
+  );
+  SafetyValveData copyWithCompanion(SafetyValveCompanion data) {
+    return SafetyValveData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      openingPressureBar: data.openingPressureBar.present
+          ? data.openingPressureBar.value
+          : this.openingPressureBar,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SafetyValveData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('openingPressureBar: $openingPressureBar')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    openingPressureBar,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SafetyValveData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.openingPressureBar == this.openingPressureBar);
+}
+
+class SafetyValveCompanion extends UpdateCompanion<SafetyValveData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<double> openingPressureBar;
+  const SafetyValveCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.openingPressureBar = const Value.absent(),
+  });
+  SafetyValveCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.openingPressureBar = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<SafetyValveData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<double>? openingPressureBar,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (openingPressureBar != null)
+        'opening_pressure_bar': openingPressureBar,
+    });
+  }
+
+  SafetyValveCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<double>? openingPressureBar,
+  }) {
+    return SafetyValveCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      openingPressureBar: openingPressureBar ?? this.openingPressureBar,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (openingPressureBar.present) {
+      map['opening_pressure_bar'] = Variable<double>(openingPressureBar.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SafetyValveCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('openingPressureBar: $openingPressureBar')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MembranausdehnungsgefaessTable extends Membranausdehnungsgefaess
+    with
+        TableInfo<
+          $MembranausdehnungsgefaessTable,
+          MembranausdehnungsgefaessData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MembranausdehnungsgefaessTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _volumeLitresMeta = const VerificationMeta(
+    'volumeLitres',
+  );
+  @override
+  late final GeneratedColumn<int> volumeLitres = GeneratedColumn<int>(
+    'volume_litres',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(10),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    volumeLitres,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'membranausdehnungsgefaess';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MembranausdehnungsgefaessData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('volume_litres')) {
+      context.handle(
+        _volumeLitresMeta,
+        volumeLitres.isAcceptableOrUnknown(
+          data['volume_litres']!,
+          _volumeLitresMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MembranausdehnungsgefaessData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MembranausdehnungsgefaessData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      volumeLitres: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}volume_litres'],
+      )!,
+    );
+  }
+
+  @override
+  $MembranausdehnungsgefaessTable createAlias(String alias) {
+    return $MembranausdehnungsgefaessTable(attachedDatabase, alias);
+  }
+}
+
+class MembranausdehnungsgefaessData extends DataClass
+    implements Insertable<MembranausdehnungsgefaessData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+
+  /// Volume in litres (CALC_MAG_Volumen).
+  final int volumeLitres;
+  const MembranausdehnungsgefaessData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.volumeLitres,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['volume_litres'] = Variable<int>(volumeLitres);
+    return map;
+  }
+
+  MembranausdehnungsgefaessCompanion toCompanion(bool nullToAbsent) {
+    return MembranausdehnungsgefaessCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      volumeLitres: Value(volumeLitres),
+    );
+  }
+
+  factory MembranausdehnungsgefaessData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MembranausdehnungsgefaessData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      volumeLitres: serializer.fromJson<int>(json['volumeLitres']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'volumeLitres': serializer.toJson<int>(volumeLitres),
+    };
+  }
+
+  MembranausdehnungsgefaessData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? volumeLitres,
+  }) => MembranausdehnungsgefaessData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    volumeLitres: volumeLitres ?? this.volumeLitres,
+  );
+  MembranausdehnungsgefaessData copyWithCompanion(
+    MembranausdehnungsgefaessCompanion data,
+  ) {
+    return MembranausdehnungsgefaessData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      volumeLitres: data.volumeLitres.present
+          ? data.volumeLitres.value
+          : this.volumeLitres,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MembranausdehnungsgefaessData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('volumeLitres: $volumeLitres')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    volumeLitres,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MembranausdehnungsgefaessData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.volumeLitres == this.volumeLitres);
+}
+
+class MembranausdehnungsgefaessCompanion
+    extends UpdateCompanion<MembranausdehnungsgefaessData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> volumeLitres;
+  const MembranausdehnungsgefaessCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.volumeLitres = const Value.absent(),
+  });
+  MembranausdehnungsgefaessCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.volumeLitres = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<MembranausdehnungsgefaessData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? volumeLitres,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (volumeLitres != null) 'volume_litres': volumeLitres,
+    });
+  }
+
+  MembranausdehnungsgefaessCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? volumeLitres,
+  }) {
+    return MembranausdehnungsgefaessCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      volumeLitres: volumeLitres ?? this.volumeLitres,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (volumeLitres.present) {
+      map['volume_litres'] = Variable<int>(volumeLitres.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MembranausdehnungsgefaessCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('volumeLitres: $volumeLitres')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EntluftungsventilTable extends Entluftungsventil
+    with TableInfo<$EntluftungsventilTable, EntluftungsventilData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EntluftungsventilTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dnSizeMeta = const VerificationMeta('dnSize');
+  @override
+  late final GeneratedColumn<int> dnSize = GeneratedColumn<int>(
+    'dn_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    dnSize,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'entluftungsventil';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EntluftungsventilData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dn_size')) {
+      context.handle(
+        _dnSizeMeta,
+        dnSize.isAcceptableOrUnknown(data['dn_size']!, _dnSizeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EntluftungsventilData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EntluftungsventilData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      dnSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dn_size'],
+      )!,
+    );
+  }
+
+  @override
+  $EntluftungsventilTable createAlias(String alias) {
+    return $EntluftungsventilTable(attachedDatabase, alias);
+  }
+}
+
+class EntluftungsventilData extends DataClass
+    implements Insertable<EntluftungsventilData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int dnSize;
+  const EntluftungsventilData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.dnSize,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['dn_size'] = Variable<int>(dnSize);
+    return map;
+  }
+
+  EntluftungsventilCompanion toCompanion(bool nullToAbsent) {
+    return EntluftungsventilCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      dnSize: Value(dnSize),
+    );
+  }
+
+  factory EntluftungsventilData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EntluftungsventilData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      dnSize: serializer.fromJson<int>(json['dnSize']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'dnSize': serializer.toJson<int>(dnSize),
+    };
+  }
+
+  EntluftungsventilData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? dnSize,
+  }) => EntluftungsventilData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    dnSize: dnSize ?? this.dnSize,
+  );
+  EntluftungsventilData copyWithCompanion(EntluftungsventilCompanion data) {
+    return EntluftungsventilData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      dnSize: data.dnSize.present ? data.dnSize.value : this.dnSize,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntluftungsventilData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, dnSize);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EntluftungsventilData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.dnSize == this.dnSize);
+}
+
+class EntluftungsventilCompanion
+    extends UpdateCompanion<EntluftungsventilData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> dnSize;
+  const EntluftungsventilCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  });
+  EntluftungsventilCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<EntluftungsventilData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? dnSize,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (dnSize != null) 'dn_size': dnSize,
+    });
+  }
+
+  EntluftungsventilCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? dnSize,
+  }) {
+    return EntluftungsventilCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      dnSize: dnSize ?? this.dnSize,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (dnSize.present) {
+      map['dn_size'] = Variable<int>(dnSize.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntluftungsventilCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HeizkreispumpeTable extends Heizkreispumpe
+    with TableInfo<$HeizkreispumpeTable, HeizkreispumpeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HeizkreispumpeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _flowRateLMinMeta = const VerificationMeta(
+    'flowRateLMin',
+  );
+  @override
+  late final GeneratedColumn<double> flowRateLMin = GeneratedColumn<double>(
+    'flow_rate_l_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _headPressureMMeta = const VerificationMeta(
+    'headPressureM',
+  );
+  @override
+  late final GeneratedColumn<double> headPressureM = GeneratedColumn<double>(
+    'head_pressure_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _eeiRatingMeta = const VerificationMeta(
+    'eeiRating',
+  );
+  @override
+  late final GeneratedColumn<double> eeiRating = GeneratedColumn<double>(
+    'eei_rating',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.2),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    flowRateLMin,
+    headPressureM,
+    eeiRating,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'heizkreispumpe';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HeizkreispumpeData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('flow_rate_l_min')) {
+      context.handle(
+        _flowRateLMinMeta,
+        flowRateLMin.isAcceptableOrUnknown(
+          data['flow_rate_l_min']!,
+          _flowRateLMinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('head_pressure_m')) {
+      context.handle(
+        _headPressureMMeta,
+        headPressureM.isAcceptableOrUnknown(
+          data['head_pressure_m']!,
+          _headPressureMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('eei_rating')) {
+      context.handle(
+        _eeiRatingMeta,
+        eeiRating.isAcceptableOrUnknown(data['eei_rating']!, _eeiRatingMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HeizkreispumpeData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HeizkreispumpeData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      flowRateLMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}flow_rate_l_min'],
+      )!,
+      headPressureM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}head_pressure_m'],
+      )!,
+      eeiRating: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}eei_rating'],
+      )!,
+    );
+  }
+
+  @override
+  $HeizkreispumpeTable createAlias(String alias) {
+    return $HeizkreispumpeTable(attachedDatabase, alias);
+  }
+}
+
+class HeizkreispumpeData extends DataClass
+    implements Insertable<HeizkreispumpeData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final double flowRateLMin;
+  final double headPressureM;
+  final double eeiRating;
+  const HeizkreispumpeData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.flowRateLMin,
+    required this.headPressureM,
+    required this.eeiRating,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['flow_rate_l_min'] = Variable<double>(flowRateLMin);
+    map['head_pressure_m'] = Variable<double>(headPressureM);
+    map['eei_rating'] = Variable<double>(eeiRating);
+    return map;
+  }
+
+  HeizkreispumpeCompanion toCompanion(bool nullToAbsent) {
+    return HeizkreispumpeCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      flowRateLMin: Value(flowRateLMin),
+      headPressureM: Value(headPressureM),
+      eeiRating: Value(eeiRating),
+    );
+  }
+
+  factory HeizkreispumpeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HeizkreispumpeData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      flowRateLMin: serializer.fromJson<double>(json['flowRateLMin']),
+      headPressureM: serializer.fromJson<double>(json['headPressureM']),
+      eeiRating: serializer.fromJson<double>(json['eeiRating']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'flowRateLMin': serializer.toJson<double>(flowRateLMin),
+      'headPressureM': serializer.toJson<double>(headPressureM),
+      'eeiRating': serializer.toJson<double>(eeiRating),
+    };
+  }
+
+  HeizkreispumpeData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    double? flowRateLMin,
+    double? headPressureM,
+    double? eeiRating,
+  }) => HeizkreispumpeData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    flowRateLMin: flowRateLMin ?? this.flowRateLMin,
+    headPressureM: headPressureM ?? this.headPressureM,
+    eeiRating: eeiRating ?? this.eeiRating,
+  );
+  HeizkreispumpeData copyWithCompanion(HeizkreispumpeCompanion data) {
+    return HeizkreispumpeData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      flowRateLMin: data.flowRateLMin.present
+          ? data.flowRateLMin.value
+          : this.flowRateLMin,
+      headPressureM: data.headPressureM.present
+          ? data.headPressureM.value
+          : this.headPressureM,
+      eeiRating: data.eeiRating.present ? data.eeiRating.value : this.eeiRating,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HeizkreispumpeData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('flowRateLMin: $flowRateLMin, ')
+          ..write('headPressureM: $headPressureM, ')
+          ..write('eeiRating: $eeiRating')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    flowRateLMin,
+    headPressureM,
+    eeiRating,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HeizkreispumpeData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.flowRateLMin == this.flowRateLMin &&
+          other.headPressureM == this.headPressureM &&
+          other.eeiRating == this.eeiRating);
+}
+
+class HeizkreispumpeCompanion extends UpdateCompanion<HeizkreispumpeData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<double> flowRateLMin;
+  final Value<double> headPressureM;
+  final Value<double> eeiRating;
+  const HeizkreispumpeCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.flowRateLMin = const Value.absent(),
+    this.headPressureM = const Value.absent(),
+    this.eeiRating = const Value.absent(),
+  });
+  HeizkreispumpeCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.flowRateLMin = const Value.absent(),
+    this.headPressureM = const Value.absent(),
+    this.eeiRating = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<HeizkreispumpeData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<double>? flowRateLMin,
+    Expression<double>? headPressureM,
+    Expression<double>? eeiRating,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (flowRateLMin != null) 'flow_rate_l_min': flowRateLMin,
+      if (headPressureM != null) 'head_pressure_m': headPressureM,
+      if (eeiRating != null) 'eei_rating': eeiRating,
+    });
+  }
+
+  HeizkreispumpeCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<double>? flowRateLMin,
+    Value<double>? headPressureM,
+    Value<double>? eeiRating,
+  }) {
+    return HeizkreispumpeCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      flowRateLMin: flowRateLMin ?? this.flowRateLMin,
+      headPressureM: headPressureM ?? this.headPressureM,
+      eeiRating: eeiRating ?? this.eeiRating,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (flowRateLMin.present) {
+      map['flow_rate_l_min'] = Variable<double>(flowRateLMin.value);
+    }
+    if (headPressureM.present) {
+      map['head_pressure_m'] = Variable<double>(headPressureM.value);
+    }
+    if (eeiRating.present) {
+      map['eei_rating'] = Variable<double>(eeiRating.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HeizkreispumpeCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('flowRateLMin: $flowRateLMin, ')
+          ..write('headPressureM: $headPressureM, ')
+          ..write('eeiRating: $eeiRating')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AbsperrventilTable extends Absperrventil
+    with TableInfo<$AbsperrventilTable, AbsperrventilData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AbsperrventilTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dnSizeMeta = const VerificationMeta('dnSize');
+  @override
+  late final GeneratedColumn<int> dnSize = GeneratedColumn<int>(
+    'dn_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    dnSize,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'absperrventil';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AbsperrventilData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dn_size')) {
+      context.handle(
+        _dnSizeMeta,
+        dnSize.isAcceptableOrUnknown(data['dn_size']!, _dnSizeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AbsperrventilData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AbsperrventilData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      dnSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dn_size'],
+      )!,
+    );
+  }
+
+  @override
+  $AbsperrventilTable createAlias(String alias) {
+    return $AbsperrventilTable(attachedDatabase, alias);
+  }
+}
+
+class AbsperrventilData extends DataClass
+    implements Insertable<AbsperrventilData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int dnSize;
+  const AbsperrventilData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.dnSize,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['dn_size'] = Variable<int>(dnSize);
+    return map;
+  }
+
+  AbsperrventilCompanion toCompanion(bool nullToAbsent) {
+    return AbsperrventilCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      dnSize: Value(dnSize),
+    );
+  }
+
+  factory AbsperrventilData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AbsperrventilData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      dnSize: serializer.fromJson<int>(json['dnSize']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'dnSize': serializer.toJson<int>(dnSize),
+    };
+  }
+
+  AbsperrventilData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? dnSize,
+  }) => AbsperrventilData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    dnSize: dnSize ?? this.dnSize,
+  );
+  AbsperrventilData copyWithCompanion(AbsperrventilCompanion data) {
+    return AbsperrventilData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      dnSize: data.dnSize.present ? data.dnSize.value : this.dnSize,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AbsperrventilData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, dnSize);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AbsperrventilData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.dnSize == this.dnSize);
+}
+
+class AbsperrventilCompanion extends UpdateCompanion<AbsperrventilData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> dnSize;
+  const AbsperrventilCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  });
+  AbsperrventilCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<AbsperrventilData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? dnSize,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (dnSize != null) 'dn_size': dnSize,
+    });
+  }
+
+  AbsperrventilCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? dnSize,
+  }) {
+    return AbsperrventilCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      dnSize: dnSize ?? this.dnSize,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (dnSize.present) {
+      map['dn_size'] = Variable<int>(dnSize.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AbsperrventilCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FbhVerteilerTable extends FbhVerteiler
+    with TableInfo<$FbhVerteilerTable, FbhVerteilerData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FbhVerteilerTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _zonesMeta = const VerificationMeta('zones');
+  @override
+  late final GeneratedColumn<int> zones = GeneratedColumn<int>(
+    'zones',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    zones,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fbh_verteiler';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FbhVerteilerData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('zones')) {
+      context.handle(
+        _zonesMeta,
+        zones.isAcceptableOrUnknown(data['zones']!, _zonesMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FbhVerteilerData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FbhVerteilerData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      zones: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}zones'],
+      )!,
+    );
+  }
+
+  @override
+  $FbhVerteilerTable createAlias(String alias) {
+    return $FbhVerteilerTable(attachedDatabase, alias);
+  }
+}
+
+class FbhVerteilerData extends DataClass
+    implements Insertable<FbhVerteilerData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int zones;
+  const FbhVerteilerData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.zones,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['zones'] = Variable<int>(zones);
+    return map;
+  }
+
+  FbhVerteilerCompanion toCompanion(bool nullToAbsent) {
+    return FbhVerteilerCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      zones: Value(zones),
+    );
+  }
+
+  factory FbhVerteilerData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FbhVerteilerData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      zones: serializer.fromJson<int>(json['zones']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'zones': serializer.toJson<int>(zones),
+    };
+  }
+
+  FbhVerteilerData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? zones,
+  }) => FbhVerteilerData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    zones: zones ?? this.zones,
+  );
+  FbhVerteilerData copyWithCompanion(FbhVerteilerCompanion data) {
+    return FbhVerteilerData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      zones: data.zones.present ? data.zones.value : this.zones,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FbhVerteilerData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('zones: $zones')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, zones);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FbhVerteilerData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.zones == this.zones);
+}
+
+class FbhVerteilerCompanion extends UpdateCompanion<FbhVerteilerData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> zones;
+  const FbhVerteilerCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.zones = const Value.absent(),
+  });
+  FbhVerteilerCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.zones = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<FbhVerteilerData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? zones,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (zones != null) 'zones': zones,
+    });
+  }
+
+  FbhVerteilerCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? zones,
+  }) {
+    return FbhVerteilerCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      zones: zones ?? this.zones,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (zones.present) {
+      map['zones'] = Variable<int>(zones.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FbhVerteilerCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('zones: $zones')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FbhSchleifeTable extends FbhSchleife
+    with TableInfo<$FbhSchleifeTable, FbhSchleifeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FbhSchleifeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _pipeLengthMMeta = const VerificationMeta(
+    'pipeLengthM',
+  );
+  @override
+  late final GeneratedColumn<double> pipeLengthM = GeneratedColumn<double>(
+    'pipe_length_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _pipeDiameterMmMeta = const VerificationMeta(
+    'pipeDiameterMm',
+  );
+  @override
+  late final GeneratedColumn<int> pipeDiameterMm = GeneratedColumn<int>(
+    'pipe_diameter_mm',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(16),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    pipeLengthM,
+    pipeDiameterMm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fbh_schleife';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FbhSchleifeData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pipe_length_m')) {
+      context.handle(
+        _pipeLengthMMeta,
+        pipeLengthM.isAcceptableOrUnknown(
+          data['pipe_length_m']!,
+          _pipeLengthMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pipe_diameter_mm')) {
+      context.handle(
+        _pipeDiameterMmMeta,
+        pipeDiameterMm.isAcceptableOrUnknown(
+          data['pipe_diameter_mm']!,
+          _pipeDiameterMmMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FbhSchleifeData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FbhSchleifeData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      pipeLengthM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}pipe_length_m'],
+      )!,
+      pipeDiameterMm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pipe_diameter_mm'],
+      )!,
+    );
+  }
+
+  @override
+  $FbhSchleifeTable createAlias(String alias) {
+    return $FbhSchleifeTable(attachedDatabase, alias);
+  }
+}
+
+class FbhSchleifeData extends DataClass implements Insertable<FbhSchleifeData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final double pipeLengthM;
+  final int pipeDiameterMm;
+  const FbhSchleifeData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.pipeLengthM,
+    required this.pipeDiameterMm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['pipe_length_m'] = Variable<double>(pipeLengthM);
+    map['pipe_diameter_mm'] = Variable<int>(pipeDiameterMm);
+    return map;
+  }
+
+  FbhSchleifeCompanion toCompanion(bool nullToAbsent) {
+    return FbhSchleifeCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      pipeLengthM: Value(pipeLengthM),
+      pipeDiameterMm: Value(pipeDiameterMm),
+    );
+  }
+
+  factory FbhSchleifeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FbhSchleifeData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      pipeLengthM: serializer.fromJson<double>(json['pipeLengthM']),
+      pipeDiameterMm: serializer.fromJson<int>(json['pipeDiameterMm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'pipeLengthM': serializer.toJson<double>(pipeLengthM),
+      'pipeDiameterMm': serializer.toJson<int>(pipeDiameterMm),
+    };
+  }
+
+  FbhSchleifeData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    double? pipeLengthM,
+    int? pipeDiameterMm,
+  }) => FbhSchleifeData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    pipeLengthM: pipeLengthM ?? this.pipeLengthM,
+    pipeDiameterMm: pipeDiameterMm ?? this.pipeDiameterMm,
+  );
+  FbhSchleifeData copyWithCompanion(FbhSchleifeCompanion data) {
+    return FbhSchleifeData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      pipeLengthM: data.pipeLengthM.present
+          ? data.pipeLengthM.value
+          : this.pipeLengthM,
+      pipeDiameterMm: data.pipeDiameterMm.present
+          ? data.pipeDiameterMm.value
+          : this.pipeDiameterMm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FbhSchleifeData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('pipeLengthM: $pipeLengthM, ')
+          ..write('pipeDiameterMm: $pipeDiameterMm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    pipeLengthM,
+    pipeDiameterMm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FbhSchleifeData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.pipeLengthM == this.pipeLengthM &&
+          other.pipeDiameterMm == this.pipeDiameterMm);
+}
+
+class FbhSchleifeCompanion extends UpdateCompanion<FbhSchleifeData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<double> pipeLengthM;
+  final Value<int> pipeDiameterMm;
+  const FbhSchleifeCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.pipeLengthM = const Value.absent(),
+    this.pipeDiameterMm = const Value.absent(),
+  });
+  FbhSchleifeCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.pipeLengthM = const Value.absent(),
+    this.pipeDiameterMm = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<FbhSchleifeData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<double>? pipeLengthM,
+    Expression<int>? pipeDiameterMm,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (pipeLengthM != null) 'pipe_length_m': pipeLengthM,
+      if (pipeDiameterMm != null) 'pipe_diameter_mm': pipeDiameterMm,
+    });
+  }
+
+  FbhSchleifeCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<double>? pipeLengthM,
+    Value<int>? pipeDiameterMm,
+  }) {
+    return FbhSchleifeCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      pipeLengthM: pipeLengthM ?? this.pipeLengthM,
+      pipeDiameterMm: pipeDiameterMm ?? this.pipeDiameterMm,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (pipeLengthM.present) {
+      map['pipe_length_m'] = Variable<double>(pipeLengthM.value);
+    }
+    if (pipeDiameterMm.present) {
+      map['pipe_diameter_mm'] = Variable<int>(pipeDiameterMm.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FbhSchleifeCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('pipeLengthM: $pipeLengthM, ')
+          ..write('pipeDiameterMm: $pipeDiameterMm')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MischbatterieTable extends Mischbatterie
+    with TableInfo<$MischbatterieTable, MischbatterieData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MischbatterieTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dnSizeMeta = const VerificationMeta('dnSize');
+  @override
+  late final GeneratedColumn<int> dnSize = GeneratedColumn<int>(
+    'dn_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    dnSize,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'mischbatterie';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MischbatterieData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dn_size')) {
+      context.handle(
+        _dnSizeMeta,
+        dnSize.isAcceptableOrUnknown(data['dn_size']!, _dnSizeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MischbatterieData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MischbatterieData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      dnSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dn_size'],
+      )!,
+    );
+  }
+
+  @override
+  $MischbatterieTable createAlias(String alias) {
+    return $MischbatterieTable(attachedDatabase, alias);
+  }
+}
+
+class MischbatterieData extends DataClass
+    implements Insertable<MischbatterieData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int dnSize;
+  const MischbatterieData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.dnSize,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['dn_size'] = Variable<int>(dnSize);
+    return map;
+  }
+
+  MischbatterieCompanion toCompanion(bool nullToAbsent) {
+    return MischbatterieCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      dnSize: Value(dnSize),
+    );
+  }
+
+  factory MischbatterieData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MischbatterieData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      dnSize: serializer.fromJson<int>(json['dnSize']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'dnSize': serializer.toJson<int>(dnSize),
+    };
+  }
+
+  MischbatterieData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? dnSize,
+  }) => MischbatterieData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    dnSize: dnSize ?? this.dnSize,
+  );
+  MischbatterieData copyWithCompanion(MischbatterieCompanion data) {
+    return MischbatterieData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      dnSize: data.dnSize.present ? data.dnSize.value : this.dnSize,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MischbatterieData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, dnSize);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MischbatterieData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.dnSize == this.dnSize);
+}
+
+class MischbatterieCompanion extends UpdateCompanion<MischbatterieData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> dnSize;
+  const MischbatterieCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  });
+  MischbatterieCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<MischbatterieData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? dnSize,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (dnSize != null) 'dn_size': dnSize,
+    });
+  }
+
+  MischbatterieCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? dnSize,
+  }) {
+    return MischbatterieCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      dnSize: dnSize ?? this.dnSize,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (dnSize.present) {
+      map['dn_size'] = Variable<int>(dnSize.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MischbatterieCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RfvGartenanschlussTable extends RfvGartenanschluss
+    with TableInfo<$RfvGartenanschlussTable, RfvGartenanschlussData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RfvGartenanschlussTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dnSizeMeta = const VerificationMeta('dnSize');
+  @override
+  late final GeneratedColumn<int> dnSize = GeneratedColumn<int>(
+    'dn_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    dnSize,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'rfv_gartenanschluss';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RfvGartenanschlussData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dn_size')) {
+      context.handle(
+        _dnSizeMeta,
+        dnSize.isAcceptableOrUnknown(data['dn_size']!, _dnSizeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RfvGartenanschlussData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RfvGartenanschlussData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      dnSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dn_size'],
+      )!,
+    );
+  }
+
+  @override
+  $RfvGartenanschlussTable createAlias(String alias) {
+    return $RfvGartenanschlussTable(attachedDatabase, alias);
+  }
+}
+
+class RfvGartenanschlussData extends DataClass
+    implements Insertable<RfvGartenanschlussData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int dnSize;
+  const RfvGartenanschlussData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.dnSize,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['dn_size'] = Variable<int>(dnSize);
+    return map;
+  }
+
+  RfvGartenanschlussCompanion toCompanion(bool nullToAbsent) {
+    return RfvGartenanschlussCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      dnSize: Value(dnSize),
+    );
+  }
+
+  factory RfvGartenanschlussData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RfvGartenanschlussData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      dnSize: serializer.fromJson<int>(json['dnSize']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'dnSize': serializer.toJson<int>(dnSize),
+    };
+  }
+
+  RfvGartenanschlussData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? dnSize,
+  }) => RfvGartenanschlussData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    dnSize: dnSize ?? this.dnSize,
+  );
+  RfvGartenanschlussData copyWithCompanion(RfvGartenanschlussCompanion data) {
+    return RfvGartenanschlussData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      dnSize: data.dnSize.present ? data.dnSize.value : this.dnSize,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RfvGartenanschlussData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, dnSize);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RfvGartenanschlussData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.dnSize == this.dnSize);
+}
+
+class RfvGartenanschlussCompanion
+    extends UpdateCompanion<RfvGartenanschlussData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> dnSize;
+  const RfvGartenanschlussCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  });
+  RfvGartenanschlussCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.dnSize = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<RfvGartenanschlussData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? dnSize,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (dnSize != null) 'dn_size': dnSize,
+    });
+  }
+
+  RfvGartenanschlussCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? dnSize,
+  }) {
+    return RfvGartenanschlussCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      dnSize: dnSize ?? this.dnSize,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (dnSize.present) {
+      map['dn_size'] = Variable<int>(dnSize.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RfvGartenanschlussCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('dnSize: $dnSize')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FuellwasserZuleitungTable extends FuellwasserZuleitung
+    with TableInfo<$FuellwasserZuleitungTable, FuellwasserZuleitungData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FuellwasserZuleitungTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _pipeDiameterMmMeta = const VerificationMeta(
+    'pipeDiameterMm',
+  );
+  @override
+  late final GeneratedColumn<int> pipeDiameterMm = GeneratedColumn<int>(
+    'pipe_diameter_mm',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(20),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    pipeDiameterMm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fuellwasser_zuleitung';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FuellwasserZuleitungData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pipe_diameter_mm')) {
+      context.handle(
+        _pipeDiameterMmMeta,
+        pipeDiameterMm.isAcceptableOrUnknown(
+          data['pipe_diameter_mm']!,
+          _pipeDiameterMmMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FuellwasserZuleitungData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FuellwasserZuleitungData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      pipeDiameterMm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pipe_diameter_mm'],
+      )!,
+    );
+  }
+
+  @override
+  $FuellwasserZuleitungTable createAlias(String alias) {
+    return $FuellwasserZuleitungTable(attachedDatabase, alias);
+  }
+}
+
+class FuellwasserZuleitungData extends DataClass
+    implements Insertable<FuellwasserZuleitungData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int pipeDiameterMm;
+  const FuellwasserZuleitungData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.pipeDiameterMm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['pipe_diameter_mm'] = Variable<int>(pipeDiameterMm);
+    return map;
+  }
+
+  FuellwasserZuleitungCompanion toCompanion(bool nullToAbsent) {
+    return FuellwasserZuleitungCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      pipeDiameterMm: Value(pipeDiameterMm),
+    );
+  }
+
+  factory FuellwasserZuleitungData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FuellwasserZuleitungData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      pipeDiameterMm: serializer.fromJson<int>(json['pipeDiameterMm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'pipeDiameterMm': serializer.toJson<int>(pipeDiameterMm),
+    };
+  }
+
+  FuellwasserZuleitungData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? pipeDiameterMm,
+  }) => FuellwasserZuleitungData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    pipeDiameterMm: pipeDiameterMm ?? this.pipeDiameterMm,
+  );
+  FuellwasserZuleitungData copyWithCompanion(
+    FuellwasserZuleitungCompanion data,
+  ) {
+    return FuellwasserZuleitungData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      pipeDiameterMm: data.pipeDiameterMm.present
+          ? data.pipeDiameterMm.value
+          : this.pipeDiameterMm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FuellwasserZuleitungData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('pipeDiameterMm: $pipeDiameterMm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    pipeDiameterMm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FuellwasserZuleitungData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.pipeDiameterMm == this.pipeDiameterMm);
+}
+
+class FuellwasserZuleitungCompanion
+    extends UpdateCompanion<FuellwasserZuleitungData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> pipeDiameterMm;
+  const FuellwasserZuleitungCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.pipeDiameterMm = const Value.absent(),
+  });
+  FuellwasserZuleitungCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.pipeDiameterMm = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<FuellwasserZuleitungData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? pipeDiameterMm,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (pipeDiameterMm != null) 'pipe_diameter_mm': pipeDiameterMm,
+    });
+  }
+
+  FuellwasserZuleitungCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? pipeDiameterMm,
+  }) {
+    return FuellwasserZuleitungCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      pipeDiameterMm: pipeDiameterMm ?? this.pipeDiameterMm,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (pipeDiameterMm.present) {
+      map['pipe_diameter_mm'] = Variable<int>(pipeDiameterMm.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FuellwasserZuleitungCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('pipeDiameterMm: $pipeDiameterMm')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $KaltwasserVerbraucherTable extends KaltwasserVerbraucher
+    with TableInfo<$KaltwasserVerbraucherTable, KaltwasserVerbraucherData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KaltwasserVerbraucherTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _countMeta = const VerificationMeta('count');
+  @override
+  late final GeneratedColumn<int> count = GeneratedColumn<int>(
+    'count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    count,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'kaltwasser_verbraucher';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<KaltwasserVerbraucherData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('count')) {
+      context.handle(
+        _countMeta,
+        count.isAcceptableOrUnknown(data['count']!, _countMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  KaltwasserVerbraucherData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KaltwasserVerbraucherData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      count: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}count'],
+      )!,
+    );
+  }
+
+  @override
+  $KaltwasserVerbraucherTable createAlias(String alias) {
+    return $KaltwasserVerbraucherTable(attachedDatabase, alias);
+  }
+}
+
+class KaltwasserVerbraucherData extends DataClass
+    implements Insertable<KaltwasserVerbraucherData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int count;
+  const KaltwasserVerbraucherData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.count,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['count'] = Variable<int>(count);
+    return map;
+  }
+
+  KaltwasserVerbraucherCompanion toCompanion(bool nullToAbsent) {
+    return KaltwasserVerbraucherCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      count: Value(count),
+    );
+  }
+
+  factory KaltwasserVerbraucherData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return KaltwasserVerbraucherData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      count: serializer.fromJson<int>(json['count']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'count': serializer.toJson<int>(count),
+    };
+  }
+
+  KaltwasserVerbraucherData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? count,
+  }) => KaltwasserVerbraucherData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    count: count ?? this.count,
+  );
+  KaltwasserVerbraucherData copyWithCompanion(
+    KaltwasserVerbraucherCompanion data,
+  ) {
+    return KaltwasserVerbraucherData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      count: data.count.present ? data.count.value : this.count,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KaltwasserVerbraucherData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('count: $count')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, count);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is KaltwasserVerbraucherData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.count == this.count);
+}
+
+class KaltwasserVerbraucherCompanion
+    extends UpdateCompanion<KaltwasserVerbraucherData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> count;
+  const KaltwasserVerbraucherCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.count = const Value.absent(),
+  });
+  KaltwasserVerbraucherCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.count = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<KaltwasserVerbraucherData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? count,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (count != null) 'count': count,
+    });
+  }
+
+  KaltwasserVerbraucherCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? count,
+  }) {
+    return KaltwasserVerbraucherCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      count: count ?? this.count,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (count.present) {
+      map['count'] = Variable<int>(count.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KaltwasserVerbraucherCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('count: $count')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LsSchalterTable extends LsSchalter
+    with TableInfo<$LsSchalterTable, LsSchalterData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LsSchalterTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _currentRatingAMeta = const VerificationMeta(
+    'currentRatingA',
+  );
+  @override
+  late final GeneratedColumn<int> currentRatingA = GeneratedColumn<int>(
+    'current_rating_a',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(16),
+  );
+  static const VerificationMeta _poleCountMeta = const VerificationMeta(
+    'poleCount',
+  );
+  @override
+  late final GeneratedColumn<int> poleCount = GeneratedColumn<int>(
+    'pole_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _charTypeMeta = const VerificationMeta(
+    'charType',
+  );
+  @override
+  late final GeneratedColumn<String> charType = GeneratedColumn<String>(
+    'char_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('B'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    currentRatingA,
+    poleCount,
+    charType,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ls_schalter';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LsSchalterData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('current_rating_a')) {
+      context.handle(
+        _currentRatingAMeta,
+        currentRatingA.isAcceptableOrUnknown(
+          data['current_rating_a']!,
+          _currentRatingAMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pole_count')) {
+      context.handle(
+        _poleCountMeta,
+        poleCount.isAcceptableOrUnknown(data['pole_count']!, _poleCountMeta),
+      );
+    }
+    if (data.containsKey('char_type')) {
+      context.handle(
+        _charTypeMeta,
+        charType.isAcceptableOrUnknown(data['char_type']!, _charTypeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LsSchalterData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LsSchalterData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      currentRatingA: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_rating_a'],
+      )!,
+      poleCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pole_count'],
+      )!,
+      charType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}char_type'],
+      )!,
+    );
+  }
+
+  @override
+  $LsSchalterTable createAlias(String alias) {
+    return $LsSchalterTable(attachedDatabase, alias);
+  }
+}
+
+class LsSchalterData extends DataClass implements Insertable<LsSchalterData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int currentRatingA;
+  final int poleCount;
+  final String charType;
+  const LsSchalterData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.currentRatingA,
+    required this.poleCount,
+    required this.charType,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['current_rating_a'] = Variable<int>(currentRatingA);
+    map['pole_count'] = Variable<int>(poleCount);
+    map['char_type'] = Variable<String>(charType);
+    return map;
+  }
+
+  LsSchalterCompanion toCompanion(bool nullToAbsent) {
+    return LsSchalterCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      currentRatingA: Value(currentRatingA),
+      poleCount: Value(poleCount),
+      charType: Value(charType),
+    );
+  }
+
+  factory LsSchalterData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LsSchalterData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      currentRatingA: serializer.fromJson<int>(json['currentRatingA']),
+      poleCount: serializer.fromJson<int>(json['poleCount']),
+      charType: serializer.fromJson<String>(json['charType']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'currentRatingA': serializer.toJson<int>(currentRatingA),
+      'poleCount': serializer.toJson<int>(poleCount),
+      'charType': serializer.toJson<String>(charType),
+    };
+  }
+
+  LsSchalterData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? currentRatingA,
+    int? poleCount,
+    String? charType,
+  }) => LsSchalterData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    currentRatingA: currentRatingA ?? this.currentRatingA,
+    poleCount: poleCount ?? this.poleCount,
+    charType: charType ?? this.charType,
+  );
+  LsSchalterData copyWithCompanion(LsSchalterCompanion data) {
+    return LsSchalterData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      currentRatingA: data.currentRatingA.present
+          ? data.currentRatingA.value
+          : this.currentRatingA,
+      poleCount: data.poleCount.present ? data.poleCount.value : this.poleCount,
+      charType: data.charType.present ? data.charType.value : this.charType,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LsSchalterData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('currentRatingA: $currentRatingA, ')
+          ..write('poleCount: $poleCount, ')
+          ..write('charType: $charType')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    currentRatingA,
+    poleCount,
+    charType,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LsSchalterData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.currentRatingA == this.currentRatingA &&
+          other.poleCount == this.poleCount &&
+          other.charType == this.charType);
+}
+
+class LsSchalterCompanion extends UpdateCompanion<LsSchalterData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> currentRatingA;
+  final Value<int> poleCount;
+  final Value<String> charType;
+  const LsSchalterCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.currentRatingA = const Value.absent(),
+    this.poleCount = const Value.absent(),
+    this.charType = const Value.absent(),
+  });
+  LsSchalterCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.currentRatingA = const Value.absent(),
+    this.poleCount = const Value.absent(),
+    this.charType = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<LsSchalterData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? currentRatingA,
+    Expression<int>? poleCount,
+    Expression<String>? charType,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (currentRatingA != null) 'current_rating_a': currentRatingA,
+      if (poleCount != null) 'pole_count': poleCount,
+      if (charType != null) 'char_type': charType,
+    });
+  }
+
+  LsSchalterCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? currentRatingA,
+    Value<int>? poleCount,
+    Value<String>? charType,
+  }) {
+    return LsSchalterCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      currentRatingA: currentRatingA ?? this.currentRatingA,
+      poleCount: poleCount ?? this.poleCount,
+      charType: charType ?? this.charType,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (currentRatingA.present) {
+      map['current_rating_a'] = Variable<int>(currentRatingA.value);
+    }
+    if (poleCount.present) {
+      map['pole_count'] = Variable<int>(poleCount.value);
+    }
+    if (charType.present) {
+      map['char_type'] = Variable<String>(charType.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LsSchalterCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('currentRatingA: $currentRatingA, ')
+          ..write('poleCount: $poleCount, ')
+          ..write('charType: $charType')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FiSchutzschalterTable extends FiSchutzschalter
+    with TableInfo<$FiSchutzschalterTable, FiSchutzschalterData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FiSchutzschalterTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _currentRatingAMeta = const VerificationMeta(
+    'currentRatingA',
+  );
+  @override
+  late final GeneratedColumn<int> currentRatingA = GeneratedColumn<int>(
+    'current_rating_a',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(40),
+  );
+  static const VerificationMeta _sensitivityMaMeta = const VerificationMeta(
+    'sensitivityMa',
+  );
+  @override
+  late final GeneratedColumn<int> sensitivityMa = GeneratedColumn<int>(
+    'sensitivity_ma',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(30),
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('A'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    currentRatingA,
+    sensitivityMa,
+    type,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fi_schutzschalter';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FiSchutzschalterData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('current_rating_a')) {
+      context.handle(
+        _currentRatingAMeta,
+        currentRatingA.isAcceptableOrUnknown(
+          data['current_rating_a']!,
+          _currentRatingAMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sensitivity_ma')) {
+      context.handle(
+        _sensitivityMaMeta,
+        sensitivityMa.isAcceptableOrUnknown(
+          data['sensitivity_ma']!,
+          _sensitivityMaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FiSchutzschalterData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FiSchutzschalterData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      currentRatingA: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_rating_a'],
+      )!,
+      sensitivityMa: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sensitivity_ma'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+    );
+  }
+
+  @override
+  $FiSchutzschalterTable createAlias(String alias) {
+    return $FiSchutzschalterTable(attachedDatabase, alias);
+  }
+}
+
+class FiSchutzschalterData extends DataClass
+    implements Insertable<FiSchutzschalterData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int currentRatingA;
+  final int sensitivityMa;
+  final String type;
+  const FiSchutzschalterData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.currentRatingA,
+    required this.sensitivityMa,
+    required this.type,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['current_rating_a'] = Variable<int>(currentRatingA);
+    map['sensitivity_ma'] = Variable<int>(sensitivityMa);
+    map['type'] = Variable<String>(type);
+    return map;
+  }
+
+  FiSchutzschalterCompanion toCompanion(bool nullToAbsent) {
+    return FiSchutzschalterCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      currentRatingA: Value(currentRatingA),
+      sensitivityMa: Value(sensitivityMa),
+      type: Value(type),
+    );
+  }
+
+  factory FiSchutzschalterData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FiSchutzschalterData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      currentRatingA: serializer.fromJson<int>(json['currentRatingA']),
+      sensitivityMa: serializer.fromJson<int>(json['sensitivityMa']),
+      type: serializer.fromJson<String>(json['type']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'currentRatingA': serializer.toJson<int>(currentRatingA),
+      'sensitivityMa': serializer.toJson<int>(sensitivityMa),
+      'type': serializer.toJson<String>(type),
+    };
+  }
+
+  FiSchutzschalterData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? currentRatingA,
+    int? sensitivityMa,
+    String? type,
+  }) => FiSchutzschalterData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    currentRatingA: currentRatingA ?? this.currentRatingA,
+    sensitivityMa: sensitivityMa ?? this.sensitivityMa,
+    type: type ?? this.type,
+  );
+  FiSchutzschalterData copyWithCompanion(FiSchutzschalterCompanion data) {
+    return FiSchutzschalterData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      currentRatingA: data.currentRatingA.present
+          ? data.currentRatingA.value
+          : this.currentRatingA,
+      sensitivityMa: data.sensitivityMa.present
+          ? data.sensitivityMa.value
+          : this.sensitivityMa,
+      type: data.type.present ? data.type.value : this.type,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FiSchutzschalterData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('currentRatingA: $currentRatingA, ')
+          ..write('sensitivityMa: $sensitivityMa, ')
+          ..write('type: $type')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    currentRatingA,
+    sensitivityMa,
+    type,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FiSchutzschalterData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.currentRatingA == this.currentRatingA &&
+          other.sensitivityMa == this.sensitivityMa &&
+          other.type == this.type);
+}
+
+class FiSchutzschalterCompanion extends UpdateCompanion<FiSchutzschalterData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> currentRatingA;
+  final Value<int> sensitivityMa;
+  final Value<String> type;
+  const FiSchutzschalterCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.currentRatingA = const Value.absent(),
+    this.sensitivityMa = const Value.absent(),
+    this.type = const Value.absent(),
+  });
+  FiSchutzschalterCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.currentRatingA = const Value.absent(),
+    this.sensitivityMa = const Value.absent(),
+    this.type = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<FiSchutzschalterData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? currentRatingA,
+    Expression<int>? sensitivityMa,
+    Expression<String>? type,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (currentRatingA != null) 'current_rating_a': currentRatingA,
+      if (sensitivityMa != null) 'sensitivity_ma': sensitivityMa,
+      if (type != null) 'type': type,
+    });
+  }
+
+  FiSchutzschalterCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? currentRatingA,
+    Value<int>? sensitivityMa,
+    Value<String>? type,
+  }) {
+    return FiSchutzschalterCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      currentRatingA: currentRatingA ?? this.currentRatingA,
+      sensitivityMa: sensitivityMa ?? this.sensitivityMa,
+      type: type ?? this.type,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (currentRatingA.present) {
+      map['current_rating_a'] = Variable<int>(currentRatingA.value);
+    }
+    if (sensitivityMa.present) {
+      map['sensitivity_ma'] = Variable<int>(sensitivityMa.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FiSchutzschalterCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('currentRatingA: $currentRatingA, ')
+          ..write('sensitivityMa: $sensitivityMa, ')
+          ..write('type: $type')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ZuleitungStarkstromTable extends ZuleitungStarkstrom
+    with TableInfo<$ZuleitungStarkstromTable, ZuleitungStarkstromData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ZuleitungStarkstromTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _crossSectionMm2Meta = const VerificationMeta(
+    'crossSectionMm2',
+  );
+  @override
+  late final GeneratedColumn<int> crossSectionMm2 = GeneratedColumn<int>(
+    'cross_section_mm2',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(6),
+  );
+  static const VerificationMeta _lengthMMeta = const VerificationMeta(
+    'lengthM',
+  );
+  @override
+  late final GeneratedColumn<double> lengthM = GeneratedColumn<double>(
+    'length_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _conductorMaterialMeta = const VerificationMeta(
+    'conductorMaterial',
+  );
+  @override
+  late final GeneratedColumn<String> conductorMaterial =
+      GeneratedColumn<String>(
+        'conductor_material',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('Cu'),
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    crossSectionMm2,
+    lengthM,
+    conductorMaterial,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'zuleitung_starkstrom';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ZuleitungStarkstromData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cross_section_mm2')) {
+      context.handle(
+        _crossSectionMm2Meta,
+        crossSectionMm2.isAcceptableOrUnknown(
+          data['cross_section_mm2']!,
+          _crossSectionMm2Meta,
+        ),
+      );
+    }
+    if (data.containsKey('length_m')) {
+      context.handle(
+        _lengthMMeta,
+        lengthM.isAcceptableOrUnknown(data['length_m']!, _lengthMMeta),
+      );
+    }
+    if (data.containsKey('conductor_material')) {
+      context.handle(
+        _conductorMaterialMeta,
+        conductorMaterial.isAcceptableOrUnknown(
+          data['conductor_material']!,
+          _conductorMaterialMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ZuleitungStarkstromData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ZuleitungStarkstromData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      crossSectionMm2: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cross_section_mm2'],
+      )!,
+      lengthM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}length_m'],
+      )!,
+      conductorMaterial: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conductor_material'],
+      )!,
+    );
+  }
+
+  @override
+  $ZuleitungStarkstromTable createAlias(String alias) {
+    return $ZuleitungStarkstromTable(attachedDatabase, alias);
+  }
+}
+
+class ZuleitungStarkstromData extends DataClass
+    implements Insertable<ZuleitungStarkstromData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int crossSectionMm2;
+  final double lengthM;
+  final String conductorMaterial;
+  const ZuleitungStarkstromData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.crossSectionMm2,
+    required this.lengthM,
+    required this.conductorMaterial,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['cross_section_mm2'] = Variable<int>(crossSectionMm2);
+    map['length_m'] = Variable<double>(lengthM);
+    map['conductor_material'] = Variable<String>(conductorMaterial);
+    return map;
+  }
+
+  ZuleitungStarkstromCompanion toCompanion(bool nullToAbsent) {
+    return ZuleitungStarkstromCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      crossSectionMm2: Value(crossSectionMm2),
+      lengthM: Value(lengthM),
+      conductorMaterial: Value(conductorMaterial),
+    );
+  }
+
+  factory ZuleitungStarkstromData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ZuleitungStarkstromData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      crossSectionMm2: serializer.fromJson<int>(json['crossSectionMm2']),
+      lengthM: serializer.fromJson<double>(json['lengthM']),
+      conductorMaterial: serializer.fromJson<String>(json['conductorMaterial']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'crossSectionMm2': serializer.toJson<int>(crossSectionMm2),
+      'lengthM': serializer.toJson<double>(lengthM),
+      'conductorMaterial': serializer.toJson<String>(conductorMaterial),
+    };
+  }
+
+  ZuleitungStarkstromData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? crossSectionMm2,
+    double? lengthM,
+    String? conductorMaterial,
+  }) => ZuleitungStarkstromData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    crossSectionMm2: crossSectionMm2 ?? this.crossSectionMm2,
+    lengthM: lengthM ?? this.lengthM,
+    conductorMaterial: conductorMaterial ?? this.conductorMaterial,
+  );
+  ZuleitungStarkstromData copyWithCompanion(ZuleitungStarkstromCompanion data) {
+    return ZuleitungStarkstromData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      crossSectionMm2: data.crossSectionMm2.present
+          ? data.crossSectionMm2.value
+          : this.crossSectionMm2,
+      lengthM: data.lengthM.present ? data.lengthM.value : this.lengthM,
+      conductorMaterial: data.conductorMaterial.present
+          ? data.conductorMaterial.value
+          : this.conductorMaterial,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ZuleitungStarkstromData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('crossSectionMm2: $crossSectionMm2, ')
+          ..write('lengthM: $lengthM, ')
+          ..write('conductorMaterial: $conductorMaterial')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    crossSectionMm2,
+    lengthM,
+    conductorMaterial,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ZuleitungStarkstromData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.crossSectionMm2 == this.crossSectionMm2 &&
+          other.lengthM == this.lengthM &&
+          other.conductorMaterial == this.conductorMaterial);
+}
+
+class ZuleitungStarkstromCompanion
+    extends UpdateCompanion<ZuleitungStarkstromData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> crossSectionMm2;
+  final Value<double> lengthM;
+  final Value<String> conductorMaterial;
+  const ZuleitungStarkstromCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.crossSectionMm2 = const Value.absent(),
+    this.lengthM = const Value.absent(),
+    this.conductorMaterial = const Value.absent(),
+  });
+  ZuleitungStarkstromCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.crossSectionMm2 = const Value.absent(),
+    this.lengthM = const Value.absent(),
+    this.conductorMaterial = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<ZuleitungStarkstromData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? crossSectionMm2,
+    Expression<double>? lengthM,
+    Expression<String>? conductorMaterial,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (crossSectionMm2 != null) 'cross_section_mm2': crossSectionMm2,
+      if (lengthM != null) 'length_m': lengthM,
+      if (conductorMaterial != null) 'conductor_material': conductorMaterial,
+    });
+  }
+
+  ZuleitungStarkstromCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? crossSectionMm2,
+    Value<double>? lengthM,
+    Value<String>? conductorMaterial,
+  }) {
+    return ZuleitungStarkstromCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      crossSectionMm2: crossSectionMm2 ?? this.crossSectionMm2,
+      lengthM: lengthM ?? this.lengthM,
+      conductorMaterial: conductorMaterial ?? this.conductorMaterial,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (crossSectionMm2.present) {
+      map['cross_section_mm2'] = Variable<int>(crossSectionMm2.value);
+    }
+    if (lengthM.present) {
+      map['length_m'] = Variable<double>(lengthM.value);
+    }
+    if (conductorMaterial.present) {
+      map['conductor_material'] = Variable<String>(conductorMaterial.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ZuleitungStarkstromCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('crossSectionMm2: $crossSectionMm2, ')
+          ..write('lengthM: $lengthM, ')
+          ..write('conductorMaterial: $conductorMaterial')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TrennschalterTable extends Trennschalter
+    with TableInfo<$TrennschalterTable, TrennschalterData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TrennschalterTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _currentRatingAMeta = const VerificationMeta(
+    'currentRatingA',
+  );
+  @override
+  late final GeneratedColumn<int> currentRatingA = GeneratedColumn<int>(
+    'current_rating_a',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(16),
+  );
+  static const VerificationMeta _poleCountMeta = const VerificationMeta(
+    'poleCount',
+  );
+  @override
+  late final GeneratedColumn<int> poleCount = GeneratedColumn<int>(
+    'pole_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    currentRatingA,
+    poleCount,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'trennschalter';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TrennschalterData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('current_rating_a')) {
+      context.handle(
+        _currentRatingAMeta,
+        currentRatingA.isAcceptableOrUnknown(
+          data['current_rating_a']!,
+          _currentRatingAMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pole_count')) {
+      context.handle(
+        _poleCountMeta,
+        poleCount.isAcceptableOrUnknown(data['pole_count']!, _poleCountMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TrennschalterData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TrennschalterData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      currentRatingA: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_rating_a'],
+      )!,
+      poleCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pole_count'],
+      )!,
+    );
+  }
+
+  @override
+  $TrennschalterTable createAlias(String alias) {
+    return $TrennschalterTable(attachedDatabase, alias);
+  }
+}
+
+class TrennschalterData extends DataClass
+    implements Insertable<TrennschalterData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int currentRatingA;
+  final int poleCount;
+  const TrennschalterData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.currentRatingA,
+    required this.poleCount,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['current_rating_a'] = Variable<int>(currentRatingA);
+    map['pole_count'] = Variable<int>(poleCount);
+    return map;
+  }
+
+  TrennschalterCompanion toCompanion(bool nullToAbsent) {
+    return TrennschalterCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      currentRatingA: Value(currentRatingA),
+      poleCount: Value(poleCount),
+    );
+  }
+
+  factory TrennschalterData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TrennschalterData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      currentRatingA: serializer.fromJson<int>(json['currentRatingA']),
+      poleCount: serializer.fromJson<int>(json['poleCount']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'currentRatingA': serializer.toJson<int>(currentRatingA),
+      'poleCount': serializer.toJson<int>(poleCount),
+    };
+  }
+
+  TrennschalterData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? currentRatingA,
+    int? poleCount,
+  }) => TrennschalterData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    currentRatingA: currentRatingA ?? this.currentRatingA,
+    poleCount: poleCount ?? this.poleCount,
+  );
+  TrennschalterData copyWithCompanion(TrennschalterCompanion data) {
+    return TrennschalterData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      currentRatingA: data.currentRatingA.present
+          ? data.currentRatingA.value
+          : this.currentRatingA,
+      poleCount: data.poleCount.present ? data.poleCount.value : this.poleCount,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrennschalterData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('currentRatingA: $currentRatingA, ')
+          ..write('poleCount: $poleCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    currentRatingA,
+    poleCount,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TrennschalterData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.currentRatingA == this.currentRatingA &&
+          other.poleCount == this.poleCount);
+}
+
+class TrennschalterCompanion extends UpdateCompanion<TrennschalterData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> currentRatingA;
+  final Value<int> poleCount;
+  const TrennschalterCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.currentRatingA = const Value.absent(),
+    this.poleCount = const Value.absent(),
+  });
+  TrennschalterCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.currentRatingA = const Value.absent(),
+    this.poleCount = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<TrennschalterData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? currentRatingA,
+    Expression<int>? poleCount,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (currentRatingA != null) 'current_rating_a': currentRatingA,
+      if (poleCount != null) 'pole_count': poleCount,
+    });
+  }
+
+  TrennschalterCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? currentRatingA,
+    Value<int>? poleCount,
+  }) {
+    return TrennschalterCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      currentRatingA: currentRatingA ?? this.currentRatingA,
+      poleCount: poleCount ?? this.poleCount,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (currentRatingA.present) {
+      map['current_rating_a'] = Variable<int>(currentRatingA.value);
+    }
+    if (poleCount.present) {
+      map['pole_count'] = Variable<int>(poleCount.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrennschalterCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('currentRatingA: $currentRatingA, ')
+          ..write('poleCount: $poleCount')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $KlemmenleisteTable extends Klemmenleiste
+    with TableInfo<$KlemmenleisteTable, KlemmenleisteData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KlemmenleisteTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _busWidthMeta = const VerificationMeta(
+    'busWidth',
+  );
+  @override
+  late final GeneratedColumn<int> busWidth = GeneratedColumn<int>(
+    'bus_width',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(12),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    busWidth,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'klemmenleiste';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<KlemmenleisteData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('bus_width')) {
+      context.handle(
+        _busWidthMeta,
+        busWidth.isAcceptableOrUnknown(data['bus_width']!, _busWidthMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  KlemmenleisteData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KlemmenleisteData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      busWidth: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bus_width'],
+      )!,
+    );
+  }
+
+  @override
+  $KlemmenleisteTable createAlias(String alias) {
+    return $KlemmenleisteTable(attachedDatabase, alias);
+  }
+}
+
+class KlemmenleisteData extends DataClass
+    implements Insertable<KlemmenleisteData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int busWidth;
+  const KlemmenleisteData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.busWidth,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['bus_width'] = Variable<int>(busWidth);
+    return map;
+  }
+
+  KlemmenleisteCompanion toCompanion(bool nullToAbsent) {
+    return KlemmenleisteCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      busWidth: Value(busWidth),
+    );
+  }
+
+  factory KlemmenleisteData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return KlemmenleisteData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      busWidth: serializer.fromJson<int>(json['busWidth']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'busWidth': serializer.toJson<int>(busWidth),
+    };
+  }
+
+  KlemmenleisteData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? busWidth,
+  }) => KlemmenleisteData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    busWidth: busWidth ?? this.busWidth,
+  );
+  KlemmenleisteData copyWithCompanion(KlemmenleisteCompanion data) {
+    return KlemmenleisteData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      busWidth: data.busWidth.present ? data.busWidth.value : this.busWidth,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KlemmenleisteData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('busWidth: $busWidth')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, manufacturer, seriesName, modelNumber, busWidth);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is KlemmenleisteData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.busWidth == this.busWidth);
+}
+
+class KlemmenleisteCompanion extends UpdateCompanion<KlemmenleisteData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> busWidth;
+  const KlemmenleisteCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.busWidth = const Value.absent(),
+  });
+  KlemmenleisteCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.busWidth = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<KlemmenleisteData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? busWidth,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (busWidth != null) 'bus_width': busWidth,
+    });
+  }
+
+  KlemmenleisteCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? busWidth,
+  }) {
+    return KlemmenleisteCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      busWidth: busWidth ?? this.busWidth,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (busWidth.present) {
+      map['bus_width'] = Variable<int>(busWidth.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KlemmenleisteCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('busWidth: $busWidth')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PeAnschlussTable extends PeAnschluss
+    with TableInfo<$PeAnschlussTable, PeAnschlussData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PeAnschlussTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _wireCrossSectionMm2Meta =
+      const VerificationMeta('wireCrossSectionMm2');
+  @override
+  late final GeneratedColumn<int> wireCrossSectionMm2 = GeneratedColumn<int>(
+    'wire_cross_section_mm2',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(4),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    wireCrossSectionMm2,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pe_anschluss';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PeAnschlussData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wire_cross_section_mm2')) {
+      context.handle(
+        _wireCrossSectionMm2Meta,
+        wireCrossSectionMm2.isAcceptableOrUnknown(
+          data['wire_cross_section_mm2']!,
+          _wireCrossSectionMm2Meta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PeAnschlussData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PeAnschlussData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      wireCrossSectionMm2: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wire_cross_section_mm2'],
+      )!,
+    );
+  }
+
+  @override
+  $PeAnschlussTable createAlias(String alias) {
+    return $PeAnschlussTable(attachedDatabase, alias);
+  }
+}
+
+class PeAnschlussData extends DataClass implements Insertable<PeAnschlussData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int wireCrossSectionMm2;
+  const PeAnschlussData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.wireCrossSectionMm2,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['wire_cross_section_mm2'] = Variable<int>(wireCrossSectionMm2);
+    return map;
+  }
+
+  PeAnschlussCompanion toCompanion(bool nullToAbsent) {
+    return PeAnschlussCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      wireCrossSectionMm2: Value(wireCrossSectionMm2),
+    );
+  }
+
+  factory PeAnschlussData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PeAnschlussData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      wireCrossSectionMm2: serializer.fromJson<int>(
+        json['wireCrossSectionMm2'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'wireCrossSectionMm2': serializer.toJson<int>(wireCrossSectionMm2),
+    };
+  }
+
+  PeAnschlussData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? wireCrossSectionMm2,
+  }) => PeAnschlussData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    wireCrossSectionMm2: wireCrossSectionMm2 ?? this.wireCrossSectionMm2,
+  );
+  PeAnschlussData copyWithCompanion(PeAnschlussCompanion data) {
+    return PeAnschlussData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      wireCrossSectionMm2: data.wireCrossSectionMm2.present
+          ? data.wireCrossSectionMm2.value
+          : this.wireCrossSectionMm2,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PeAnschlussData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('wireCrossSectionMm2: $wireCrossSectionMm2')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    wireCrossSectionMm2,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PeAnschlussData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.wireCrossSectionMm2 == this.wireCrossSectionMm2);
+}
+
+class PeAnschlussCompanion extends UpdateCompanion<PeAnschlussData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> wireCrossSectionMm2;
+  const PeAnschlussCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.wireCrossSectionMm2 = const Value.absent(),
+  });
+  PeAnschlussCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.wireCrossSectionMm2 = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<PeAnschlussData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? wireCrossSectionMm2,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (wireCrossSectionMm2 != null)
+        'wire_cross_section_mm2': wireCrossSectionMm2,
+    });
+  }
+
+  PeAnschlussCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? wireCrossSectionMm2,
+  }) {
+    return PeAnschlussCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      wireCrossSectionMm2: wireCrossSectionMm2 ?? this.wireCrossSectionMm2,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (wireCrossSectionMm2.present) {
+      map['wire_cross_section_mm2'] = Variable<int>(wireCrossSectionMm2.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PeAnschlussCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('wireCrossSectionMm2: $wireCrossSectionMm2')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HpaAnschlussTable extends HpaAnschluss
+    with TableInfo<$HpaAnschlussTable, HpaAnschlussData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HpaAnschlussTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _manufacturerMeta = const VerificationMeta(
+    'manufacturer',
+  );
+  @override
+  late final GeneratedColumn<String> manufacturer = GeneratedColumn<String>(
+    'manufacturer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _seriesNameMeta = const VerificationMeta(
+    'seriesName',
+  );
+  @override
+  late final GeneratedColumn<String> seriesName = GeneratedColumn<String>(
+    'series_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _modelNumberMeta = const VerificationMeta(
+    'modelNumber',
+  );
+  @override
+  late final GeneratedColumn<String> modelNumber = GeneratedColumn<String>(
+    'model_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _conductorCrossSectionMm2Meta =
+      const VerificationMeta('conductorCrossSectionMm2');
+  @override
+  late final GeneratedColumn<int> conductorCrossSectionMm2 =
+      GeneratedColumn<int>(
+        'conductor_cross_section_mm2',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(4),
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    conductorCrossSectionMm2,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'hpa_anschluss';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HpaAnschlussData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('manufacturer')) {
+      context.handle(
+        _manufacturerMeta,
+        manufacturer.isAcceptableOrUnknown(
+          data['manufacturer']!,
+          _manufacturerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('series_name')) {
+      context.handle(
+        _seriesNameMeta,
+        seriesName.isAcceptableOrUnknown(data['series_name']!, _seriesNameMeta),
+      );
+    }
+    if (data.containsKey('model_number')) {
+      context.handle(
+        _modelNumberMeta,
+        modelNumber.isAcceptableOrUnknown(
+          data['model_number']!,
+          _modelNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('conductor_cross_section_mm2')) {
+      context.handle(
+        _conductorCrossSectionMm2Meta,
+        conductorCrossSectionMm2.isAcceptableOrUnknown(
+          data['conductor_cross_section_mm2']!,
+          _conductorCrossSectionMm2Meta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HpaAnschlussData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HpaAnschlussData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      manufacturer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manufacturer'],
+      )!,
+      seriesName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}series_name'],
+      )!,
+      modelNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_number'],
+      )!,
+      conductorCrossSectionMm2: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}conductor_cross_section_mm2'],
+      )!,
+    );
+  }
+
+  @override
+  $HpaAnschlussTable createAlias(String alias) {
+    return $HpaAnschlussTable(attachedDatabase, alias);
+  }
+}
+
+class HpaAnschlussData extends DataClass
+    implements Insertable<HpaAnschlussData> {
+  final int id;
+  final String name;
+  final String manufacturer;
+  final String seriesName;
+  final String modelNumber;
+  final int conductorCrossSectionMm2;
+  const HpaAnschlussData({
+    required this.id,
+    required this.name,
+    required this.manufacturer,
+    required this.seriesName,
+    required this.modelNumber,
+    required this.conductorCrossSectionMm2,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['manufacturer'] = Variable<String>(manufacturer);
+    map['series_name'] = Variable<String>(seriesName);
+    map['model_number'] = Variable<String>(modelNumber);
+    map['conductor_cross_section_mm2'] = Variable<int>(
+      conductorCrossSectionMm2,
+    );
+    return map;
+  }
+
+  HpaAnschlussCompanion toCompanion(bool nullToAbsent) {
+    return HpaAnschlussCompanion(
+      id: Value(id),
+      name: Value(name),
+      manufacturer: Value(manufacturer),
+      seriesName: Value(seriesName),
+      modelNumber: Value(modelNumber),
+      conductorCrossSectionMm2: Value(conductorCrossSectionMm2),
+    );
+  }
+
+  factory HpaAnschlussData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HpaAnschlussData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      manufacturer: serializer.fromJson<String>(json['manufacturer']),
+      seriesName: serializer.fromJson<String>(json['seriesName']),
+      modelNumber: serializer.fromJson<String>(json['modelNumber']),
+      conductorCrossSectionMm2: serializer.fromJson<int>(
+        json['conductorCrossSectionMm2'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'manufacturer': serializer.toJson<String>(manufacturer),
+      'seriesName': serializer.toJson<String>(seriesName),
+      'modelNumber': serializer.toJson<String>(modelNumber),
+      'conductorCrossSectionMm2': serializer.toJson<int>(
+        conductorCrossSectionMm2,
+      ),
+    };
+  }
+
+  HpaAnschlussData copyWith({
+    int? id,
+    String? name,
+    String? manufacturer,
+    String? seriesName,
+    String? modelNumber,
+    int? conductorCrossSectionMm2,
+  }) => HpaAnschlussData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    manufacturer: manufacturer ?? this.manufacturer,
+    seriesName: seriesName ?? this.seriesName,
+    modelNumber: modelNumber ?? this.modelNumber,
+    conductorCrossSectionMm2:
+        conductorCrossSectionMm2 ?? this.conductorCrossSectionMm2,
+  );
+  HpaAnschlussData copyWithCompanion(HpaAnschlussCompanion data) {
+    return HpaAnschlussData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      manufacturer: data.manufacturer.present
+          ? data.manufacturer.value
+          : this.manufacturer,
+      seriesName: data.seriesName.present
+          ? data.seriesName.value
+          : this.seriesName,
+      modelNumber: data.modelNumber.present
+          ? data.modelNumber.value
+          : this.modelNumber,
+      conductorCrossSectionMm2: data.conductorCrossSectionMm2.present
+          ? data.conductorCrossSectionMm2.value
+          : this.conductorCrossSectionMm2,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HpaAnschlussData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('conductorCrossSectionMm2: $conductorCrossSectionMm2')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    manufacturer,
+    seriesName,
+    modelNumber,
+    conductorCrossSectionMm2,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HpaAnschlussData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.manufacturer == this.manufacturer &&
+          other.seriesName == this.seriesName &&
+          other.modelNumber == this.modelNumber &&
+          other.conductorCrossSectionMm2 == this.conductorCrossSectionMm2);
+}
+
+class HpaAnschlussCompanion extends UpdateCompanion<HpaAnschlussData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> manufacturer;
+  final Value<String> seriesName;
+  final Value<String> modelNumber;
+  final Value<int> conductorCrossSectionMm2;
+  const HpaAnschlussCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.conductorCrossSectionMm2 = const Value.absent(),
+  });
+  HpaAnschlussCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.manufacturer = const Value.absent(),
+    this.seriesName = const Value.absent(),
+    this.modelNumber = const Value.absent(),
+    this.conductorCrossSectionMm2 = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<HpaAnschlussData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? manufacturer,
+    Expression<String>? seriesName,
+    Expression<String>? modelNumber,
+    Expression<int>? conductorCrossSectionMm2,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (manufacturer != null) 'manufacturer': manufacturer,
+      if (seriesName != null) 'series_name': seriesName,
+      if (modelNumber != null) 'model_number': modelNumber,
+      if (conductorCrossSectionMm2 != null)
+        'conductor_cross_section_mm2': conductorCrossSectionMm2,
+    });
+  }
+
+  HpaAnschlussCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? manufacturer,
+    Value<String>? seriesName,
+    Value<String>? modelNumber,
+    Value<int>? conductorCrossSectionMm2,
+  }) {
+    return HpaAnschlussCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      manufacturer: manufacturer ?? this.manufacturer,
+      seriesName: seriesName ?? this.seriesName,
+      modelNumber: modelNumber ?? this.modelNumber,
+      conductorCrossSectionMm2:
+          conductorCrossSectionMm2 ?? this.conductorCrossSectionMm2,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (manufacturer.present) {
+      map['manufacturer'] = Variable<String>(manufacturer.value);
+    }
+    if (seriesName.present) {
+      map['series_name'] = Variable<String>(seriesName.value);
+    }
+    if (modelNumber.present) {
+      map['model_number'] = Variable<String>(modelNumber.value);
+    }
+    if (conductorCrossSectionMm2.present) {
+      map['conductor_cross_section_mm2'] = Variable<int>(
+        conductorCrossSectionMm2.value,
+      );
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HpaAnschlussCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('manufacturer: $manufacturer, ')
+          ..write('seriesName: $seriesName, ')
+          ..write('modelNumber: $modelNumber, ')
+          ..write('conductorCrossSectionMm2: $conductorCrossSectionMm2')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8974,6 +23663,49 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ScenarioResultsTable scenarioResults = $ScenarioResultsTable(
     this,
   );
+  late final $HeatPumpsTable heatPumps = $HeatPumpsTable(this);
+  late final $HeatLoopsTable heatLoops = $HeatLoopsTable(this);
+  late final $InventoryItemsTable inventoryItems = $InventoryItemsTable(this);
+  late final $ComponentStatusTableTable componentStatusTable =
+      $ComponentStatusTableTable(this);
+  late final $BoilerTable boiler = $BoilerTable(this);
+  late final $HwVerteilerTable hwVerteiler = $HwVerteilerTable(this);
+  late final $ZirkulationspumpeTable zirkulationspumpe =
+      $ZirkulationspumpeTable(this);
+  late final $RueckflussverhindererTable rueckflussverhinderer =
+      $RueckflussverhindererTable(this);
+  late final $SchmutzfangerTable schmutzfanger = $SchmutzfangerTable(this);
+  late final $DurchflusswaechterTable durchflusswaechter =
+      $DurchflusswaechterTable(this);
+  late final $PufferspeicherTable pufferspeicher = $PufferspeicherTable(this);
+  late final $PlattenwaermetauscherTable plattenwaermetauscher =
+      $PlattenwaermetauscherTable(this);
+  late final $SafetyValveTable safetyValve = $SafetyValveTable(this);
+  late final $MembranausdehnungsgefaessTable membranausdehnungsgefaess =
+      $MembranausdehnungsgefaessTable(this);
+  late final $EntluftungsventilTable entluftungsventil =
+      $EntluftungsventilTable(this);
+  late final $HeizkreispumpeTable heizkreispumpe = $HeizkreispumpeTable(this);
+  late final $AbsperrventilTable absperrventil = $AbsperrventilTable(this);
+  late final $FbhVerteilerTable fbhVerteiler = $FbhVerteilerTable(this);
+  late final $FbhSchleifeTable fbhSchleife = $FbhSchleifeTable(this);
+  late final $MischbatterieTable mischbatterie = $MischbatterieTable(this);
+  late final $RfvGartenanschlussTable rfvGartenanschluss =
+      $RfvGartenanschlussTable(this);
+  late final $FuellwasserZuleitungTable fuellwasserZuleitung =
+      $FuellwasserZuleitungTable(this);
+  late final $KaltwasserVerbraucherTable kaltwasserVerbraucher =
+      $KaltwasserVerbraucherTable(this);
+  late final $LsSchalterTable lsSchalter = $LsSchalterTable(this);
+  late final $FiSchutzschalterTable fiSchutzschalter = $FiSchutzschalterTable(
+    this,
+  );
+  late final $ZuleitungStarkstromTable zuleitungStarkstrom =
+      $ZuleitungStarkstromTable(this);
+  late final $TrennschalterTable trennschalter = $TrennschalterTable(this);
+  late final $KlemmenleisteTable klemmenleiste = $KlemmenleisteTable(this);
+  late final $PeAnschlussTable peAnschluss = $PeAnschlussTable(this);
+  late final $HpaAnschlussTable hpaAnschluss = $HpaAnschlussTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8991,6 +23723,36 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     stringModules,
     scenarios,
     scenarioResults,
+    heatPumps,
+    heatLoops,
+    inventoryItems,
+    componentStatusTable,
+    boiler,
+    hwVerteiler,
+    zirkulationspumpe,
+    rueckflussverhinderer,
+    schmutzfanger,
+    durchflusswaechter,
+    pufferspeicher,
+    plattenwaermetauscher,
+    safetyValve,
+    membranausdehnungsgefaess,
+    entluftungsventil,
+    heizkreispumpe,
+    absperrventil,
+    fbhVerteiler,
+    fbhSchleife,
+    mischbatterie,
+    rfvGartenanschluss,
+    fuellwasserZuleitung,
+    kaltwasserVerbraucher,
+    lsSchalter,
+    fiSchutzschalter,
+    zuleitungStarkstrom,
+    trennschalter,
+    klemmenleiste,
+    peAnschluss,
+    hpaAnschluss,
   ];
 }
 
@@ -10356,6 +25118,7 @@ typedef $$ProjectsTableCreateCompanionBuilder = ProjectsCompanion Function({
   Value<bool> batAnlage,
   Value<bool> wbAnlage,
   Value<bool> wpAnlage,
+  Value<int?> activeHeatPumpId,
 });
 typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
   Value<int> id,
@@ -10399,7 +25162,56 @@ typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
   Value<bool> batAnlage,
   Value<bool> wbAnlage,
   Value<bool> wpAnlage,
+  Value<int?> activeHeatPumpId,
 });
+
+final class $$ProjectsTableReferences
+    extends BaseReferences<_$AppDatabase, $ProjectsTable, Project> {
+  $$ProjectsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$HeatLoopsTable, List<HeatLoop>>
+  _heatLoopsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.heatLoops,
+    aliasName: 'projects__id__heat_loops__project_id',
+  );
+
+  $$HeatLoopsTableProcessedTableManager get heatLoopsRefs {
+    final manager = $$HeatLoopsTableTableManager(
+      $_db,
+      $_db.heatLoops,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_heatLoopsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ComponentStatusTableTable,
+    List<ComponentStatusTableData>
+  >
+  _componentStatusTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.componentStatusTable,
+        aliasName: 'projects__id__component_status_table__project_id',
+      );
+
+  $$ComponentStatusTableTableProcessedTableManager
+  get componentStatusTableRefs {
+    final manager = $$ComponentStatusTableTableTableManager(
+      $_db,
+      $_db.componentStatusTable,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _componentStatusTableRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
 
 class $$ProjectsTableFilterComposer
     extends Composer<_$AppDatabase, $ProjectsTable> {
@@ -10614,6 +25426,61 @@ class $$ProjectsTableFilterComposer
     column: $table.wpAnlage,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<int> get activeHeatPumpId => $composableBuilder(
+    column: $table.activeHeatPumpId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> heatLoopsRefs(
+    Expression<bool> Function($$HeatLoopsTableFilterComposer f) f,
+  ) {
+    final $$HeatLoopsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.heatLoops,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HeatLoopsTableFilterComposer(
+            $db: $db,
+            $table: $db.heatLoops,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> componentStatusTableRefs(
+    Expression<bool> Function($$ComponentStatusTableTableFilterComposer f) f,
+  ) {
+    final $$ComponentStatusTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.componentStatusTable,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ComponentStatusTableTableFilterComposer(
+            $db: $db,
+            $table: $db.componentStatusTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableOrderingComposer
@@ -10829,6 +25696,11 @@ class $$ProjectsTableOrderingComposer
     column: $table.wpAnlage,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get activeHeatPumpId => $composableBuilder(
+    column: $table.activeHeatPumpId,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ProjectsTableAnnotationComposer
@@ -10986,6 +25858,62 @@ class $$ProjectsTableAnnotationComposer
 
   GeneratedColumn<bool> get wpAnlage =>
       $composableBuilder(column: $table.wpAnlage, builder: (column) => column);
+
+  GeneratedColumn<int> get activeHeatPumpId => $composableBuilder(
+    column: $table.activeHeatPumpId,
+    builder: (column) => column,
+  );
+
+  Expression<T> heatLoopsRefs<T extends Object>(
+    Expression<T> Function($$HeatLoopsTableAnnotationComposer a) f,
+  ) {
+    final $$HeatLoopsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.heatLoops,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HeatLoopsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.heatLoops,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> componentStatusTableRefs<T extends Object>(
+    Expression<T> Function($$ComponentStatusTableTableAnnotationComposer a) f,
+  ) {
+    final $$ComponentStatusTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.componentStatusTable,
+          getReferencedColumn: (t) => t.projectId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ComponentStatusTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.componentStatusTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableTableManager
@@ -10999,9 +25927,12 @@ class $$ProjectsTableTableManager
           $$ProjectsTableAnnotationComposer,
           $$ProjectsTableCreateCompanionBuilder,
           $$ProjectsTableUpdateCompanionBuilder,
-          (Project, BaseReferences<_$AppDatabase, $ProjectsTable, Project>),
+          (Project, $$ProjectsTableReferences),
           Project,
-          PrefetchHooks Function()
+          PrefetchHooks Function({
+            bool heatLoopsRefs,
+            bool componentStatusTableRefs,
+          })
         > {
   $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
     : super(
@@ -11057,6 +25988,7 @@ class $$ProjectsTableTableManager
                 Value<bool> batAnlage = const Value.absent(),
                 Value<bool> wbAnlage = const Value.absent(),
                 Value<bool> wpAnlage = const Value.absent(),
+                Value<int?> activeHeatPumpId = const Value.absent(),
               }) => ProjectsCompanion(
                 id: id,
                 name: name,
@@ -11099,6 +26031,7 @@ class $$ProjectsTableTableManager
                 batAnlage: batAnlage,
                 wbAnlage: wbAnlage,
                 wpAnlage: wpAnlage,
+                activeHeatPumpId: activeHeatPumpId,
               ),
           createCompanionCallback:
               ({
@@ -11143,6 +26076,7 @@ class $$ProjectsTableTableManager
                 Value<bool> batAnlage = const Value.absent(),
                 Value<bool> wbAnlage = const Value.absent(),
                 Value<bool> wpAnlage = const Value.absent(),
+                Value<int?> activeHeatPumpId = const Value.absent(),
               }) => ProjectsCompanion.insert(
                 id: id,
                 name: name,
@@ -11185,20 +26119,73 @@ class $$ProjectsTableTableManager
                 batAnlage: batAnlage,
                 wbAnlage: wbAnlage,
                 wpAnlage: wpAnlage,
+                activeHeatPumpId: activeHeatPumpId,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
                   e.readTable<$ProjectsTable, Project>(table),
-                  BaseReferences<_$AppDatabase, $ProjectsTable, Project>(
-                    db,
-                    table,
-                    e,
-                  ),
+                  $$ProjectsTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback:
+              ({heatLoopsRefs = false, componentStatusTableRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (heatLoopsRefs) db.heatLoops,
+                    if (componentStatusTableRefs) db.componentStatusTable,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (heatLoopsRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          HeatLoop
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._heatLoopsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).heatLoopsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (componentStatusTableRefs)
+                        await $_getPrefetchedData<
+                          Project,
+                          $ProjectsTable,
+                          ComponentStatusTableData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectsTableReferences
+                              ._componentStatusTableRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).componentStatusTableRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
         ),
       );
 }
@@ -11213,9 +26200,12 @@ typedef $$ProjectsTableProcessedTableManager =
       $$ProjectsTableAnnotationComposer,
       $$ProjectsTableCreateCompanionBuilder,
       $$ProjectsTableUpdateCompanionBuilder,
-      (Project, BaseReferences<_$AppDatabase, $ProjectsTable, Project>),
+      (Project, $$ProjectsTableReferences),
       Project,
-      PrefetchHooks Function()
+      PrefetchHooks Function({
+        bool heatLoopsRefs,
+        bool componentStatusTableRefs,
+      })
     >;
 typedef $$RoofsTableCreateCompanionBuilder = RoofsCompanion Function({
   Value<int> id,
@@ -13177,6 +28167,8325 @@ typedef $$ScenarioResultsTableProcessedTableManager =
       ScenarioResult,
       PrefetchHooks Function()
     >;
+typedef $$HeatPumpsTableCreateCompanionBuilder = HeatPumpsCompanion Function({
+  Value<int> id,
+  required String displayName,
+  required String manufacturer,
+  required String seriesName,
+  required String modelNumber,
+  required double heatingCapacityKwA7W35,
+  required double electricalConsumptionKwA7W35,
+  required double copRatioA7W35,
+  required double heatingCapacityKwA2W35,
+  required double electricalConsumptionKwA2W35,
+  required double copRatioA2W35,
+  required double heatingCapacityKwPartialLoad,
+  required double electricalConsumptionKwPartialLoad,
+  required double copRatioPartialLoad,
+  Value<double?> coolingCapacityKw,
+  Value<double?> electricalConsumptionKwCooling,
+  Value<double?> eerRatio,
+  required String annualHeatingEfficiencyPercent,
+  required int compressorVoltageNominalVolts,
+  required int compressorFrequencyHz,
+  required double soundLevelErpDbA,
+  required String maxSoundLevelDayNightDbA,
+  required int dimensionsUnpackedWidthMm,
+  required int dimensionsUnpackedDepthMm,
+  required int dimensionsUnpackedHeightMm,
+  required double weightKg,
+  required String refrigerantType,
+  required double gwpEuRegulationValue,
+  required double refrigerantQuantityKgCo2Equivalent,
+  required double co2EquivalentPerTon,
+  required String energyEfficiencyClass35C55C,
+});
+typedef $$HeatPumpsTableUpdateCompanionBuilder = HeatPumpsCompanion Function({
+  Value<int> id,
+  Value<String> displayName,
+  Value<String> manufacturer,
+  Value<String> seriesName,
+  Value<String> modelNumber,
+  Value<double> heatingCapacityKwA7W35,
+  Value<double> electricalConsumptionKwA7W35,
+  Value<double> copRatioA7W35,
+  Value<double> heatingCapacityKwA2W35,
+  Value<double> electricalConsumptionKwA2W35,
+  Value<double> copRatioA2W35,
+  Value<double> heatingCapacityKwPartialLoad,
+  Value<double> electricalConsumptionKwPartialLoad,
+  Value<double> copRatioPartialLoad,
+  Value<double?> coolingCapacityKw,
+  Value<double?> electricalConsumptionKwCooling,
+  Value<double?> eerRatio,
+  Value<String> annualHeatingEfficiencyPercent,
+  Value<int> compressorVoltageNominalVolts,
+  Value<int> compressorFrequencyHz,
+  Value<double> soundLevelErpDbA,
+  Value<String> maxSoundLevelDayNightDbA,
+  Value<int> dimensionsUnpackedWidthMm,
+  Value<int> dimensionsUnpackedDepthMm,
+  Value<int> dimensionsUnpackedHeightMm,
+  Value<double> weightKg,
+  Value<String> refrigerantType,
+  Value<double> gwpEuRegulationValue,
+  Value<double> refrigerantQuantityKgCo2Equivalent,
+  Value<double> co2EquivalentPerTon,
+  Value<String> energyEfficiencyClass35C55C,
+});
+
+class $$HeatPumpsTableFilterComposer
+    extends Composer<_$AppDatabase, $HeatPumpsTable> {
+  $$HeatPumpsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get heatingCapacityKwA7W35 => $composableBuilder(
+    column: $table.heatingCapacityKwA7W35,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get electricalConsumptionKwA7W35 => $composableBuilder(
+    column: $table.electricalConsumptionKwA7W35,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get copRatioA7W35 => $composableBuilder(
+    column: $table.copRatioA7W35,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get heatingCapacityKwA2W35 => $composableBuilder(
+    column: $table.heatingCapacityKwA2W35,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get electricalConsumptionKwA2W35 => $composableBuilder(
+    column: $table.electricalConsumptionKwA2W35,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get copRatioA2W35 => $composableBuilder(
+    column: $table.copRatioA2W35,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get heatingCapacityKwPartialLoad => $composableBuilder(
+    column: $table.heatingCapacityKwPartialLoad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get electricalConsumptionKwPartialLoad =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwPartialLoad,
+        builder: (column) => ColumnFilters(column),
+      );
+
+  ColumnFilters<double> get copRatioPartialLoad => $composableBuilder(
+    column: $table.copRatioPartialLoad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get coolingCapacityKw => $composableBuilder(
+    column: $table.coolingCapacityKw,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get electricalConsumptionKwCooling =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwCooling,
+        builder: (column) => ColumnFilters(column),
+      );
+
+  ColumnFilters<double> get eerRatio => $composableBuilder(
+    column: $table.eerRatio,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get annualHeatingEfficiencyPercent =>
+      $composableBuilder(
+        column: $table.annualHeatingEfficiencyPercent,
+        builder: (column) => ColumnFilters(column),
+      );
+
+  ColumnFilters<int> get compressorVoltageNominalVolts => $composableBuilder(
+    column: $table.compressorVoltageNominalVolts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get compressorFrequencyHz => $composableBuilder(
+    column: $table.compressorFrequencyHz,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get soundLevelErpDbA => $composableBuilder(
+    column: $table.soundLevelErpDbA,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get maxSoundLevelDayNightDbA => $composableBuilder(
+    column: $table.maxSoundLevelDayNightDbA,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dimensionsUnpackedWidthMm => $composableBuilder(
+    column: $table.dimensionsUnpackedWidthMm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dimensionsUnpackedDepthMm => $composableBuilder(
+    column: $table.dimensionsUnpackedDepthMm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dimensionsUnpackedHeightMm => $composableBuilder(
+    column: $table.dimensionsUnpackedHeightMm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get refrigerantType => $composableBuilder(
+    column: $table.refrigerantType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get gwpEuRegulationValue => $composableBuilder(
+    column: $table.gwpEuRegulationValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get refrigerantQuantityKgCo2Equivalent =>
+      $composableBuilder(
+        column: $table.refrigerantQuantityKgCo2Equivalent,
+        builder: (column) => ColumnFilters(column),
+      );
+
+  ColumnFilters<double> get co2EquivalentPerTon => $composableBuilder(
+    column: $table.co2EquivalentPerTon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get energyEfficiencyClass35C55C => $composableBuilder(
+    column: $table.energyEfficiencyClass35C55C,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HeatPumpsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HeatPumpsTable> {
+  $$HeatPumpsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get heatingCapacityKwA7W35 => $composableBuilder(
+    column: $table.heatingCapacityKwA7W35,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get electricalConsumptionKwA7W35 =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwA7W35,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<double> get copRatioA7W35 => $composableBuilder(
+    column: $table.copRatioA7W35,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get heatingCapacityKwA2W35 => $composableBuilder(
+    column: $table.heatingCapacityKwA2W35,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get electricalConsumptionKwA2W35 =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwA2W35,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<double> get copRatioA2W35 => $composableBuilder(
+    column: $table.copRatioA2W35,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get heatingCapacityKwPartialLoad =>
+      $composableBuilder(
+        column: $table.heatingCapacityKwPartialLoad,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<double> get electricalConsumptionKwPartialLoad =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwPartialLoad,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<double> get copRatioPartialLoad => $composableBuilder(
+    column: $table.copRatioPartialLoad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get coolingCapacityKw => $composableBuilder(
+    column: $table.coolingCapacityKw,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get electricalConsumptionKwCooling =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwCooling,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<double> get eerRatio => $composableBuilder(
+    column: $table.eerRatio,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get annualHeatingEfficiencyPercent =>
+      $composableBuilder(
+        column: $table.annualHeatingEfficiencyPercent,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<int> get compressorVoltageNominalVolts => $composableBuilder(
+    column: $table.compressorVoltageNominalVolts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get compressorFrequencyHz => $composableBuilder(
+    column: $table.compressorFrequencyHz,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get soundLevelErpDbA => $composableBuilder(
+    column: $table.soundLevelErpDbA,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get maxSoundLevelDayNightDbA => $composableBuilder(
+    column: $table.maxSoundLevelDayNightDbA,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dimensionsUnpackedWidthMm => $composableBuilder(
+    column: $table.dimensionsUnpackedWidthMm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dimensionsUnpackedDepthMm => $composableBuilder(
+    column: $table.dimensionsUnpackedDepthMm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dimensionsUnpackedHeightMm => $composableBuilder(
+    column: $table.dimensionsUnpackedHeightMm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get refrigerantType => $composableBuilder(
+    column: $table.refrigerantType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get gwpEuRegulationValue => $composableBuilder(
+    column: $table.gwpEuRegulationValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get refrigerantQuantityKgCo2Equivalent =>
+      $composableBuilder(
+        column: $table.refrigerantQuantityKgCo2Equivalent,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<double> get co2EquivalentPerTon => $composableBuilder(
+    column: $table.co2EquivalentPerTon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get energyEfficiencyClass35C55C => $composableBuilder(
+    column: $table.energyEfficiencyClass35C55C,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HeatPumpsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HeatPumpsTable> {
+  $$HeatPumpsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get heatingCapacityKwA7W35 => $composableBuilder(
+    column: $table.heatingCapacityKwA7W35,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get electricalConsumptionKwA7W35 =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwA7W35,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<double> get copRatioA7W35 => $composableBuilder(
+    column: $table.copRatioA7W35,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get heatingCapacityKwA2W35 => $composableBuilder(
+    column: $table.heatingCapacityKwA2W35,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get electricalConsumptionKwA2W35 =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwA2W35,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<double> get copRatioA2W35 => $composableBuilder(
+    column: $table.copRatioA2W35,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get heatingCapacityKwPartialLoad =>
+      $composableBuilder(
+        column: $table.heatingCapacityKwPartialLoad,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<double> get electricalConsumptionKwPartialLoad =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwPartialLoad,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<double> get copRatioPartialLoad => $composableBuilder(
+    column: $table.copRatioPartialLoad,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get coolingCapacityKw => $composableBuilder(
+    column: $table.coolingCapacityKw,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get electricalConsumptionKwCooling =>
+      $composableBuilder(
+        column: $table.electricalConsumptionKwCooling,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<double> get eerRatio =>
+      $composableBuilder(column: $table.eerRatio, builder: (column) => column);
+
+  GeneratedColumn<String> get annualHeatingEfficiencyPercent =>
+      $composableBuilder(
+        column: $table.annualHeatingEfficiencyPercent,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<int> get compressorVoltageNominalVolts => $composableBuilder(
+    column: $table.compressorVoltageNominalVolts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get compressorFrequencyHz => $composableBuilder(
+    column: $table.compressorFrequencyHz,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get soundLevelErpDbA => $composableBuilder(
+    column: $table.soundLevelErpDbA,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get maxSoundLevelDayNightDbA => $composableBuilder(
+    column: $table.maxSoundLevelDayNightDbA,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dimensionsUnpackedWidthMm => $composableBuilder(
+    column: $table.dimensionsUnpackedWidthMm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dimensionsUnpackedDepthMm => $composableBuilder(
+    column: $table.dimensionsUnpackedDepthMm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dimensionsUnpackedHeightMm => $composableBuilder(
+    column: $table.dimensionsUnpackedHeightMm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get weightKg =>
+      $composableBuilder(column: $table.weightKg, builder: (column) => column);
+
+  GeneratedColumn<String> get refrigerantType => $composableBuilder(
+    column: $table.refrigerantType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get gwpEuRegulationValue => $composableBuilder(
+    column: $table.gwpEuRegulationValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get refrigerantQuantityKgCo2Equivalent =>
+      $composableBuilder(
+        column: $table.refrigerantQuantityKgCo2Equivalent,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<double> get co2EquivalentPerTon => $composableBuilder(
+    column: $table.co2EquivalentPerTon,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get energyEfficiencyClass35C55C => $composableBuilder(
+    column: $table.energyEfficiencyClass35C55C,
+    builder: (column) => column,
+  );
+}
+
+class $$HeatPumpsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HeatPumpsTable,
+          HeatPump,
+          $$HeatPumpsTableFilterComposer,
+          $$HeatPumpsTableOrderingComposer,
+          $$HeatPumpsTableAnnotationComposer,
+          $$HeatPumpsTableCreateCompanionBuilder,
+          $$HeatPumpsTableUpdateCompanionBuilder,
+          (HeatPump, BaseReferences<_$AppDatabase, $HeatPumpsTable, HeatPump>),
+          HeatPump,
+          PrefetchHooks Function()
+        > {
+  $$HeatPumpsTableTableManager(_$AppDatabase db, $HeatPumpsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HeatPumpsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HeatPumpsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HeatPumpsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> heatingCapacityKwA7W35 = const Value.absent(),
+                Value<double> electricalConsumptionKwA7W35 =
+                    const Value.absent(),
+                Value<double> copRatioA7W35 = const Value.absent(),
+                Value<double> heatingCapacityKwA2W35 = const Value.absent(),
+                Value<double> electricalConsumptionKwA2W35 =
+                    const Value.absent(),
+                Value<double> copRatioA2W35 = const Value.absent(),
+                Value<double> heatingCapacityKwPartialLoad =
+                    const Value.absent(),
+                Value<double> electricalConsumptionKwPartialLoad =
+                    const Value.absent(),
+                Value<double> copRatioPartialLoad = const Value.absent(),
+                Value<double?> coolingCapacityKw = const Value.absent(),
+                Value<double?> electricalConsumptionKwCooling =
+                    const Value.absent(),
+                Value<double?> eerRatio = const Value.absent(),
+                Value<String> annualHeatingEfficiencyPercent =
+                    const Value.absent(),
+                Value<int> compressorVoltageNominalVolts = const Value.absent(),
+                Value<int> compressorFrequencyHz = const Value.absent(),
+                Value<double> soundLevelErpDbA = const Value.absent(),
+                Value<String> maxSoundLevelDayNightDbA = const Value.absent(),
+                Value<int> dimensionsUnpackedWidthMm = const Value.absent(),
+                Value<int> dimensionsUnpackedDepthMm = const Value.absent(),
+                Value<int> dimensionsUnpackedHeightMm = const Value.absent(),
+                Value<double> weightKg = const Value.absent(),
+                Value<String> refrigerantType = const Value.absent(),
+                Value<double> gwpEuRegulationValue = const Value.absent(),
+                Value<double> refrigerantQuantityKgCo2Equivalent =
+                    const Value.absent(),
+                Value<double> co2EquivalentPerTon = const Value.absent(),
+                Value<String> energyEfficiencyClass35C55C =
+                    const Value.absent(),
+              }) => HeatPumpsCompanion(
+                id: id,
+                displayName: displayName,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                heatingCapacityKwA7W35: heatingCapacityKwA7W35,
+                electricalConsumptionKwA7W35: electricalConsumptionKwA7W35,
+                copRatioA7W35: copRatioA7W35,
+                heatingCapacityKwA2W35: heatingCapacityKwA2W35,
+                electricalConsumptionKwA2W35: electricalConsumptionKwA2W35,
+                copRatioA2W35: copRatioA2W35,
+                heatingCapacityKwPartialLoad: heatingCapacityKwPartialLoad,
+                electricalConsumptionKwPartialLoad:
+                    electricalConsumptionKwPartialLoad,
+                copRatioPartialLoad: copRatioPartialLoad,
+                coolingCapacityKw: coolingCapacityKw,
+                electricalConsumptionKwCooling: electricalConsumptionKwCooling,
+                eerRatio: eerRatio,
+                annualHeatingEfficiencyPercent: annualHeatingEfficiencyPercent,
+                compressorVoltageNominalVolts: compressorVoltageNominalVolts,
+                compressorFrequencyHz: compressorFrequencyHz,
+                soundLevelErpDbA: soundLevelErpDbA,
+                maxSoundLevelDayNightDbA: maxSoundLevelDayNightDbA,
+                dimensionsUnpackedWidthMm: dimensionsUnpackedWidthMm,
+                dimensionsUnpackedDepthMm: dimensionsUnpackedDepthMm,
+                dimensionsUnpackedHeightMm: dimensionsUnpackedHeightMm,
+                weightKg: weightKg,
+                refrigerantType: refrigerantType,
+                gwpEuRegulationValue: gwpEuRegulationValue,
+                refrigerantQuantityKgCo2Equivalent:
+                    refrigerantQuantityKgCo2Equivalent,
+                co2EquivalentPerTon: co2EquivalentPerTon,
+                energyEfficiencyClass35C55C: energyEfficiencyClass35C55C,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String displayName,
+                required String manufacturer,
+                required String seriesName,
+                required String modelNumber,
+                required double heatingCapacityKwA7W35,
+                required double electricalConsumptionKwA7W35,
+                required double copRatioA7W35,
+                required double heatingCapacityKwA2W35,
+                required double electricalConsumptionKwA2W35,
+                required double copRatioA2W35,
+                required double heatingCapacityKwPartialLoad,
+                required double electricalConsumptionKwPartialLoad,
+                required double copRatioPartialLoad,
+                Value<double?> coolingCapacityKw = const Value.absent(),
+                Value<double?> electricalConsumptionKwCooling =
+                    const Value.absent(),
+                Value<double?> eerRatio = const Value.absent(),
+                required String annualHeatingEfficiencyPercent,
+                required int compressorVoltageNominalVolts,
+                required int compressorFrequencyHz,
+                required double soundLevelErpDbA,
+                required String maxSoundLevelDayNightDbA,
+                required int dimensionsUnpackedWidthMm,
+                required int dimensionsUnpackedDepthMm,
+                required int dimensionsUnpackedHeightMm,
+                required double weightKg,
+                required String refrigerantType,
+                required double gwpEuRegulationValue,
+                required double refrigerantQuantityKgCo2Equivalent,
+                required double co2EquivalentPerTon,
+                required String energyEfficiencyClass35C55C,
+              }) => HeatPumpsCompanion.insert(
+                id: id,
+                displayName: displayName,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                heatingCapacityKwA7W35: heatingCapacityKwA7W35,
+                electricalConsumptionKwA7W35: electricalConsumptionKwA7W35,
+                copRatioA7W35: copRatioA7W35,
+                heatingCapacityKwA2W35: heatingCapacityKwA2W35,
+                electricalConsumptionKwA2W35: electricalConsumptionKwA2W35,
+                copRatioA2W35: copRatioA2W35,
+                heatingCapacityKwPartialLoad: heatingCapacityKwPartialLoad,
+                electricalConsumptionKwPartialLoad:
+                    electricalConsumptionKwPartialLoad,
+                copRatioPartialLoad: copRatioPartialLoad,
+                coolingCapacityKw: coolingCapacityKw,
+                electricalConsumptionKwCooling: electricalConsumptionKwCooling,
+                eerRatio: eerRatio,
+                annualHeatingEfficiencyPercent: annualHeatingEfficiencyPercent,
+                compressorVoltageNominalVolts: compressorVoltageNominalVolts,
+                compressorFrequencyHz: compressorFrequencyHz,
+                soundLevelErpDbA: soundLevelErpDbA,
+                maxSoundLevelDayNightDbA: maxSoundLevelDayNightDbA,
+                dimensionsUnpackedWidthMm: dimensionsUnpackedWidthMm,
+                dimensionsUnpackedDepthMm: dimensionsUnpackedDepthMm,
+                dimensionsUnpackedHeightMm: dimensionsUnpackedHeightMm,
+                weightKg: weightKg,
+                refrigerantType: refrigerantType,
+                gwpEuRegulationValue: gwpEuRegulationValue,
+                refrigerantQuantityKgCo2Equivalent:
+                    refrigerantQuantityKgCo2Equivalent,
+                co2EquivalentPerTon: co2EquivalentPerTon,
+                energyEfficiencyClass35C55C: energyEfficiencyClass35C55C,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HeatPumpsTable, HeatPump>(table),
+                  BaseReferences<_$AppDatabase, $HeatPumpsTable, HeatPump>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HeatPumpsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HeatPumpsTable,
+      HeatPump,
+      $$HeatPumpsTableFilterComposer,
+      $$HeatPumpsTableOrderingComposer,
+      $$HeatPumpsTableAnnotationComposer,
+      $$HeatPumpsTableCreateCompanionBuilder,
+      $$HeatPumpsTableUpdateCompanionBuilder,
+      (HeatPump, BaseReferences<_$AppDatabase, $HeatPumpsTable, HeatPump>),
+      HeatPump,
+      PrefetchHooks Function()
+    >;
+typedef $$HeatLoopsTableCreateCompanionBuilder = HeatLoopsCompanion Function({
+  Value<int> id,
+  required int projectId,
+  required String name,
+  Value<String> loopType,
+  Value<double> nominalKw,
+  Value<int> flowTempC,
+});
+typedef $$HeatLoopsTableUpdateCompanionBuilder = HeatLoopsCompanion Function({
+  Value<int> id,
+  Value<int> projectId,
+  Value<String> name,
+  Value<String> loopType,
+  Value<double> nominalKw,
+  Value<int> flowTempC,
+});
+
+final class $$HeatLoopsTableReferences
+    extends BaseReferences<_$AppDatabase, $HeatLoopsTable, HeatLoop> {
+  $$HeatLoopsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias('heat_loops__project_id__projects__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<int>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$HeatLoopsTableFilterComposer
+    extends Composer<_$AppDatabase, $HeatLoopsTable> {
+  $$HeatLoopsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get loopType => $composableBuilder(
+    column: $table.loopType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get nominalKw => $composableBuilder(
+    column: $table.nominalKw,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get flowTempC => $composableBuilder(
+    column: $table.flowTempC,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HeatLoopsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HeatLoopsTable> {
+  $$HeatLoopsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get loopType => $composableBuilder(
+    column: $table.loopType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get nominalKw => $composableBuilder(
+    column: $table.nominalKw,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get flowTempC => $composableBuilder(
+    column: $table.flowTempC,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HeatLoopsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HeatLoopsTable> {
+  $$HeatLoopsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get loopType =>
+      $composableBuilder(column: $table.loopType, builder: (column) => column);
+
+  GeneratedColumn<double> get nominalKw =>
+      $composableBuilder(column: $table.nominalKw, builder: (column) => column);
+
+  GeneratedColumn<int> get flowTempC =>
+      $composableBuilder(column: $table.flowTempC, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HeatLoopsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HeatLoopsTable,
+          HeatLoop,
+          $$HeatLoopsTableFilterComposer,
+          $$HeatLoopsTableOrderingComposer,
+          $$HeatLoopsTableAnnotationComposer,
+          $$HeatLoopsTableCreateCompanionBuilder,
+          $$HeatLoopsTableUpdateCompanionBuilder,
+          (HeatLoop, $$HeatLoopsTableReferences),
+          HeatLoop,
+          PrefetchHooks Function({bool projectId})
+        > {
+  $$HeatLoopsTableTableManager(_$AppDatabase db, $HeatLoopsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HeatLoopsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HeatLoopsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HeatLoopsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> projectId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> loopType = const Value.absent(),
+                Value<double> nominalKw = const Value.absent(),
+                Value<int> flowTempC = const Value.absent(),
+              }) => HeatLoopsCompanion(
+                id: id,
+                projectId: projectId,
+                name: name,
+                loopType: loopType,
+                nominalKw: nominalKw,
+                flowTempC: flowTempC,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int projectId,
+                required String name,
+                Value<String> loopType = const Value.absent(),
+                Value<double> nominalKw = const Value.absent(),
+                Value<int> flowTempC = const Value.absent(),
+              }) => HeatLoopsCompanion.insert(
+                id: id,
+                projectId: projectId,
+                name: name,
+                loopType: loopType,
+                nominalKw: nominalKw,
+                flowTempC: flowTempC,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HeatLoopsTable, HeatLoop>(table),
+                  $$HeatLoopsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({projectId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (projectId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.projectId,
+                        referencedTable: $$HeatLoopsTableReferences
+                            ._projectIdTable(db),
+                        referencedColumn: $$HeatLoopsTableReferences
+                            ._projectIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HeatLoopsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HeatLoopsTable,
+      HeatLoop,
+      $$HeatLoopsTableFilterComposer,
+      $$HeatLoopsTableOrderingComposer,
+      $$HeatLoopsTableAnnotationComposer,
+      $$HeatLoopsTableCreateCompanionBuilder,
+      $$HeatLoopsTableUpdateCompanionBuilder,
+      (HeatLoop, $$HeatLoopsTableReferences),
+      HeatLoop,
+      PrefetchHooks Function({bool projectId})
+    >;
+typedef $$InventoryItemsTableCreateCompanionBuilder =
+    InventoryItemsCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      required String componentType,
+    });
+typedef $$InventoryItemsTableUpdateCompanionBuilder =
+    InventoryItemsCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<String> componentType,
+    });
+
+final class $$InventoryItemsTableReferences
+    extends BaseReferences<_$AppDatabase, $InventoryItemsTable, InventoryItem> {
+  $$InventoryItemsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<
+    $ComponentStatusTableTable,
+    List<ComponentStatusTableData>
+  >
+  _componentStatusTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.componentStatusTable,
+        aliasName:
+            'inventory_items__id__component_status_table__inventory_item_id',
+      );
+
+  $$ComponentStatusTableTableProcessedTableManager
+  get componentStatusTableRefs {
+    final manager = $$ComponentStatusTableTableTableManager(
+      $_db,
+      $_db.componentStatusTable,
+    ).filter((f) => f.inventoryItemId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _componentStatusTableRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$InventoryItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $InventoryItemsTable> {
+  $$InventoryItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get componentType => $composableBuilder(
+    column: $table.componentType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> componentStatusTableRefs(
+    Expression<bool> Function($$ComponentStatusTableTableFilterComposer f) f,
+  ) {
+    final $$ComponentStatusTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.componentStatusTable,
+      getReferencedColumn: (t) => t.inventoryItemId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ComponentStatusTableTableFilterComposer(
+            $db: $db,
+            $table: $db.componentStatusTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$InventoryItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $InventoryItemsTable> {
+  $$InventoryItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get componentType => $composableBuilder(
+    column: $table.componentType,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$InventoryItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InventoryItemsTable> {
+  $$InventoryItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get componentType => $composableBuilder(
+    column: $table.componentType,
+    builder: (column) => column,
+  );
+
+  Expression<T> componentStatusTableRefs<T extends Object>(
+    Expression<T> Function($$ComponentStatusTableTableAnnotationComposer a) f,
+  ) {
+    final $$ComponentStatusTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.componentStatusTable,
+          getReferencedColumn: (t) => t.inventoryItemId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ComponentStatusTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.componentStatusTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$InventoryItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $InventoryItemsTable,
+          InventoryItem,
+          $$InventoryItemsTableFilterComposer,
+          $$InventoryItemsTableOrderingComposer,
+          $$InventoryItemsTableAnnotationComposer,
+          $$InventoryItemsTableCreateCompanionBuilder,
+          $$InventoryItemsTableUpdateCompanionBuilder,
+          (InventoryItem, $$InventoryItemsTableReferences),
+          InventoryItem,
+          PrefetchHooks Function({bool componentStatusTableRefs})
+        > {
+  $$InventoryItemsTableTableManager(
+    _$AppDatabase db,
+    $InventoryItemsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$InventoryItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InventoryItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InventoryItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<String> componentType = const Value.absent(),
+              }) => InventoryItemsCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                componentType: componentType,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                required String componentType,
+              }) => InventoryItemsCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                componentType: componentType,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$InventoryItemsTable, InventoryItem>(table),
+                  $$InventoryItemsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({componentStatusTableRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (componentStatusTableRefs) db.componentStatusTable,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (componentStatusTableRefs)
+                    await $_getPrefetchedData<
+                      InventoryItem,
+                      $InventoryItemsTable,
+                      ComponentStatusTableData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$InventoryItemsTableReferences
+                          ._componentStatusTableRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$InventoryItemsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).componentStatusTableRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where(
+                            (e) => e.inventoryItemId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$InventoryItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $InventoryItemsTable,
+      InventoryItem,
+      $$InventoryItemsTableFilterComposer,
+      $$InventoryItemsTableOrderingComposer,
+      $$InventoryItemsTableAnnotationComposer,
+      $$InventoryItemsTableCreateCompanionBuilder,
+      $$InventoryItemsTableUpdateCompanionBuilder,
+      (InventoryItem, $$InventoryItemsTableReferences),
+      InventoryItem,
+      PrefetchHooks Function({bool componentStatusTableRefs})
+    >;
+typedef $$ComponentStatusTableTableCreateCompanionBuilder =
+    ComponentStatusTableCompanion Function({
+      Value<int> id,
+      required int projectId,
+      required int inventoryItemId,
+      Value<String> status,
+      Value<bool> required,
+      Value<int> quantity,
+    });
+typedef $$ComponentStatusTableTableUpdateCompanionBuilder =
+    ComponentStatusTableCompanion Function({
+      Value<int> id,
+      Value<int> projectId,
+      Value<int> inventoryItemId,
+      Value<String> status,
+      Value<bool> required,
+      Value<int> quantity,
+    });
+
+final class $$ComponentStatusTableTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ComponentStatusTableTable,
+          ComponentStatusTableData
+        > {
+  $$ComponentStatusTableTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) => db.projects
+      .createAlias('component_status_table__project_id__projects__id');
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<int>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager(
+      $_db,
+      $_db.projects,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $InventoryItemsTable _inventoryItemIdTable(_$AppDatabase db) =>
+      db.inventoryItems.createAlias(
+        'component_status_table__inventory_item_id__inventory_items__id',
+      );
+
+  $$InventoryItemsTableProcessedTableManager get inventoryItemId {
+    final $_column = $_itemColumn<int>('inventory_item_id')!;
+
+    final manager = $$InventoryItemsTableTableManager(
+      $_db,
+      $_db.inventoryItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_inventoryItemIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ComponentStatusTableTableFilterComposer
+    extends Composer<_$AppDatabase, $ComponentStatusTableTable> {
+  $$ComponentStatusTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get required => $composableBuilder(
+    column: $table.required,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableFilterComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$InventoryItemsTableFilterComposer get inventoryItemId {
+    final $$InventoryItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.inventoryItemId,
+      referencedTable: $db.inventoryItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InventoryItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.inventoryItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ComponentStatusTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $ComponentStatusTableTable> {
+  $$ComponentStatusTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get required => $composableBuilder(
+    column: $table.required,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$InventoryItemsTableOrderingComposer get inventoryItemId {
+    final $$InventoryItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.inventoryItemId,
+      referencedTable: $db.inventoryItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InventoryItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.inventoryItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ComponentStatusTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ComponentStatusTableTable> {
+  $$ComponentStatusTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<bool> get required =>
+      $composableBuilder(column: $table.required, builder: (column) => column);
+
+  GeneratedColumn<int> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projects,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projects,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$InventoryItemsTableAnnotationComposer get inventoryItemId {
+    final $$InventoryItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.inventoryItemId,
+      referencedTable: $db.inventoryItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InventoryItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.inventoryItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ComponentStatusTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ComponentStatusTableTable,
+          ComponentStatusTableData,
+          $$ComponentStatusTableTableFilterComposer,
+          $$ComponentStatusTableTableOrderingComposer,
+          $$ComponentStatusTableTableAnnotationComposer,
+          $$ComponentStatusTableTableCreateCompanionBuilder,
+          $$ComponentStatusTableTableUpdateCompanionBuilder,
+          (ComponentStatusTableData, $$ComponentStatusTableTableReferences),
+          ComponentStatusTableData,
+          PrefetchHooks Function({bool projectId, bool inventoryItemId})
+        > {
+  $$ComponentStatusTableTableTableManager(
+    _$AppDatabase db,
+    $ComponentStatusTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ComponentStatusTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ComponentStatusTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ComponentStatusTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> projectId = const Value.absent(),
+                Value<int> inventoryItemId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<bool> required = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
+              }) => ComponentStatusTableCompanion(
+                id: id,
+                projectId: projectId,
+                inventoryItemId: inventoryItemId,
+                status: status,
+                required: required,
+                quantity: quantity,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int projectId,
+                required int inventoryItemId,
+                Value<String> status = const Value.absent(),
+                Value<bool> required = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
+              }) => ComponentStatusTableCompanion.insert(
+                id: id,
+                projectId: projectId,
+                inventoryItemId: inventoryItemId,
+                status: status,
+                required: required,
+                quantity: quantity,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $ComponentStatusTableTable,
+                    ComponentStatusTableData
+                  >(table),
+                  $$ComponentStatusTableTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({projectId = false, inventoryItemId = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.projectId,
+                            referencedTable:
+                                $$ComponentStatusTableTableReferences
+                                    ._projectIdTable(db),
+                            referencedColumn:
+                                $$ComponentStatusTableTableReferences
+                                    ._projectIdTable(db)
+                                    .id,
+                          ) as T;
+                        }
+                        if (inventoryItemId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.inventoryItemId,
+                            referencedTable:
+                                $$ComponentStatusTableTableReferences
+                                    ._inventoryItemIdTable(db),
+                            referencedColumn:
+                                $$ComponentStatusTableTableReferences
+                                    ._inventoryItemIdTable(db)
+                                    .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ComponentStatusTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ComponentStatusTableTable,
+      ComponentStatusTableData,
+      $$ComponentStatusTableTableFilterComposer,
+      $$ComponentStatusTableTableOrderingComposer,
+      $$ComponentStatusTableTableAnnotationComposer,
+      $$ComponentStatusTableTableCreateCompanionBuilder,
+      $$ComponentStatusTableTableUpdateCompanionBuilder,
+      (ComponentStatusTableData, $$ComponentStatusTableTableReferences),
+      ComponentStatusTableData,
+      PrefetchHooks Function({bool projectId, bool inventoryItemId})
+    >;
+typedef $$BoilerTableCreateCompanionBuilder = BoilerCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<String> manufacturer,
+  Value<String> seriesName,
+  Value<String> modelNumber,
+  Value<int> volumeLitres,
+});
+typedef $$BoilerTableUpdateCompanionBuilder = BoilerCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String> manufacturer,
+  Value<String> seriesName,
+  Value<String> modelNumber,
+  Value<int> volumeLitres,
+});
+
+class $$BoilerTableFilterComposer
+    extends Composer<_$AppDatabase, $BoilerTable> {
+  $$BoilerTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BoilerTableOrderingComposer
+    extends Composer<_$AppDatabase, $BoilerTable> {
+  $$BoilerTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BoilerTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BoilerTable> {
+  $$BoilerTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => column,
+  );
+}
+
+class $$BoilerTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BoilerTable,
+          BoilerData,
+          $$BoilerTableFilterComposer,
+          $$BoilerTableOrderingComposer,
+          $$BoilerTableAnnotationComposer,
+          $$BoilerTableCreateCompanionBuilder,
+          $$BoilerTableUpdateCompanionBuilder,
+          (BoilerData, BaseReferences<_$AppDatabase, $BoilerTable, BoilerData>),
+          BoilerData,
+          PrefetchHooks Function()
+        > {
+  $$BoilerTableTableManager(_$AppDatabase db, $BoilerTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BoilerTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BoilerTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BoilerTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> volumeLitres = const Value.absent(),
+              }) => BoilerCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                volumeLitres: volumeLitres,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> volumeLitres = const Value.absent(),
+              }) => BoilerCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                volumeLitres: volumeLitres,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$BoilerTable, BoilerData>(table),
+                  BaseReferences<_$AppDatabase, $BoilerTable, BoilerData>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BoilerTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BoilerTable,
+      BoilerData,
+      $$BoilerTableFilterComposer,
+      $$BoilerTableOrderingComposer,
+      $$BoilerTableAnnotationComposer,
+      $$BoilerTableCreateCompanionBuilder,
+      $$BoilerTableUpdateCompanionBuilder,
+      (BoilerData, BaseReferences<_$AppDatabase, $BoilerTable, BoilerData>),
+      BoilerData,
+      PrefetchHooks Function()
+    >;
+typedef $$HwVerteilerTableCreateCompanionBuilder =
+    HwVerteilerCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> zones,
+    });
+typedef $$HwVerteilerTableUpdateCompanionBuilder =
+    HwVerteilerCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> zones,
+    });
+
+class $$HwVerteilerTableFilterComposer
+    extends Composer<_$AppDatabase, $HwVerteilerTable> {
+  $$HwVerteilerTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get zones => $composableBuilder(
+    column: $table.zones,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HwVerteilerTableOrderingComposer
+    extends Composer<_$AppDatabase, $HwVerteilerTable> {
+  $$HwVerteilerTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get zones => $composableBuilder(
+    column: $table.zones,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HwVerteilerTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HwVerteilerTable> {
+  $$HwVerteilerTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get zones =>
+      $composableBuilder(column: $table.zones, builder: (column) => column);
+}
+
+class $$HwVerteilerTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HwVerteilerTable,
+          HwVerteilerData,
+          $$HwVerteilerTableFilterComposer,
+          $$HwVerteilerTableOrderingComposer,
+          $$HwVerteilerTableAnnotationComposer,
+          $$HwVerteilerTableCreateCompanionBuilder,
+          $$HwVerteilerTableUpdateCompanionBuilder,
+          (
+            HwVerteilerData,
+            BaseReferences<_$AppDatabase, $HwVerteilerTable, HwVerteilerData>,
+          ),
+          HwVerteilerData,
+          PrefetchHooks Function()
+        > {
+  $$HwVerteilerTableTableManager(_$AppDatabase db, $HwVerteilerTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HwVerteilerTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HwVerteilerTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HwVerteilerTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> zones = const Value.absent(),
+              }) => HwVerteilerCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                zones: zones,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> zones = const Value.absent(),
+              }) => HwVerteilerCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                zones: zones,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HwVerteilerTable, HwVerteilerData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $HwVerteilerTable,
+                    HwVerteilerData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HwVerteilerTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HwVerteilerTable,
+      HwVerteilerData,
+      $$HwVerteilerTableFilterComposer,
+      $$HwVerteilerTableOrderingComposer,
+      $$HwVerteilerTableAnnotationComposer,
+      $$HwVerteilerTableCreateCompanionBuilder,
+      $$HwVerteilerTableUpdateCompanionBuilder,
+      (
+        HwVerteilerData,
+        BaseReferences<_$AppDatabase, $HwVerteilerTable, HwVerteilerData>,
+      ),
+      HwVerteilerData,
+      PrefetchHooks Function()
+    >;
+typedef $$ZirkulationspumpeTableCreateCompanionBuilder =
+    ZirkulationspumpeCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> flowRateLMin,
+      Value<double> headPressureM,
+      Value<double> eeiRating,
+    });
+typedef $$ZirkulationspumpeTableUpdateCompanionBuilder =
+    ZirkulationspumpeCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> flowRateLMin,
+      Value<double> headPressureM,
+      Value<double> eeiRating,
+    });
+
+class $$ZirkulationspumpeTableFilterComposer
+    extends Composer<_$AppDatabase, $ZirkulationspumpeTable> {
+  $$ZirkulationspumpeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get flowRateLMin => $composableBuilder(
+    column: $table.flowRateLMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get headPressureM => $composableBuilder(
+    column: $table.headPressureM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get eeiRating => $composableBuilder(
+    column: $table.eeiRating,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ZirkulationspumpeTableOrderingComposer
+    extends Composer<_$AppDatabase, $ZirkulationspumpeTable> {
+  $$ZirkulationspumpeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get flowRateLMin => $composableBuilder(
+    column: $table.flowRateLMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get headPressureM => $composableBuilder(
+    column: $table.headPressureM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get eeiRating => $composableBuilder(
+    column: $table.eeiRating,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ZirkulationspumpeTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ZirkulationspumpeTable> {
+  $$ZirkulationspumpeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get flowRateLMin => $composableBuilder(
+    column: $table.flowRateLMin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get headPressureM => $composableBuilder(
+    column: $table.headPressureM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get eeiRating =>
+      $composableBuilder(column: $table.eeiRating, builder: (column) => column);
+}
+
+class $$ZirkulationspumpeTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ZirkulationspumpeTable,
+          ZirkulationspumpeData,
+          $$ZirkulationspumpeTableFilterComposer,
+          $$ZirkulationspumpeTableOrderingComposer,
+          $$ZirkulationspumpeTableAnnotationComposer,
+          $$ZirkulationspumpeTableCreateCompanionBuilder,
+          $$ZirkulationspumpeTableUpdateCompanionBuilder,
+          (
+            ZirkulationspumpeData,
+            BaseReferences<
+              _$AppDatabase,
+              $ZirkulationspumpeTable,
+              ZirkulationspumpeData
+            >,
+          ),
+          ZirkulationspumpeData,
+          PrefetchHooks Function()
+        > {
+  $$ZirkulationspumpeTableTableManager(
+    _$AppDatabase db,
+    $ZirkulationspumpeTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ZirkulationspumpeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ZirkulationspumpeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ZirkulationspumpeTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> flowRateLMin = const Value.absent(),
+                Value<double> headPressureM = const Value.absent(),
+                Value<double> eeiRating = const Value.absent(),
+              }) => ZirkulationspumpeCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                flowRateLMin: flowRateLMin,
+                headPressureM: headPressureM,
+                eeiRating: eeiRating,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> flowRateLMin = const Value.absent(),
+                Value<double> headPressureM = const Value.absent(),
+                Value<double> eeiRating = const Value.absent(),
+              }) => ZirkulationspumpeCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                flowRateLMin: flowRateLMin,
+                headPressureM: headPressureM,
+                eeiRating: eeiRating,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ZirkulationspumpeTable, ZirkulationspumpeData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ZirkulationspumpeTable,
+                    ZirkulationspumpeData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ZirkulationspumpeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ZirkulationspumpeTable,
+      ZirkulationspumpeData,
+      $$ZirkulationspumpeTableFilterComposer,
+      $$ZirkulationspumpeTableOrderingComposer,
+      $$ZirkulationspumpeTableAnnotationComposer,
+      $$ZirkulationspumpeTableCreateCompanionBuilder,
+      $$ZirkulationspumpeTableUpdateCompanionBuilder,
+      (
+        ZirkulationspumpeData,
+        BaseReferences<
+          _$AppDatabase,
+          $ZirkulationspumpeTable,
+          ZirkulationspumpeData
+        >,
+      ),
+      ZirkulationspumpeData,
+      PrefetchHooks Function()
+    >;
+typedef $$RueckflussverhindererTableCreateCompanionBuilder =
+    RueckflussverhindererCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+typedef $$RueckflussverhindererTableUpdateCompanionBuilder =
+    RueckflussverhindererCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+
+class $$RueckflussverhindererTableFilterComposer
+    extends Composer<_$AppDatabase, $RueckflussverhindererTable> {
+  $$RueckflussverhindererTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RueckflussverhindererTableOrderingComposer
+    extends Composer<_$AppDatabase, $RueckflussverhindererTable> {
+  $$RueckflussverhindererTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RueckflussverhindererTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RueckflussverhindererTable> {
+  $$RueckflussverhindererTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dnSize =>
+      $composableBuilder(column: $table.dnSize, builder: (column) => column);
+}
+
+class $$RueckflussverhindererTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RueckflussverhindererTable,
+          RueckflussverhindererData,
+          $$RueckflussverhindererTableFilterComposer,
+          $$RueckflussverhindererTableOrderingComposer,
+          $$RueckflussverhindererTableAnnotationComposer,
+          $$RueckflussverhindererTableCreateCompanionBuilder,
+          $$RueckflussverhindererTableUpdateCompanionBuilder,
+          (
+            RueckflussverhindererData,
+            BaseReferences<
+              _$AppDatabase,
+              $RueckflussverhindererTable,
+              RueckflussverhindererData
+            >,
+          ),
+          RueckflussverhindererData,
+          PrefetchHooks Function()
+        > {
+  $$RueckflussverhindererTableTableManager(
+    _$AppDatabase db,
+    $RueckflussverhindererTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RueckflussverhindererTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$RueckflussverhindererTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RueckflussverhindererTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => RueckflussverhindererCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => RueckflussverhindererCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $RueckflussverhindererTable,
+                    RueckflussverhindererData
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $RueckflussverhindererTable,
+                    RueckflussverhindererData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RueckflussverhindererTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RueckflussverhindererTable,
+      RueckflussverhindererData,
+      $$RueckflussverhindererTableFilterComposer,
+      $$RueckflussverhindererTableOrderingComposer,
+      $$RueckflussverhindererTableAnnotationComposer,
+      $$RueckflussverhindererTableCreateCompanionBuilder,
+      $$RueckflussverhindererTableUpdateCompanionBuilder,
+      (
+        RueckflussverhindererData,
+        BaseReferences<
+          _$AppDatabase,
+          $RueckflussverhindererTable,
+          RueckflussverhindererData
+        >,
+      ),
+      RueckflussverhindererData,
+      PrefetchHooks Function()
+    >;
+typedef $$SchmutzfangerTableCreateCompanionBuilder =
+    SchmutzfangerCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> filterSizeMm,
+    });
+typedef $$SchmutzfangerTableUpdateCompanionBuilder =
+    SchmutzfangerCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> filterSizeMm,
+    });
+
+class $$SchmutzfangerTableFilterComposer
+    extends Composer<_$AppDatabase, $SchmutzfangerTable> {
+  $$SchmutzfangerTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get filterSizeMm => $composableBuilder(
+    column: $table.filterSizeMm,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SchmutzfangerTableOrderingComposer
+    extends Composer<_$AppDatabase, $SchmutzfangerTable> {
+  $$SchmutzfangerTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get filterSizeMm => $composableBuilder(
+    column: $table.filterSizeMm,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SchmutzfangerTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SchmutzfangerTable> {
+  $$SchmutzfangerTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get filterSizeMm => $composableBuilder(
+    column: $table.filterSizeMm,
+    builder: (column) => column,
+  );
+}
+
+class $$SchmutzfangerTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SchmutzfangerTable,
+          SchmutzfangerData,
+          $$SchmutzfangerTableFilterComposer,
+          $$SchmutzfangerTableOrderingComposer,
+          $$SchmutzfangerTableAnnotationComposer,
+          $$SchmutzfangerTableCreateCompanionBuilder,
+          $$SchmutzfangerTableUpdateCompanionBuilder,
+          (
+            SchmutzfangerData,
+            BaseReferences<
+              _$AppDatabase,
+              $SchmutzfangerTable,
+              SchmutzfangerData
+            >,
+          ),
+          SchmutzfangerData,
+          PrefetchHooks Function()
+        > {
+  $$SchmutzfangerTableTableManager(_$AppDatabase db, $SchmutzfangerTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SchmutzfangerTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SchmutzfangerTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SchmutzfangerTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> filterSizeMm = const Value.absent(),
+              }) => SchmutzfangerCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                filterSizeMm: filterSizeMm,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> filterSizeMm = const Value.absent(),
+              }) => SchmutzfangerCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                filterSizeMm: filterSizeMm,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SchmutzfangerTable, SchmutzfangerData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SchmutzfangerTable,
+                    SchmutzfangerData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SchmutzfangerTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SchmutzfangerTable,
+      SchmutzfangerData,
+      $$SchmutzfangerTableFilterComposer,
+      $$SchmutzfangerTableOrderingComposer,
+      $$SchmutzfangerTableAnnotationComposer,
+      $$SchmutzfangerTableCreateCompanionBuilder,
+      $$SchmutzfangerTableUpdateCompanionBuilder,
+      (
+        SchmutzfangerData,
+        BaseReferences<_$AppDatabase, $SchmutzfangerTable, SchmutzfangerData>,
+      ),
+      SchmutzfangerData,
+      PrefetchHooks Function()
+    >;
+typedef $$DurchflusswaechterTableCreateCompanionBuilder =
+    DurchflusswaechterCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> minFlowM3H,
+    });
+typedef $$DurchflusswaechterTableUpdateCompanionBuilder =
+    DurchflusswaechterCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> minFlowM3H,
+    });
+
+class $$DurchflusswaechterTableFilterComposer
+    extends Composer<_$AppDatabase, $DurchflusswaechterTable> {
+  $$DurchflusswaechterTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get minFlowM3H => $composableBuilder(
+    column: $table.minFlowM3H,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DurchflusswaechterTableOrderingComposer
+    extends Composer<_$AppDatabase, $DurchflusswaechterTable> {
+  $$DurchflusswaechterTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get minFlowM3H => $composableBuilder(
+    column: $table.minFlowM3H,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DurchflusswaechterTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DurchflusswaechterTable> {
+  $$DurchflusswaechterTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get minFlowM3H => $composableBuilder(
+    column: $table.minFlowM3H,
+    builder: (column) => column,
+  );
+}
+
+class $$DurchflusswaechterTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DurchflusswaechterTable,
+          DurchflusswaechterData,
+          $$DurchflusswaechterTableFilterComposer,
+          $$DurchflusswaechterTableOrderingComposer,
+          $$DurchflusswaechterTableAnnotationComposer,
+          $$DurchflusswaechterTableCreateCompanionBuilder,
+          $$DurchflusswaechterTableUpdateCompanionBuilder,
+          (
+            DurchflusswaechterData,
+            BaseReferences<
+              _$AppDatabase,
+              $DurchflusswaechterTable,
+              DurchflusswaechterData
+            >,
+          ),
+          DurchflusswaechterData,
+          PrefetchHooks Function()
+        > {
+  $$DurchflusswaechterTableTableManager(
+    _$AppDatabase db,
+    $DurchflusswaechterTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DurchflusswaechterTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DurchflusswaechterTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DurchflusswaechterTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> minFlowM3H = const Value.absent(),
+              }) => DurchflusswaechterCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                minFlowM3H: minFlowM3H,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> minFlowM3H = const Value.absent(),
+              }) => DurchflusswaechterCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                minFlowM3H: minFlowM3H,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$DurchflusswaechterTable, DurchflusswaechterData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $DurchflusswaechterTable,
+                    DurchflusswaechterData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DurchflusswaechterTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DurchflusswaechterTable,
+      DurchflusswaechterData,
+      $$DurchflusswaechterTableFilterComposer,
+      $$DurchflusswaechterTableOrderingComposer,
+      $$DurchflusswaechterTableAnnotationComposer,
+      $$DurchflusswaechterTableCreateCompanionBuilder,
+      $$DurchflusswaechterTableUpdateCompanionBuilder,
+      (
+        DurchflusswaechterData,
+        BaseReferences<
+          _$AppDatabase,
+          $DurchflusswaechterTable,
+          DurchflusswaechterData
+        >,
+      ),
+      DurchflusswaechterData,
+      PrefetchHooks Function()
+    >;
+typedef $$PufferspeicherTableCreateCompanionBuilder =
+    PufferspeicherCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> volumeLitres,
+    });
+typedef $$PufferspeicherTableUpdateCompanionBuilder =
+    PufferspeicherCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> volumeLitres,
+    });
+
+class $$PufferspeicherTableFilterComposer
+    extends Composer<_$AppDatabase, $PufferspeicherTable> {
+  $$PufferspeicherTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PufferspeicherTableOrderingComposer
+    extends Composer<_$AppDatabase, $PufferspeicherTable> {
+  $$PufferspeicherTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PufferspeicherTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PufferspeicherTable> {
+  $$PufferspeicherTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => column,
+  );
+}
+
+class $$PufferspeicherTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PufferspeicherTable,
+          PufferspeicherData,
+          $$PufferspeicherTableFilterComposer,
+          $$PufferspeicherTableOrderingComposer,
+          $$PufferspeicherTableAnnotationComposer,
+          $$PufferspeicherTableCreateCompanionBuilder,
+          $$PufferspeicherTableUpdateCompanionBuilder,
+          (
+            PufferspeicherData,
+            BaseReferences<
+              _$AppDatabase,
+              $PufferspeicherTable,
+              PufferspeicherData
+            >,
+          ),
+          PufferspeicherData,
+          PrefetchHooks Function()
+        > {
+  $$PufferspeicherTableTableManager(
+    _$AppDatabase db,
+    $PufferspeicherTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PufferspeicherTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PufferspeicherTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PufferspeicherTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> volumeLitres = const Value.absent(),
+              }) => PufferspeicherCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                volumeLitres: volumeLitres,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> volumeLitres = const Value.absent(),
+              }) => PufferspeicherCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                volumeLitres: volumeLitres,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PufferspeicherTable, PufferspeicherData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $PufferspeicherTable,
+                    PufferspeicherData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PufferspeicherTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PufferspeicherTable,
+      PufferspeicherData,
+      $$PufferspeicherTableFilterComposer,
+      $$PufferspeicherTableOrderingComposer,
+      $$PufferspeicherTableAnnotationComposer,
+      $$PufferspeicherTableCreateCompanionBuilder,
+      $$PufferspeicherTableUpdateCompanionBuilder,
+      (
+        PufferspeicherData,
+        BaseReferences<_$AppDatabase, $PufferspeicherTable, PufferspeicherData>,
+      ),
+      PufferspeicherData,
+      PrefetchHooks Function()
+    >;
+typedef $$PlattenwaermetauscherTableCreateCompanionBuilder =
+    PlattenwaermetauscherCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> plates,
+      Value<double> areaM2,
+    });
+typedef $$PlattenwaermetauscherTableUpdateCompanionBuilder =
+    PlattenwaermetauscherCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> plates,
+      Value<double> areaM2,
+    });
+
+class $$PlattenwaermetauscherTableFilterComposer
+    extends Composer<_$AppDatabase, $PlattenwaermetauscherTable> {
+  $$PlattenwaermetauscherTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get plates => $composableBuilder(
+    column: $table.plates,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get areaM2 => $composableBuilder(
+    column: $table.areaM2,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PlattenwaermetauscherTableOrderingComposer
+    extends Composer<_$AppDatabase, $PlattenwaermetauscherTable> {
+  $$PlattenwaermetauscherTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get plates => $composableBuilder(
+    column: $table.plates,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get areaM2 => $composableBuilder(
+    column: $table.areaM2,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlattenwaermetauscherTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PlattenwaermetauscherTable> {
+  $$PlattenwaermetauscherTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get plates =>
+      $composableBuilder(column: $table.plates, builder: (column) => column);
+
+  GeneratedColumn<double> get areaM2 =>
+      $composableBuilder(column: $table.areaM2, builder: (column) => column);
+}
+
+class $$PlattenwaermetauscherTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PlattenwaermetauscherTable,
+          PlattenwaermetauscherData,
+          $$PlattenwaermetauscherTableFilterComposer,
+          $$PlattenwaermetauscherTableOrderingComposer,
+          $$PlattenwaermetauscherTableAnnotationComposer,
+          $$PlattenwaermetauscherTableCreateCompanionBuilder,
+          $$PlattenwaermetauscherTableUpdateCompanionBuilder,
+          (
+            PlattenwaermetauscherData,
+            BaseReferences<
+              _$AppDatabase,
+              $PlattenwaermetauscherTable,
+              PlattenwaermetauscherData
+            >,
+          ),
+          PlattenwaermetauscherData,
+          PrefetchHooks Function()
+        > {
+  $$PlattenwaermetauscherTableTableManager(
+    _$AppDatabase db,
+    $PlattenwaermetauscherTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlattenwaermetauscherTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PlattenwaermetauscherTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PlattenwaermetauscherTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> plates = const Value.absent(),
+                Value<double> areaM2 = const Value.absent(),
+              }) => PlattenwaermetauscherCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                plates: plates,
+                areaM2: areaM2,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> plates = const Value.absent(),
+                Value<double> areaM2 = const Value.absent(),
+              }) => PlattenwaermetauscherCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                plates: plates,
+                areaM2: areaM2,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $PlattenwaermetauscherTable,
+                    PlattenwaermetauscherData
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $PlattenwaermetauscherTable,
+                    PlattenwaermetauscherData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PlattenwaermetauscherTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PlattenwaermetauscherTable,
+      PlattenwaermetauscherData,
+      $$PlattenwaermetauscherTableFilterComposer,
+      $$PlattenwaermetauscherTableOrderingComposer,
+      $$PlattenwaermetauscherTableAnnotationComposer,
+      $$PlattenwaermetauscherTableCreateCompanionBuilder,
+      $$PlattenwaermetauscherTableUpdateCompanionBuilder,
+      (
+        PlattenwaermetauscherData,
+        BaseReferences<
+          _$AppDatabase,
+          $PlattenwaermetauscherTable,
+          PlattenwaermetauscherData
+        >,
+      ),
+      PlattenwaermetauscherData,
+      PrefetchHooks Function()
+    >;
+typedef $$SafetyValveTableCreateCompanionBuilder =
+    SafetyValveCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> openingPressureBar,
+    });
+typedef $$SafetyValveTableUpdateCompanionBuilder =
+    SafetyValveCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> openingPressureBar,
+    });
+
+class $$SafetyValveTableFilterComposer
+    extends Composer<_$AppDatabase, $SafetyValveTable> {
+  $$SafetyValveTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get openingPressureBar => $composableBuilder(
+    column: $table.openingPressureBar,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SafetyValveTableOrderingComposer
+    extends Composer<_$AppDatabase, $SafetyValveTable> {
+  $$SafetyValveTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get openingPressureBar => $composableBuilder(
+    column: $table.openingPressureBar,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SafetyValveTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SafetyValveTable> {
+  $$SafetyValveTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get openingPressureBar => $composableBuilder(
+    column: $table.openingPressureBar,
+    builder: (column) => column,
+  );
+}
+
+class $$SafetyValveTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SafetyValveTable,
+          SafetyValveData,
+          $$SafetyValveTableFilterComposer,
+          $$SafetyValveTableOrderingComposer,
+          $$SafetyValveTableAnnotationComposer,
+          $$SafetyValveTableCreateCompanionBuilder,
+          $$SafetyValveTableUpdateCompanionBuilder,
+          (
+            SafetyValveData,
+            BaseReferences<_$AppDatabase, $SafetyValveTable, SafetyValveData>,
+          ),
+          SafetyValveData,
+          PrefetchHooks Function()
+        > {
+  $$SafetyValveTableTableManager(_$AppDatabase db, $SafetyValveTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SafetyValveTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SafetyValveTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SafetyValveTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> openingPressureBar = const Value.absent(),
+              }) => SafetyValveCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                openingPressureBar: openingPressureBar,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> openingPressureBar = const Value.absent(),
+              }) => SafetyValveCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                openingPressureBar: openingPressureBar,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SafetyValveTable, SafetyValveData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SafetyValveTable,
+                    SafetyValveData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SafetyValveTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SafetyValveTable,
+      SafetyValveData,
+      $$SafetyValveTableFilterComposer,
+      $$SafetyValveTableOrderingComposer,
+      $$SafetyValveTableAnnotationComposer,
+      $$SafetyValveTableCreateCompanionBuilder,
+      $$SafetyValveTableUpdateCompanionBuilder,
+      (
+        SafetyValveData,
+        BaseReferences<_$AppDatabase, $SafetyValveTable, SafetyValveData>,
+      ),
+      SafetyValveData,
+      PrefetchHooks Function()
+    >;
+typedef $$MembranausdehnungsgefaessTableCreateCompanionBuilder =
+    MembranausdehnungsgefaessCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> volumeLitres,
+    });
+typedef $$MembranausdehnungsgefaessTableUpdateCompanionBuilder =
+    MembranausdehnungsgefaessCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> volumeLitres,
+    });
+
+class $$MembranausdehnungsgefaessTableFilterComposer
+    extends Composer<_$AppDatabase, $MembranausdehnungsgefaessTable> {
+  $$MembranausdehnungsgefaessTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MembranausdehnungsgefaessTableOrderingComposer
+    extends Composer<_$AppDatabase, $MembranausdehnungsgefaessTable> {
+  $$MembranausdehnungsgefaessTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MembranausdehnungsgefaessTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MembranausdehnungsgefaessTable> {
+  $$MembranausdehnungsgefaessTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get volumeLitres => $composableBuilder(
+    column: $table.volumeLitres,
+    builder: (column) => column,
+  );
+}
+
+class $$MembranausdehnungsgefaessTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MembranausdehnungsgefaessTable,
+          MembranausdehnungsgefaessData,
+          $$MembranausdehnungsgefaessTableFilterComposer,
+          $$MembranausdehnungsgefaessTableOrderingComposer,
+          $$MembranausdehnungsgefaessTableAnnotationComposer,
+          $$MembranausdehnungsgefaessTableCreateCompanionBuilder,
+          $$MembranausdehnungsgefaessTableUpdateCompanionBuilder,
+          (
+            MembranausdehnungsgefaessData,
+            BaseReferences<
+              _$AppDatabase,
+              $MembranausdehnungsgefaessTable,
+              MembranausdehnungsgefaessData
+            >,
+          ),
+          MembranausdehnungsgefaessData,
+          PrefetchHooks Function()
+        > {
+  $$MembranausdehnungsgefaessTableTableManager(
+    _$AppDatabase db,
+    $MembranausdehnungsgefaessTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MembranausdehnungsgefaessTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$MembranausdehnungsgefaessTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MembranausdehnungsgefaessTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> volumeLitres = const Value.absent(),
+              }) => MembranausdehnungsgefaessCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                volumeLitres: volumeLitres,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> volumeLitres = const Value.absent(),
+              }) => MembranausdehnungsgefaessCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                volumeLitres: volumeLitres,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $MembranausdehnungsgefaessTable,
+                    MembranausdehnungsgefaessData
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $MembranausdehnungsgefaessTable,
+                    MembranausdehnungsgefaessData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MembranausdehnungsgefaessTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MembranausdehnungsgefaessTable,
+      MembranausdehnungsgefaessData,
+      $$MembranausdehnungsgefaessTableFilterComposer,
+      $$MembranausdehnungsgefaessTableOrderingComposer,
+      $$MembranausdehnungsgefaessTableAnnotationComposer,
+      $$MembranausdehnungsgefaessTableCreateCompanionBuilder,
+      $$MembranausdehnungsgefaessTableUpdateCompanionBuilder,
+      (
+        MembranausdehnungsgefaessData,
+        BaseReferences<
+          _$AppDatabase,
+          $MembranausdehnungsgefaessTable,
+          MembranausdehnungsgefaessData
+        >,
+      ),
+      MembranausdehnungsgefaessData,
+      PrefetchHooks Function()
+    >;
+typedef $$EntluftungsventilTableCreateCompanionBuilder =
+    EntluftungsventilCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+typedef $$EntluftungsventilTableUpdateCompanionBuilder =
+    EntluftungsventilCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+
+class $$EntluftungsventilTableFilterComposer
+    extends Composer<_$AppDatabase, $EntluftungsventilTable> {
+  $$EntluftungsventilTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EntluftungsventilTableOrderingComposer
+    extends Composer<_$AppDatabase, $EntluftungsventilTable> {
+  $$EntluftungsventilTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EntluftungsventilTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EntluftungsventilTable> {
+  $$EntluftungsventilTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dnSize =>
+      $composableBuilder(column: $table.dnSize, builder: (column) => column);
+}
+
+class $$EntluftungsventilTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EntluftungsventilTable,
+          EntluftungsventilData,
+          $$EntluftungsventilTableFilterComposer,
+          $$EntluftungsventilTableOrderingComposer,
+          $$EntluftungsventilTableAnnotationComposer,
+          $$EntluftungsventilTableCreateCompanionBuilder,
+          $$EntluftungsventilTableUpdateCompanionBuilder,
+          (
+            EntluftungsventilData,
+            BaseReferences<
+              _$AppDatabase,
+              $EntluftungsventilTable,
+              EntluftungsventilData
+            >,
+          ),
+          EntluftungsventilData,
+          PrefetchHooks Function()
+        > {
+  $$EntluftungsventilTableTableManager(
+    _$AppDatabase db,
+    $EntluftungsventilTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EntluftungsventilTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EntluftungsventilTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EntluftungsventilTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => EntluftungsventilCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => EntluftungsventilCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$EntluftungsventilTable, EntluftungsventilData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $EntluftungsventilTable,
+                    EntluftungsventilData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EntluftungsventilTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EntluftungsventilTable,
+      EntluftungsventilData,
+      $$EntluftungsventilTableFilterComposer,
+      $$EntluftungsventilTableOrderingComposer,
+      $$EntluftungsventilTableAnnotationComposer,
+      $$EntluftungsventilTableCreateCompanionBuilder,
+      $$EntluftungsventilTableUpdateCompanionBuilder,
+      (
+        EntluftungsventilData,
+        BaseReferences<
+          _$AppDatabase,
+          $EntluftungsventilTable,
+          EntluftungsventilData
+        >,
+      ),
+      EntluftungsventilData,
+      PrefetchHooks Function()
+    >;
+typedef $$HeizkreispumpeTableCreateCompanionBuilder =
+    HeizkreispumpeCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> flowRateLMin,
+      Value<double> headPressureM,
+      Value<double> eeiRating,
+    });
+typedef $$HeizkreispumpeTableUpdateCompanionBuilder =
+    HeizkreispumpeCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> flowRateLMin,
+      Value<double> headPressureM,
+      Value<double> eeiRating,
+    });
+
+class $$HeizkreispumpeTableFilterComposer
+    extends Composer<_$AppDatabase, $HeizkreispumpeTable> {
+  $$HeizkreispumpeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get flowRateLMin => $composableBuilder(
+    column: $table.flowRateLMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get headPressureM => $composableBuilder(
+    column: $table.headPressureM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get eeiRating => $composableBuilder(
+    column: $table.eeiRating,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HeizkreispumpeTableOrderingComposer
+    extends Composer<_$AppDatabase, $HeizkreispumpeTable> {
+  $$HeizkreispumpeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get flowRateLMin => $composableBuilder(
+    column: $table.flowRateLMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get headPressureM => $composableBuilder(
+    column: $table.headPressureM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get eeiRating => $composableBuilder(
+    column: $table.eeiRating,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HeizkreispumpeTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HeizkreispumpeTable> {
+  $$HeizkreispumpeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get flowRateLMin => $composableBuilder(
+    column: $table.flowRateLMin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get headPressureM => $composableBuilder(
+    column: $table.headPressureM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get eeiRating =>
+      $composableBuilder(column: $table.eeiRating, builder: (column) => column);
+}
+
+class $$HeizkreispumpeTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HeizkreispumpeTable,
+          HeizkreispumpeData,
+          $$HeizkreispumpeTableFilterComposer,
+          $$HeizkreispumpeTableOrderingComposer,
+          $$HeizkreispumpeTableAnnotationComposer,
+          $$HeizkreispumpeTableCreateCompanionBuilder,
+          $$HeizkreispumpeTableUpdateCompanionBuilder,
+          (
+            HeizkreispumpeData,
+            BaseReferences<
+              _$AppDatabase,
+              $HeizkreispumpeTable,
+              HeizkreispumpeData
+            >,
+          ),
+          HeizkreispumpeData,
+          PrefetchHooks Function()
+        > {
+  $$HeizkreispumpeTableTableManager(
+    _$AppDatabase db,
+    $HeizkreispumpeTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HeizkreispumpeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HeizkreispumpeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HeizkreispumpeTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> flowRateLMin = const Value.absent(),
+                Value<double> headPressureM = const Value.absent(),
+                Value<double> eeiRating = const Value.absent(),
+              }) => HeizkreispumpeCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                flowRateLMin: flowRateLMin,
+                headPressureM: headPressureM,
+                eeiRating: eeiRating,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> flowRateLMin = const Value.absent(),
+                Value<double> headPressureM = const Value.absent(),
+                Value<double> eeiRating = const Value.absent(),
+              }) => HeizkreispumpeCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                flowRateLMin: flowRateLMin,
+                headPressureM: headPressureM,
+                eeiRating: eeiRating,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HeizkreispumpeTable, HeizkreispumpeData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $HeizkreispumpeTable,
+                    HeizkreispumpeData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HeizkreispumpeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HeizkreispumpeTable,
+      HeizkreispumpeData,
+      $$HeizkreispumpeTableFilterComposer,
+      $$HeizkreispumpeTableOrderingComposer,
+      $$HeizkreispumpeTableAnnotationComposer,
+      $$HeizkreispumpeTableCreateCompanionBuilder,
+      $$HeizkreispumpeTableUpdateCompanionBuilder,
+      (
+        HeizkreispumpeData,
+        BaseReferences<_$AppDatabase, $HeizkreispumpeTable, HeizkreispumpeData>,
+      ),
+      HeizkreispumpeData,
+      PrefetchHooks Function()
+    >;
+typedef $$AbsperrventilTableCreateCompanionBuilder =
+    AbsperrventilCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+typedef $$AbsperrventilTableUpdateCompanionBuilder =
+    AbsperrventilCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+
+class $$AbsperrventilTableFilterComposer
+    extends Composer<_$AppDatabase, $AbsperrventilTable> {
+  $$AbsperrventilTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AbsperrventilTableOrderingComposer
+    extends Composer<_$AppDatabase, $AbsperrventilTable> {
+  $$AbsperrventilTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AbsperrventilTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AbsperrventilTable> {
+  $$AbsperrventilTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dnSize =>
+      $composableBuilder(column: $table.dnSize, builder: (column) => column);
+}
+
+class $$AbsperrventilTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AbsperrventilTable,
+          AbsperrventilData,
+          $$AbsperrventilTableFilterComposer,
+          $$AbsperrventilTableOrderingComposer,
+          $$AbsperrventilTableAnnotationComposer,
+          $$AbsperrventilTableCreateCompanionBuilder,
+          $$AbsperrventilTableUpdateCompanionBuilder,
+          (
+            AbsperrventilData,
+            BaseReferences<
+              _$AppDatabase,
+              $AbsperrventilTable,
+              AbsperrventilData
+            >,
+          ),
+          AbsperrventilData,
+          PrefetchHooks Function()
+        > {
+  $$AbsperrventilTableTableManager(_$AppDatabase db, $AbsperrventilTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AbsperrventilTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AbsperrventilTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AbsperrventilTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => AbsperrventilCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => AbsperrventilCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AbsperrventilTable, AbsperrventilData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $AbsperrventilTable,
+                    AbsperrventilData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AbsperrventilTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AbsperrventilTable,
+      AbsperrventilData,
+      $$AbsperrventilTableFilterComposer,
+      $$AbsperrventilTableOrderingComposer,
+      $$AbsperrventilTableAnnotationComposer,
+      $$AbsperrventilTableCreateCompanionBuilder,
+      $$AbsperrventilTableUpdateCompanionBuilder,
+      (
+        AbsperrventilData,
+        BaseReferences<_$AppDatabase, $AbsperrventilTable, AbsperrventilData>,
+      ),
+      AbsperrventilData,
+      PrefetchHooks Function()
+    >;
+typedef $$FbhVerteilerTableCreateCompanionBuilder =
+    FbhVerteilerCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> zones,
+    });
+typedef $$FbhVerteilerTableUpdateCompanionBuilder =
+    FbhVerteilerCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> zones,
+    });
+
+class $$FbhVerteilerTableFilterComposer
+    extends Composer<_$AppDatabase, $FbhVerteilerTable> {
+  $$FbhVerteilerTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get zones => $composableBuilder(
+    column: $table.zones,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FbhVerteilerTableOrderingComposer
+    extends Composer<_$AppDatabase, $FbhVerteilerTable> {
+  $$FbhVerteilerTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get zones => $composableBuilder(
+    column: $table.zones,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FbhVerteilerTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FbhVerteilerTable> {
+  $$FbhVerteilerTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get zones =>
+      $composableBuilder(column: $table.zones, builder: (column) => column);
+}
+
+class $$FbhVerteilerTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FbhVerteilerTable,
+          FbhVerteilerData,
+          $$FbhVerteilerTableFilterComposer,
+          $$FbhVerteilerTableOrderingComposer,
+          $$FbhVerteilerTableAnnotationComposer,
+          $$FbhVerteilerTableCreateCompanionBuilder,
+          $$FbhVerteilerTableUpdateCompanionBuilder,
+          (
+            FbhVerteilerData,
+            BaseReferences<_$AppDatabase, $FbhVerteilerTable, FbhVerteilerData>,
+          ),
+          FbhVerteilerData,
+          PrefetchHooks Function()
+        > {
+  $$FbhVerteilerTableTableManager(_$AppDatabase db, $FbhVerteilerTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FbhVerteilerTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FbhVerteilerTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FbhVerteilerTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> zones = const Value.absent(),
+              }) => FbhVerteilerCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                zones: zones,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> zones = const Value.absent(),
+              }) => FbhVerteilerCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                zones: zones,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FbhVerteilerTable, FbhVerteilerData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $FbhVerteilerTable,
+                    FbhVerteilerData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FbhVerteilerTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FbhVerteilerTable,
+      FbhVerteilerData,
+      $$FbhVerteilerTableFilterComposer,
+      $$FbhVerteilerTableOrderingComposer,
+      $$FbhVerteilerTableAnnotationComposer,
+      $$FbhVerteilerTableCreateCompanionBuilder,
+      $$FbhVerteilerTableUpdateCompanionBuilder,
+      (
+        FbhVerteilerData,
+        BaseReferences<_$AppDatabase, $FbhVerteilerTable, FbhVerteilerData>,
+      ),
+      FbhVerteilerData,
+      PrefetchHooks Function()
+    >;
+typedef $$FbhSchleifeTableCreateCompanionBuilder =
+    FbhSchleifeCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> pipeLengthM,
+      Value<int> pipeDiameterMm,
+    });
+typedef $$FbhSchleifeTableUpdateCompanionBuilder =
+    FbhSchleifeCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<double> pipeLengthM,
+      Value<int> pipeDiameterMm,
+    });
+
+class $$FbhSchleifeTableFilterComposer
+    extends Composer<_$AppDatabase, $FbhSchleifeTable> {
+  $$FbhSchleifeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get pipeLengthM => $composableBuilder(
+    column: $table.pipeLengthM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pipeDiameterMm => $composableBuilder(
+    column: $table.pipeDiameterMm,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FbhSchleifeTableOrderingComposer
+    extends Composer<_$AppDatabase, $FbhSchleifeTable> {
+  $$FbhSchleifeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get pipeLengthM => $composableBuilder(
+    column: $table.pipeLengthM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pipeDiameterMm => $composableBuilder(
+    column: $table.pipeDiameterMm,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FbhSchleifeTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FbhSchleifeTable> {
+  $$FbhSchleifeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get pipeLengthM => $composableBuilder(
+    column: $table.pipeLengthM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pipeDiameterMm => $composableBuilder(
+    column: $table.pipeDiameterMm,
+    builder: (column) => column,
+  );
+}
+
+class $$FbhSchleifeTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FbhSchleifeTable,
+          FbhSchleifeData,
+          $$FbhSchleifeTableFilterComposer,
+          $$FbhSchleifeTableOrderingComposer,
+          $$FbhSchleifeTableAnnotationComposer,
+          $$FbhSchleifeTableCreateCompanionBuilder,
+          $$FbhSchleifeTableUpdateCompanionBuilder,
+          (
+            FbhSchleifeData,
+            BaseReferences<_$AppDatabase, $FbhSchleifeTable, FbhSchleifeData>,
+          ),
+          FbhSchleifeData,
+          PrefetchHooks Function()
+        > {
+  $$FbhSchleifeTableTableManager(_$AppDatabase db, $FbhSchleifeTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FbhSchleifeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FbhSchleifeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FbhSchleifeTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> pipeLengthM = const Value.absent(),
+                Value<int> pipeDiameterMm = const Value.absent(),
+              }) => FbhSchleifeCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                pipeLengthM: pipeLengthM,
+                pipeDiameterMm: pipeDiameterMm,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<double> pipeLengthM = const Value.absent(),
+                Value<int> pipeDiameterMm = const Value.absent(),
+              }) => FbhSchleifeCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                pipeLengthM: pipeLengthM,
+                pipeDiameterMm: pipeDiameterMm,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FbhSchleifeTable, FbhSchleifeData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $FbhSchleifeTable,
+                    FbhSchleifeData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FbhSchleifeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FbhSchleifeTable,
+      FbhSchleifeData,
+      $$FbhSchleifeTableFilterComposer,
+      $$FbhSchleifeTableOrderingComposer,
+      $$FbhSchleifeTableAnnotationComposer,
+      $$FbhSchleifeTableCreateCompanionBuilder,
+      $$FbhSchleifeTableUpdateCompanionBuilder,
+      (
+        FbhSchleifeData,
+        BaseReferences<_$AppDatabase, $FbhSchleifeTable, FbhSchleifeData>,
+      ),
+      FbhSchleifeData,
+      PrefetchHooks Function()
+    >;
+typedef $$MischbatterieTableCreateCompanionBuilder =
+    MischbatterieCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+typedef $$MischbatterieTableUpdateCompanionBuilder =
+    MischbatterieCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+
+class $$MischbatterieTableFilterComposer
+    extends Composer<_$AppDatabase, $MischbatterieTable> {
+  $$MischbatterieTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MischbatterieTableOrderingComposer
+    extends Composer<_$AppDatabase, $MischbatterieTable> {
+  $$MischbatterieTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MischbatterieTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MischbatterieTable> {
+  $$MischbatterieTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dnSize =>
+      $composableBuilder(column: $table.dnSize, builder: (column) => column);
+}
+
+class $$MischbatterieTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MischbatterieTable,
+          MischbatterieData,
+          $$MischbatterieTableFilterComposer,
+          $$MischbatterieTableOrderingComposer,
+          $$MischbatterieTableAnnotationComposer,
+          $$MischbatterieTableCreateCompanionBuilder,
+          $$MischbatterieTableUpdateCompanionBuilder,
+          (
+            MischbatterieData,
+            BaseReferences<
+              _$AppDatabase,
+              $MischbatterieTable,
+              MischbatterieData
+            >,
+          ),
+          MischbatterieData,
+          PrefetchHooks Function()
+        > {
+  $$MischbatterieTableTableManager(_$AppDatabase db, $MischbatterieTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MischbatterieTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MischbatterieTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MischbatterieTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => MischbatterieCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => MischbatterieCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MischbatterieTable, MischbatterieData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $MischbatterieTable,
+                    MischbatterieData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MischbatterieTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MischbatterieTable,
+      MischbatterieData,
+      $$MischbatterieTableFilterComposer,
+      $$MischbatterieTableOrderingComposer,
+      $$MischbatterieTableAnnotationComposer,
+      $$MischbatterieTableCreateCompanionBuilder,
+      $$MischbatterieTableUpdateCompanionBuilder,
+      (
+        MischbatterieData,
+        BaseReferences<_$AppDatabase, $MischbatterieTable, MischbatterieData>,
+      ),
+      MischbatterieData,
+      PrefetchHooks Function()
+    >;
+typedef $$RfvGartenanschlussTableCreateCompanionBuilder =
+    RfvGartenanschlussCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+typedef $$RfvGartenanschlussTableUpdateCompanionBuilder =
+    RfvGartenanschlussCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> dnSize,
+    });
+
+class $$RfvGartenanschlussTableFilterComposer
+    extends Composer<_$AppDatabase, $RfvGartenanschlussTable> {
+  $$RfvGartenanschlussTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RfvGartenanschlussTableOrderingComposer
+    extends Composer<_$AppDatabase, $RfvGartenanschlussTable> {
+  $$RfvGartenanschlussTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dnSize => $composableBuilder(
+    column: $table.dnSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RfvGartenanschlussTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RfvGartenanschlussTable> {
+  $$RfvGartenanschlussTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dnSize =>
+      $composableBuilder(column: $table.dnSize, builder: (column) => column);
+}
+
+class $$RfvGartenanschlussTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RfvGartenanschlussTable,
+          RfvGartenanschlussData,
+          $$RfvGartenanschlussTableFilterComposer,
+          $$RfvGartenanschlussTableOrderingComposer,
+          $$RfvGartenanschlussTableAnnotationComposer,
+          $$RfvGartenanschlussTableCreateCompanionBuilder,
+          $$RfvGartenanschlussTableUpdateCompanionBuilder,
+          (
+            RfvGartenanschlussData,
+            BaseReferences<
+              _$AppDatabase,
+              $RfvGartenanschlussTable,
+              RfvGartenanschlussData
+            >,
+          ),
+          RfvGartenanschlussData,
+          PrefetchHooks Function()
+        > {
+  $$RfvGartenanschlussTableTableManager(
+    _$AppDatabase db,
+    $RfvGartenanschlussTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RfvGartenanschlussTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RfvGartenanschlussTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RfvGartenanschlussTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => RfvGartenanschlussCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> dnSize = const Value.absent(),
+              }) => RfvGartenanschlussCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                dnSize: dnSize,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$RfvGartenanschlussTable, RfvGartenanschlussData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $RfvGartenanschlussTable,
+                    RfvGartenanschlussData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RfvGartenanschlussTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RfvGartenanschlussTable,
+      RfvGartenanschlussData,
+      $$RfvGartenanschlussTableFilterComposer,
+      $$RfvGartenanschlussTableOrderingComposer,
+      $$RfvGartenanschlussTableAnnotationComposer,
+      $$RfvGartenanschlussTableCreateCompanionBuilder,
+      $$RfvGartenanschlussTableUpdateCompanionBuilder,
+      (
+        RfvGartenanschlussData,
+        BaseReferences<
+          _$AppDatabase,
+          $RfvGartenanschlussTable,
+          RfvGartenanschlussData
+        >,
+      ),
+      RfvGartenanschlussData,
+      PrefetchHooks Function()
+    >;
+typedef $$FuellwasserZuleitungTableCreateCompanionBuilder =
+    FuellwasserZuleitungCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> pipeDiameterMm,
+    });
+typedef $$FuellwasserZuleitungTableUpdateCompanionBuilder =
+    FuellwasserZuleitungCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> pipeDiameterMm,
+    });
+
+class $$FuellwasserZuleitungTableFilterComposer
+    extends Composer<_$AppDatabase, $FuellwasserZuleitungTable> {
+  $$FuellwasserZuleitungTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pipeDiameterMm => $composableBuilder(
+    column: $table.pipeDiameterMm,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FuellwasserZuleitungTableOrderingComposer
+    extends Composer<_$AppDatabase, $FuellwasserZuleitungTable> {
+  $$FuellwasserZuleitungTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pipeDiameterMm => $composableBuilder(
+    column: $table.pipeDiameterMm,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FuellwasserZuleitungTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FuellwasserZuleitungTable> {
+  $$FuellwasserZuleitungTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pipeDiameterMm => $composableBuilder(
+    column: $table.pipeDiameterMm,
+    builder: (column) => column,
+  );
+}
+
+class $$FuellwasserZuleitungTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FuellwasserZuleitungTable,
+          FuellwasserZuleitungData,
+          $$FuellwasserZuleitungTableFilterComposer,
+          $$FuellwasserZuleitungTableOrderingComposer,
+          $$FuellwasserZuleitungTableAnnotationComposer,
+          $$FuellwasserZuleitungTableCreateCompanionBuilder,
+          $$FuellwasserZuleitungTableUpdateCompanionBuilder,
+          (
+            FuellwasserZuleitungData,
+            BaseReferences<
+              _$AppDatabase,
+              $FuellwasserZuleitungTable,
+              FuellwasserZuleitungData
+            >,
+          ),
+          FuellwasserZuleitungData,
+          PrefetchHooks Function()
+        > {
+  $$FuellwasserZuleitungTableTableManager(
+    _$AppDatabase db,
+    $FuellwasserZuleitungTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FuellwasserZuleitungTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FuellwasserZuleitungTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$FuellwasserZuleitungTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> pipeDiameterMm = const Value.absent(),
+              }) => FuellwasserZuleitungCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                pipeDiameterMm: pipeDiameterMm,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> pipeDiameterMm = const Value.absent(),
+              }) => FuellwasserZuleitungCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                pipeDiameterMm: pipeDiameterMm,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $FuellwasserZuleitungTable,
+                    FuellwasserZuleitungData
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $FuellwasserZuleitungTable,
+                    FuellwasserZuleitungData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FuellwasserZuleitungTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FuellwasserZuleitungTable,
+      FuellwasserZuleitungData,
+      $$FuellwasserZuleitungTableFilterComposer,
+      $$FuellwasserZuleitungTableOrderingComposer,
+      $$FuellwasserZuleitungTableAnnotationComposer,
+      $$FuellwasserZuleitungTableCreateCompanionBuilder,
+      $$FuellwasserZuleitungTableUpdateCompanionBuilder,
+      (
+        FuellwasserZuleitungData,
+        BaseReferences<
+          _$AppDatabase,
+          $FuellwasserZuleitungTable,
+          FuellwasserZuleitungData
+        >,
+      ),
+      FuellwasserZuleitungData,
+      PrefetchHooks Function()
+    >;
+typedef $$KaltwasserVerbraucherTableCreateCompanionBuilder =
+    KaltwasserVerbraucherCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> count,
+    });
+typedef $$KaltwasserVerbraucherTableUpdateCompanionBuilder =
+    KaltwasserVerbraucherCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> count,
+    });
+
+class $$KaltwasserVerbraucherTableFilterComposer
+    extends Composer<_$AppDatabase, $KaltwasserVerbraucherTable> {
+  $$KaltwasserVerbraucherTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get count => $composableBuilder(
+    column: $table.count,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$KaltwasserVerbraucherTableOrderingComposer
+    extends Composer<_$AppDatabase, $KaltwasserVerbraucherTable> {
+  $$KaltwasserVerbraucherTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get count => $composableBuilder(
+    column: $table.count,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$KaltwasserVerbraucherTableAnnotationComposer
+    extends Composer<_$AppDatabase, $KaltwasserVerbraucherTable> {
+  $$KaltwasserVerbraucherTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get count =>
+      $composableBuilder(column: $table.count, builder: (column) => column);
+}
+
+class $$KaltwasserVerbraucherTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $KaltwasserVerbraucherTable,
+          KaltwasserVerbraucherData,
+          $$KaltwasserVerbraucherTableFilterComposer,
+          $$KaltwasserVerbraucherTableOrderingComposer,
+          $$KaltwasserVerbraucherTableAnnotationComposer,
+          $$KaltwasserVerbraucherTableCreateCompanionBuilder,
+          $$KaltwasserVerbraucherTableUpdateCompanionBuilder,
+          (
+            KaltwasserVerbraucherData,
+            BaseReferences<
+              _$AppDatabase,
+              $KaltwasserVerbraucherTable,
+              KaltwasserVerbraucherData
+            >,
+          ),
+          KaltwasserVerbraucherData,
+          PrefetchHooks Function()
+        > {
+  $$KaltwasserVerbraucherTableTableManager(
+    _$AppDatabase db,
+    $KaltwasserVerbraucherTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$KaltwasserVerbraucherTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$KaltwasserVerbraucherTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$KaltwasserVerbraucherTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> count = const Value.absent(),
+              }) => KaltwasserVerbraucherCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                count: count,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> count = const Value.absent(),
+              }) => KaltwasserVerbraucherCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                count: count,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $KaltwasserVerbraucherTable,
+                    KaltwasserVerbraucherData
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $KaltwasserVerbraucherTable,
+                    KaltwasserVerbraucherData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$KaltwasserVerbraucherTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $KaltwasserVerbraucherTable,
+      KaltwasserVerbraucherData,
+      $$KaltwasserVerbraucherTableFilterComposer,
+      $$KaltwasserVerbraucherTableOrderingComposer,
+      $$KaltwasserVerbraucherTableAnnotationComposer,
+      $$KaltwasserVerbraucherTableCreateCompanionBuilder,
+      $$KaltwasserVerbraucherTableUpdateCompanionBuilder,
+      (
+        KaltwasserVerbraucherData,
+        BaseReferences<
+          _$AppDatabase,
+          $KaltwasserVerbraucherTable,
+          KaltwasserVerbraucherData
+        >,
+      ),
+      KaltwasserVerbraucherData,
+      PrefetchHooks Function()
+    >;
+typedef $$LsSchalterTableCreateCompanionBuilder = LsSchalterCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<String> manufacturer,
+  Value<String> seriesName,
+  Value<String> modelNumber,
+  Value<int> currentRatingA,
+  Value<int> poleCount,
+  Value<String> charType,
+});
+typedef $$LsSchalterTableUpdateCompanionBuilder = LsSchalterCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String> manufacturer,
+  Value<String> seriesName,
+  Value<String> modelNumber,
+  Value<int> currentRatingA,
+  Value<int> poleCount,
+  Value<String> charType,
+});
+
+class $$LsSchalterTableFilterComposer
+    extends Composer<_$AppDatabase, $LsSchalterTable> {
+  $$LsSchalterTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get poleCount => $composableBuilder(
+    column: $table.poleCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get charType => $composableBuilder(
+    column: $table.charType,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LsSchalterTableOrderingComposer
+    extends Composer<_$AppDatabase, $LsSchalterTable> {
+  $$LsSchalterTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get poleCount => $composableBuilder(
+    column: $table.poleCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get charType => $composableBuilder(
+    column: $table.charType,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LsSchalterTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LsSchalterTable> {
+  $$LsSchalterTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get poleCount =>
+      $composableBuilder(column: $table.poleCount, builder: (column) => column);
+
+  GeneratedColumn<String> get charType =>
+      $composableBuilder(column: $table.charType, builder: (column) => column);
+}
+
+class $$LsSchalterTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LsSchalterTable,
+          LsSchalterData,
+          $$LsSchalterTableFilterComposer,
+          $$LsSchalterTableOrderingComposer,
+          $$LsSchalterTableAnnotationComposer,
+          $$LsSchalterTableCreateCompanionBuilder,
+          $$LsSchalterTableUpdateCompanionBuilder,
+          (
+            LsSchalterData,
+            BaseReferences<_$AppDatabase, $LsSchalterTable, LsSchalterData>,
+          ),
+          LsSchalterData,
+          PrefetchHooks Function()
+        > {
+  $$LsSchalterTableTableManager(_$AppDatabase db, $LsSchalterTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LsSchalterTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LsSchalterTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LsSchalterTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> currentRatingA = const Value.absent(),
+                Value<int> poleCount = const Value.absent(),
+                Value<String> charType = const Value.absent(),
+              }) => LsSchalterCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                currentRatingA: currentRatingA,
+                poleCount: poleCount,
+                charType: charType,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> currentRatingA = const Value.absent(),
+                Value<int> poleCount = const Value.absent(),
+                Value<String> charType = const Value.absent(),
+              }) => LsSchalterCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                currentRatingA: currentRatingA,
+                poleCount: poleCount,
+                charType: charType,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LsSchalterTable, LsSchalterData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LsSchalterTable,
+                    LsSchalterData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LsSchalterTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LsSchalterTable,
+      LsSchalterData,
+      $$LsSchalterTableFilterComposer,
+      $$LsSchalterTableOrderingComposer,
+      $$LsSchalterTableAnnotationComposer,
+      $$LsSchalterTableCreateCompanionBuilder,
+      $$LsSchalterTableUpdateCompanionBuilder,
+      (
+        LsSchalterData,
+        BaseReferences<_$AppDatabase, $LsSchalterTable, LsSchalterData>,
+      ),
+      LsSchalterData,
+      PrefetchHooks Function()
+    >;
+typedef $$FiSchutzschalterTableCreateCompanionBuilder =
+    FiSchutzschalterCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> currentRatingA,
+      Value<int> sensitivityMa,
+      Value<String> type,
+    });
+typedef $$FiSchutzschalterTableUpdateCompanionBuilder =
+    FiSchutzschalterCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> currentRatingA,
+      Value<int> sensitivityMa,
+      Value<String> type,
+    });
+
+class $$FiSchutzschalterTableFilterComposer
+    extends Composer<_$AppDatabase, $FiSchutzschalterTable> {
+  $$FiSchutzschalterTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sensitivityMa => $composableBuilder(
+    column: $table.sensitivityMa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FiSchutzschalterTableOrderingComposer
+    extends Composer<_$AppDatabase, $FiSchutzschalterTable> {
+  $$FiSchutzschalterTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sensitivityMa => $composableBuilder(
+    column: $table.sensitivityMa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FiSchutzschalterTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FiSchutzschalterTable> {
+  $$FiSchutzschalterTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sensitivityMa => $composableBuilder(
+    column: $table.sensitivityMa,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+}
+
+class $$FiSchutzschalterTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FiSchutzschalterTable,
+          FiSchutzschalterData,
+          $$FiSchutzschalterTableFilterComposer,
+          $$FiSchutzschalterTableOrderingComposer,
+          $$FiSchutzschalterTableAnnotationComposer,
+          $$FiSchutzschalterTableCreateCompanionBuilder,
+          $$FiSchutzschalterTableUpdateCompanionBuilder,
+          (
+            FiSchutzschalterData,
+            BaseReferences<
+              _$AppDatabase,
+              $FiSchutzschalterTable,
+              FiSchutzschalterData
+            >,
+          ),
+          FiSchutzschalterData,
+          PrefetchHooks Function()
+        > {
+  $$FiSchutzschalterTableTableManager(
+    _$AppDatabase db,
+    $FiSchutzschalterTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FiSchutzschalterTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FiSchutzschalterTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FiSchutzschalterTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> currentRatingA = const Value.absent(),
+                Value<int> sensitivityMa = const Value.absent(),
+                Value<String> type = const Value.absent(),
+              }) => FiSchutzschalterCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                currentRatingA: currentRatingA,
+                sensitivityMa: sensitivityMa,
+                type: type,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> currentRatingA = const Value.absent(),
+                Value<int> sensitivityMa = const Value.absent(),
+                Value<String> type = const Value.absent(),
+              }) => FiSchutzschalterCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                currentRatingA: currentRatingA,
+                sensitivityMa: sensitivityMa,
+                type: type,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FiSchutzschalterTable, FiSchutzschalterData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $FiSchutzschalterTable,
+                    FiSchutzschalterData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FiSchutzschalterTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FiSchutzschalterTable,
+      FiSchutzschalterData,
+      $$FiSchutzschalterTableFilterComposer,
+      $$FiSchutzschalterTableOrderingComposer,
+      $$FiSchutzschalterTableAnnotationComposer,
+      $$FiSchutzschalterTableCreateCompanionBuilder,
+      $$FiSchutzschalterTableUpdateCompanionBuilder,
+      (
+        FiSchutzschalterData,
+        BaseReferences<
+          _$AppDatabase,
+          $FiSchutzschalterTable,
+          FiSchutzschalterData
+        >,
+      ),
+      FiSchutzschalterData,
+      PrefetchHooks Function()
+    >;
+typedef $$ZuleitungStarkstromTableCreateCompanionBuilder =
+    ZuleitungStarkstromCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> crossSectionMm2,
+      Value<double> lengthM,
+      Value<String> conductorMaterial,
+    });
+typedef $$ZuleitungStarkstromTableUpdateCompanionBuilder =
+    ZuleitungStarkstromCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> crossSectionMm2,
+      Value<double> lengthM,
+      Value<String> conductorMaterial,
+    });
+
+class $$ZuleitungStarkstromTableFilterComposer
+    extends Composer<_$AppDatabase, $ZuleitungStarkstromTable> {
+  $$ZuleitungStarkstromTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get crossSectionMm2 => $composableBuilder(
+    column: $table.crossSectionMm2,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lengthM => $composableBuilder(
+    column: $table.lengthM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conductorMaterial => $composableBuilder(
+    column: $table.conductorMaterial,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ZuleitungStarkstromTableOrderingComposer
+    extends Composer<_$AppDatabase, $ZuleitungStarkstromTable> {
+  $$ZuleitungStarkstromTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get crossSectionMm2 => $composableBuilder(
+    column: $table.crossSectionMm2,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lengthM => $composableBuilder(
+    column: $table.lengthM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conductorMaterial => $composableBuilder(
+    column: $table.conductorMaterial,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ZuleitungStarkstromTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ZuleitungStarkstromTable> {
+  $$ZuleitungStarkstromTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get crossSectionMm2 => $composableBuilder(
+    column: $table.crossSectionMm2,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get lengthM =>
+      $composableBuilder(column: $table.lengthM, builder: (column) => column);
+
+  GeneratedColumn<String> get conductorMaterial => $composableBuilder(
+    column: $table.conductorMaterial,
+    builder: (column) => column,
+  );
+}
+
+class $$ZuleitungStarkstromTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ZuleitungStarkstromTable,
+          ZuleitungStarkstromData,
+          $$ZuleitungStarkstromTableFilterComposer,
+          $$ZuleitungStarkstromTableOrderingComposer,
+          $$ZuleitungStarkstromTableAnnotationComposer,
+          $$ZuleitungStarkstromTableCreateCompanionBuilder,
+          $$ZuleitungStarkstromTableUpdateCompanionBuilder,
+          (
+            ZuleitungStarkstromData,
+            BaseReferences<
+              _$AppDatabase,
+              $ZuleitungStarkstromTable,
+              ZuleitungStarkstromData
+            >,
+          ),
+          ZuleitungStarkstromData,
+          PrefetchHooks Function()
+        > {
+  $$ZuleitungStarkstromTableTableManager(
+    _$AppDatabase db,
+    $ZuleitungStarkstromTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ZuleitungStarkstromTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ZuleitungStarkstromTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ZuleitungStarkstromTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> crossSectionMm2 = const Value.absent(),
+                Value<double> lengthM = const Value.absent(),
+                Value<String> conductorMaterial = const Value.absent(),
+              }) => ZuleitungStarkstromCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                crossSectionMm2: crossSectionMm2,
+                lengthM: lengthM,
+                conductorMaterial: conductorMaterial,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> crossSectionMm2 = const Value.absent(),
+                Value<double> lengthM = const Value.absent(),
+                Value<String> conductorMaterial = const Value.absent(),
+              }) => ZuleitungStarkstromCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                crossSectionMm2: crossSectionMm2,
+                lengthM: lengthM,
+                conductorMaterial: conductorMaterial,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $ZuleitungStarkstromTable,
+                    ZuleitungStarkstromData
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ZuleitungStarkstromTable,
+                    ZuleitungStarkstromData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ZuleitungStarkstromTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ZuleitungStarkstromTable,
+      ZuleitungStarkstromData,
+      $$ZuleitungStarkstromTableFilterComposer,
+      $$ZuleitungStarkstromTableOrderingComposer,
+      $$ZuleitungStarkstromTableAnnotationComposer,
+      $$ZuleitungStarkstromTableCreateCompanionBuilder,
+      $$ZuleitungStarkstromTableUpdateCompanionBuilder,
+      (
+        ZuleitungStarkstromData,
+        BaseReferences<
+          _$AppDatabase,
+          $ZuleitungStarkstromTable,
+          ZuleitungStarkstromData
+        >,
+      ),
+      ZuleitungStarkstromData,
+      PrefetchHooks Function()
+    >;
+typedef $$TrennschalterTableCreateCompanionBuilder =
+    TrennschalterCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> currentRatingA,
+      Value<int> poleCount,
+    });
+typedef $$TrennschalterTableUpdateCompanionBuilder =
+    TrennschalterCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> currentRatingA,
+      Value<int> poleCount,
+    });
+
+class $$TrennschalterTableFilterComposer
+    extends Composer<_$AppDatabase, $TrennschalterTable> {
+  $$TrennschalterTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get poleCount => $composableBuilder(
+    column: $table.poleCount,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TrennschalterTableOrderingComposer
+    extends Composer<_$AppDatabase, $TrennschalterTable> {
+  $$TrennschalterTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get poleCount => $composableBuilder(
+    column: $table.poleCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TrennschalterTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TrennschalterTable> {
+  $$TrennschalterTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentRatingA => $composableBuilder(
+    column: $table.currentRatingA,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get poleCount =>
+      $composableBuilder(column: $table.poleCount, builder: (column) => column);
+}
+
+class $$TrennschalterTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TrennschalterTable,
+          TrennschalterData,
+          $$TrennschalterTableFilterComposer,
+          $$TrennschalterTableOrderingComposer,
+          $$TrennschalterTableAnnotationComposer,
+          $$TrennschalterTableCreateCompanionBuilder,
+          $$TrennschalterTableUpdateCompanionBuilder,
+          (
+            TrennschalterData,
+            BaseReferences<
+              _$AppDatabase,
+              $TrennschalterTable,
+              TrennschalterData
+            >,
+          ),
+          TrennschalterData,
+          PrefetchHooks Function()
+        > {
+  $$TrennschalterTableTableManager(_$AppDatabase db, $TrennschalterTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TrennschalterTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TrennschalterTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TrennschalterTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> currentRatingA = const Value.absent(),
+                Value<int> poleCount = const Value.absent(),
+              }) => TrennschalterCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                currentRatingA: currentRatingA,
+                poleCount: poleCount,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> currentRatingA = const Value.absent(),
+                Value<int> poleCount = const Value.absent(),
+              }) => TrennschalterCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                currentRatingA: currentRatingA,
+                poleCount: poleCount,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TrennschalterTable, TrennschalterData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $TrennschalterTable,
+                    TrennschalterData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TrennschalterTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TrennschalterTable,
+      TrennschalterData,
+      $$TrennschalterTableFilterComposer,
+      $$TrennschalterTableOrderingComposer,
+      $$TrennschalterTableAnnotationComposer,
+      $$TrennschalterTableCreateCompanionBuilder,
+      $$TrennschalterTableUpdateCompanionBuilder,
+      (
+        TrennschalterData,
+        BaseReferences<_$AppDatabase, $TrennschalterTable, TrennschalterData>,
+      ),
+      TrennschalterData,
+      PrefetchHooks Function()
+    >;
+typedef $$KlemmenleisteTableCreateCompanionBuilder =
+    KlemmenleisteCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> busWidth,
+    });
+typedef $$KlemmenleisteTableUpdateCompanionBuilder =
+    KlemmenleisteCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> busWidth,
+    });
+
+class $$KlemmenleisteTableFilterComposer
+    extends Composer<_$AppDatabase, $KlemmenleisteTable> {
+  $$KlemmenleisteTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get busWidth => $composableBuilder(
+    column: $table.busWidth,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$KlemmenleisteTableOrderingComposer
+    extends Composer<_$AppDatabase, $KlemmenleisteTable> {
+  $$KlemmenleisteTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get busWidth => $composableBuilder(
+    column: $table.busWidth,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$KlemmenleisteTableAnnotationComposer
+    extends Composer<_$AppDatabase, $KlemmenleisteTable> {
+  $$KlemmenleisteTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get busWidth =>
+      $composableBuilder(column: $table.busWidth, builder: (column) => column);
+}
+
+class $$KlemmenleisteTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $KlemmenleisteTable,
+          KlemmenleisteData,
+          $$KlemmenleisteTableFilterComposer,
+          $$KlemmenleisteTableOrderingComposer,
+          $$KlemmenleisteTableAnnotationComposer,
+          $$KlemmenleisteTableCreateCompanionBuilder,
+          $$KlemmenleisteTableUpdateCompanionBuilder,
+          (
+            KlemmenleisteData,
+            BaseReferences<
+              _$AppDatabase,
+              $KlemmenleisteTable,
+              KlemmenleisteData
+            >,
+          ),
+          KlemmenleisteData,
+          PrefetchHooks Function()
+        > {
+  $$KlemmenleisteTableTableManager(_$AppDatabase db, $KlemmenleisteTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$KlemmenleisteTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$KlemmenleisteTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$KlemmenleisteTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> busWidth = const Value.absent(),
+              }) => KlemmenleisteCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                busWidth: busWidth,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> busWidth = const Value.absent(),
+              }) => KlemmenleisteCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                busWidth: busWidth,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$KlemmenleisteTable, KlemmenleisteData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $KlemmenleisteTable,
+                    KlemmenleisteData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$KlemmenleisteTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $KlemmenleisteTable,
+      KlemmenleisteData,
+      $$KlemmenleisteTableFilterComposer,
+      $$KlemmenleisteTableOrderingComposer,
+      $$KlemmenleisteTableAnnotationComposer,
+      $$KlemmenleisteTableCreateCompanionBuilder,
+      $$KlemmenleisteTableUpdateCompanionBuilder,
+      (
+        KlemmenleisteData,
+        BaseReferences<_$AppDatabase, $KlemmenleisteTable, KlemmenleisteData>,
+      ),
+      KlemmenleisteData,
+      PrefetchHooks Function()
+    >;
+typedef $$PeAnschlussTableCreateCompanionBuilder =
+    PeAnschlussCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> wireCrossSectionMm2,
+    });
+typedef $$PeAnschlussTableUpdateCompanionBuilder =
+    PeAnschlussCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> wireCrossSectionMm2,
+    });
+
+class $$PeAnschlussTableFilterComposer
+    extends Composer<_$AppDatabase, $PeAnschlussTable> {
+  $$PeAnschlussTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get wireCrossSectionMm2 => $composableBuilder(
+    column: $table.wireCrossSectionMm2,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PeAnschlussTableOrderingComposer
+    extends Composer<_$AppDatabase, $PeAnschlussTable> {
+  $$PeAnschlussTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get wireCrossSectionMm2 => $composableBuilder(
+    column: $table.wireCrossSectionMm2,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PeAnschlussTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PeAnschlussTable> {
+  $$PeAnschlussTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get wireCrossSectionMm2 => $composableBuilder(
+    column: $table.wireCrossSectionMm2,
+    builder: (column) => column,
+  );
+}
+
+class $$PeAnschlussTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PeAnschlussTable,
+          PeAnschlussData,
+          $$PeAnschlussTableFilterComposer,
+          $$PeAnschlussTableOrderingComposer,
+          $$PeAnschlussTableAnnotationComposer,
+          $$PeAnschlussTableCreateCompanionBuilder,
+          $$PeAnschlussTableUpdateCompanionBuilder,
+          (
+            PeAnschlussData,
+            BaseReferences<_$AppDatabase, $PeAnschlussTable, PeAnschlussData>,
+          ),
+          PeAnschlussData,
+          PrefetchHooks Function()
+        > {
+  $$PeAnschlussTableTableManager(_$AppDatabase db, $PeAnschlussTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PeAnschlussTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PeAnschlussTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PeAnschlussTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> wireCrossSectionMm2 = const Value.absent(),
+              }) => PeAnschlussCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                wireCrossSectionMm2: wireCrossSectionMm2,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> wireCrossSectionMm2 = const Value.absent(),
+              }) => PeAnschlussCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                wireCrossSectionMm2: wireCrossSectionMm2,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PeAnschlussTable, PeAnschlussData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $PeAnschlussTable,
+                    PeAnschlussData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PeAnschlussTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PeAnschlussTable,
+      PeAnschlussData,
+      $$PeAnschlussTableFilterComposer,
+      $$PeAnschlussTableOrderingComposer,
+      $$PeAnschlussTableAnnotationComposer,
+      $$PeAnschlussTableCreateCompanionBuilder,
+      $$PeAnschlussTableUpdateCompanionBuilder,
+      (
+        PeAnschlussData,
+        BaseReferences<_$AppDatabase, $PeAnschlussTable, PeAnschlussData>,
+      ),
+      PeAnschlussData,
+      PrefetchHooks Function()
+    >;
+typedef $$HpaAnschlussTableCreateCompanionBuilder =
+    HpaAnschlussCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> conductorCrossSectionMm2,
+    });
+typedef $$HpaAnschlussTableUpdateCompanionBuilder =
+    HpaAnschlussCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> manufacturer,
+      Value<String> seriesName,
+      Value<String> modelNumber,
+      Value<int> conductorCrossSectionMm2,
+    });
+
+class $$HpaAnschlussTableFilterComposer
+    extends Composer<_$AppDatabase, $HpaAnschlussTable> {
+  $$HpaAnschlussTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get conductorCrossSectionMm2 => $composableBuilder(
+    column: $table.conductorCrossSectionMm2,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HpaAnschlussTableOrderingComposer
+    extends Composer<_$AppDatabase, $HpaAnschlussTable> {
+  $$HpaAnschlussTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get conductorCrossSectionMm2 => $composableBuilder(
+    column: $table.conductorCrossSectionMm2,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HpaAnschlussTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HpaAnschlussTable> {
+  $$HpaAnschlussTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get manufacturer => $composableBuilder(
+    column: $table.manufacturer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seriesName => $composableBuilder(
+    column: $table.seriesName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelNumber => $composableBuilder(
+    column: $table.modelNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get conductorCrossSectionMm2 => $composableBuilder(
+    column: $table.conductorCrossSectionMm2,
+    builder: (column) => column,
+  );
+}
+
+class $$HpaAnschlussTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HpaAnschlussTable,
+          HpaAnschlussData,
+          $$HpaAnschlussTableFilterComposer,
+          $$HpaAnschlussTableOrderingComposer,
+          $$HpaAnschlussTableAnnotationComposer,
+          $$HpaAnschlussTableCreateCompanionBuilder,
+          $$HpaAnschlussTableUpdateCompanionBuilder,
+          (
+            HpaAnschlussData,
+            BaseReferences<_$AppDatabase, $HpaAnschlussTable, HpaAnschlussData>,
+          ),
+          HpaAnschlussData,
+          PrefetchHooks Function()
+        > {
+  $$HpaAnschlussTableTableManager(_$AppDatabase db, $HpaAnschlussTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HpaAnschlussTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HpaAnschlussTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HpaAnschlussTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> conductorCrossSectionMm2 = const Value.absent(),
+              }) => HpaAnschlussCompanion(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                conductorCrossSectionMm2: conductorCrossSectionMm2,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> manufacturer = const Value.absent(),
+                Value<String> seriesName = const Value.absent(),
+                Value<String> modelNumber = const Value.absent(),
+                Value<int> conductorCrossSectionMm2 = const Value.absent(),
+              }) => HpaAnschlussCompanion.insert(
+                id: id,
+                name: name,
+                manufacturer: manufacturer,
+                seriesName: seriesName,
+                modelNumber: modelNumber,
+                conductorCrossSectionMm2: conductorCrossSectionMm2,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HpaAnschlussTable, HpaAnschlussData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $HpaAnschlussTable,
+                    HpaAnschlussData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HpaAnschlussTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HpaAnschlussTable,
+      HpaAnschlussData,
+      $$HpaAnschlussTableFilterComposer,
+      $$HpaAnschlussTableOrderingComposer,
+      $$HpaAnschlussTableAnnotationComposer,
+      $$HpaAnschlussTableCreateCompanionBuilder,
+      $$HpaAnschlussTableUpdateCompanionBuilder,
+      (
+        HpaAnschlussData,
+        BaseReferences<_$AppDatabase, $HpaAnschlussTable, HpaAnschlussData>,
+      ),
+      HpaAnschlussData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -13205,4 +36514,67 @@ class $AppDatabaseManager {
       $$ScenariosTableTableManager(_db, _db.scenarios);
   $$ScenarioResultsTableTableManager get scenarioResults =>
       $$ScenarioResultsTableTableManager(_db, _db.scenarioResults);
+  $$HeatPumpsTableTableManager get heatPumps =>
+      $$HeatPumpsTableTableManager(_db, _db.heatPumps);
+  $$HeatLoopsTableTableManager get heatLoops =>
+      $$HeatLoopsTableTableManager(_db, _db.heatLoops);
+  $$InventoryItemsTableTableManager get inventoryItems =>
+      $$InventoryItemsTableTableManager(_db, _db.inventoryItems);
+  $$ComponentStatusTableTableTableManager get componentStatusTable =>
+      $$ComponentStatusTableTableTableManager(_db, _db.componentStatusTable);
+  $$BoilerTableTableManager get boiler =>
+      $$BoilerTableTableManager(_db, _db.boiler);
+  $$HwVerteilerTableTableManager get hwVerteiler =>
+      $$HwVerteilerTableTableManager(_db, _db.hwVerteiler);
+  $$ZirkulationspumpeTableTableManager get zirkulationspumpe =>
+      $$ZirkulationspumpeTableTableManager(_db, _db.zirkulationspumpe);
+  $$RueckflussverhindererTableTableManager get rueckflussverhinderer =>
+      $$RueckflussverhindererTableTableManager(_db, _db.rueckflussverhinderer);
+  $$SchmutzfangerTableTableManager get schmutzfanger =>
+      $$SchmutzfangerTableTableManager(_db, _db.schmutzfanger);
+  $$DurchflusswaechterTableTableManager get durchflusswaechter =>
+      $$DurchflusswaechterTableTableManager(_db, _db.durchflusswaechter);
+  $$PufferspeicherTableTableManager get pufferspeicher =>
+      $$PufferspeicherTableTableManager(_db, _db.pufferspeicher);
+  $$PlattenwaermetauscherTableTableManager get plattenwaermetauscher =>
+      $$PlattenwaermetauscherTableTableManager(_db, _db.plattenwaermetauscher);
+  $$SafetyValveTableTableManager get safetyValve =>
+      $$SafetyValveTableTableManager(_db, _db.safetyValve);
+  $$MembranausdehnungsgefaessTableTableManager get membranausdehnungsgefaess =>
+      $$MembranausdehnungsgefaessTableTableManager(
+        _db,
+        _db.membranausdehnungsgefaess,
+      );
+  $$EntluftungsventilTableTableManager get entluftungsventil =>
+      $$EntluftungsventilTableTableManager(_db, _db.entluftungsventil);
+  $$HeizkreispumpeTableTableManager get heizkreispumpe =>
+      $$HeizkreispumpeTableTableManager(_db, _db.heizkreispumpe);
+  $$AbsperrventilTableTableManager get absperrventil =>
+      $$AbsperrventilTableTableManager(_db, _db.absperrventil);
+  $$FbhVerteilerTableTableManager get fbhVerteiler =>
+      $$FbhVerteilerTableTableManager(_db, _db.fbhVerteiler);
+  $$FbhSchleifeTableTableManager get fbhSchleife =>
+      $$FbhSchleifeTableTableManager(_db, _db.fbhSchleife);
+  $$MischbatterieTableTableManager get mischbatterie =>
+      $$MischbatterieTableTableManager(_db, _db.mischbatterie);
+  $$RfvGartenanschlussTableTableManager get rfvGartenanschluss =>
+      $$RfvGartenanschlussTableTableManager(_db, _db.rfvGartenanschluss);
+  $$FuellwasserZuleitungTableTableManager get fuellwasserZuleitung =>
+      $$FuellwasserZuleitungTableTableManager(_db, _db.fuellwasserZuleitung);
+  $$KaltwasserVerbraucherTableTableManager get kaltwasserVerbraucher =>
+      $$KaltwasserVerbraucherTableTableManager(_db, _db.kaltwasserVerbraucher);
+  $$LsSchalterTableTableManager get lsSchalter =>
+      $$LsSchalterTableTableManager(_db, _db.lsSchalter);
+  $$FiSchutzschalterTableTableManager get fiSchutzschalter =>
+      $$FiSchutzschalterTableTableManager(_db, _db.fiSchutzschalter);
+  $$ZuleitungStarkstromTableTableManager get zuleitungStarkstrom =>
+      $$ZuleitungStarkstromTableTableManager(_db, _db.zuleitungStarkstrom);
+  $$TrennschalterTableTableManager get trennschalter =>
+      $$TrennschalterTableTableManager(_db, _db.trennschalter);
+  $$KlemmenleisteTableTableManager get klemmenleiste =>
+      $$KlemmenleisteTableTableManager(_db, _db.klemmenleiste);
+  $$PeAnschlussTableTableManager get peAnschluss =>
+      $$PeAnschlussTableTableManager(_db, _db.peAnschluss);
+  $$HpaAnschlussTableTableManager get hpaAnschluss =>
+      $$HpaAnschlussTableTableManager(_db, _db.hpaAnschluss);
 }

@@ -7,6 +7,7 @@ import '../../core/geo.dart';
 import '../../db/database.dart';
 import '../../db/electrical.dart' show inverterOutputCurrentA, recommendedMcbA;
 import '../../db/tables.dart' show RoofType, RoofTypeX;
+import 'component_calculator.dart';
 
 export 'roof_dialogs.dart' show RoofFormResult;
 import 'roof_dialogs.dart';
@@ -29,12 +30,20 @@ class EditorController extends ChangeNotifier {
   /// Wallbox catalog (for the wallbox RCD check).
   List<Wallbox> wallboxes = [];
 
+  /// Heat pump inventory (all seeded models).
+  List<HeatPump> heatPumps = [];
+
+  /// Heating loops for this project.
+  List<HeatLoop> heatLoops = [];
+
   List<Roof> roofs = [];
   List<Obstacle> obstacles = [];
   List<PlacedModule> placed = [];
   List<ModuleString> strings = [];
   List<SolarModule> moduleTypes = [];
   List<Inverter> inverters = [];
+  List<InventoryItem> inventoryItems = [];
+  List<ComponentStatusTableData> componentStatuses = [];
 
   /// placedModuleId -> stringId (modules not in a string are absent).
   Map<int, int> placedToString = {};
@@ -125,6 +134,9 @@ class EditorController extends ChangeNotifier {
 
   void _changed() => notifyListeners();
 
+  ComponentCalculator? _calculator;
+  ComponentCalculator get calculator => _calculator!;
+
   /// Public alias so the UI can trigger a repaint after direct field edits.
   void notifyNow() => notifyListeners();
 
@@ -148,6 +160,17 @@ class EditorController extends ChangeNotifier {
         .get();
     inverters = await (db.select(db.inverters)
           ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+        .get();
+    heatPumps = await (db.select(db.heatPumps)
+          ..orderBy([(t) => OrderingTerm.asc(t.displayName)]))
+        .get();
+    heatLoops = await db.heatLoopsOf(projectId);
+
+    // Heat pump components inventory.
+    _calculator = ComponentCalculator(db);
+    inventoryItems = await db.select(db.inventoryItems).get();
+    componentStatuses = await (db.select(db.componentStatusTable)
+          ..where((t) => t.projectId.equals(projectId)))
         .get();
 
     final stringIds = strings.map((s) => s.id).toSet();
@@ -178,7 +201,52 @@ class EditorController extends ChangeNotifier {
               ? savedInverter
               : inverters.first.id;
     }
+
+    // Recalculate component statuses so the UI reflects any changes.
+    _calculator?.calculate(projectId);
+
     _changed();
+  }
+
+  /// Updates or creates a component status for an inventory item.
+  Future<void> updateComponentStatus({
+    required int inventoryItemId,
+    required String status,
+    required int required,
+    required int quantity,
+  }) async {
+    print('DEBUG controller: updateComponentStatus called, inventoryItemId=$inventoryItemId, canEdit=$_canEdit');
+    if (!_canEdit) return;
+
+    // Check if a status row already exists for this inventory item + project.
+    final existing = await (db.select(db.componentStatusTable)
+          ..where((t) =>
+              t.projectId.equals(projectId) &
+              t.inventoryItemId.equals(inventoryItemId)))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      await (db.update(db.componentStatusTable)
+            ..where((t) => t.id.equals(existing.id)))
+          .write(ComponentStatusTableCompanion(
+            status: Value(status),
+            required: Value<bool>(required == 1),
+            quantity: Value(quantity),
+          ));
+    } else {
+      await db.into(db.componentStatusTable).insert(
+            ComponentStatusTableCompanion(
+              projectId: Value(projectId),
+              inventoryItemId: Value(inventoryItemId),
+              status: Value(status),
+              required: Value<bool>(required == 1),
+              quantity: Value(quantity),
+            ),
+          );
+    }
+
+    // Refresh the local state.
+    await load();
   }
 
   /// Sets the project's global module type.
@@ -280,6 +348,7 @@ class EditorController extends ChangeNotifier {
     bool? radiatoren,
     bool? garten,
     int? hwSchleifeM,
+    int? heatPumpId,
   }) async {
     if (!_canEdit) return;
     final p = project;
@@ -328,6 +397,9 @@ class EditorController extends ChangeNotifier {
       radiatoren: Value(radiatoren ?? p.radiatoren),
       garten: Value(garten ?? p.garten),
       hwSchleifeM: Value(hwSchleifeM ?? p.hwSchleifeM),
+      activeHeatPumpId: heatPumpId == null
+          ? const Value.absent()
+          : Value(heatPumpId),
     );
     project = p.copyWithCompanion(c);
     await (db.update(db.projects)..where((t) => t.id.equals(projectId)))
@@ -355,6 +427,66 @@ class EditorController extends ChangeNotifier {
       isBoltedMounting: isBoltedMounting,
     );
     await _persistProjectSettings();
+  }
+
+  // ------------------------------------------------------------------
+  // Heat pump & heating loops
+  // ------------------------------------------------------------------
+
+  Future<void> setHeatPumpId(int? heatPumpId) async {
+    await updateProjectProperties(heatPumpId: heatPumpId);
+  }
+
+  Future<int> insertHeatLoop({
+    required String name,
+    String loopType = 'radiator',
+    double nominalKw = 0,
+    int flowTempC = 55,
+  }) async {
+    if (!_canEdit || project == null) return -1;
+    final id = await db.into(db.heatLoops).insert(HeatLoopsCompanion.insert(
+      projectId: project!.id,
+      name: name,
+      loopType: Value(loopType),
+      nominalKw: Value(nominalKw),
+      flowTempC: Value(flowTempC),
+    ));
+    await _reloadHeatLoops();
+    return id;
+  }
+
+  Future<void> updateHeatLoop(int heatLoopId, {
+    String? name,
+    String? loopType,
+    double? nominalKw,
+    int? flowTempC,
+  }) async {
+    if (!_canEdit) return;
+    await (db.update(db.heatLoops)
+          ..where((t) => t.id.equals(heatLoopId)))
+        .write(HeatLoopsCompanion(
+      name: name == null ? const Value.absent() : Value(name),
+      loopType: loopType == null ? const Value.absent() : Value(loopType),
+      nominalKw: nominalKw == null
+          ? const Value.absent()
+          : Value(nominalKw),
+      flowTempC:
+          flowTempC == null ? const Value.absent() : Value(flowTempC),
+    ));
+    await _reloadHeatLoops();
+  }
+
+  Future<void> deleteHeatLoop(int heatLoopId) async {
+    if (!_canEdit) return;
+    await (db.delete(db.heatLoops)
+          ..where((t) => t.id.equals(heatLoopId)))
+        .go();
+    await _reloadHeatLoops();
+  }
+
+  Future<void> _reloadHeatLoops() async {
+    heatLoops = await db.heatLoopsOf(projectId);
+    _changed();
   }
 
   // ------------------------------------------------------------------
